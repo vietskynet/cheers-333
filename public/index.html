@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>333 Cheers Lab</title>
-<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700;800&family=Patrick+Hand&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{--bg:#0d1424;--panel:#151f36;--line:#26334f;--gold:#e8b63c;--gold2:#f6d77e;--ink:#eef2fa;--mute:#93a0bb;--ok:#3ccf8e;--bad:#ff6b6b}
   *{box-sizing:border-box;margin:0;padding:0}
@@ -161,9 +161,9 @@
           <img id="guideImg" alt="Shape cơ bản của cú cụng">
         </div>
         <div class="opts">
-          <label class="opt"><input type="checkbox" id="frameOn" checked> Đặt tác phẩm trong khung tranh</label>
-          <label class="opt"><input type="checkbox" id="fontWish"> Chèn lời chúc bằng font viết tay (dùng khi AI viết sai dấu tiếng Việt)</label>
-          <div class="opt">Logo 333 thật để in chìm (PNG nền trong, tuỳ chọn):
+          <label class="opt"><input type="checkbox" id="frameOn"> Đặt poster trong khung</label>
+          <label class="opt"><input type="checkbox" id="fontWish"> App tự xếp chữ (bật khi AI viết sai dấu tiếng Việt)</label>
+          <div class="opt">Logo 333 thật đặt góc poster (PNG nền trong, tuỳ chọn):
             <div class="row" style="margin-top:6px"><label class="btn" for="logoIn">⬆️ Tải logo</label><input type="file" id="logoIn" accept="image/png,image/svg+xml,image/webp"><img id="logoPrev" style="height:34px;display:none;background:#fff;border-radius:6px;padding:3px"><button class="btn" id="logoDel" style="display:none">Bỏ logo</button></div>
           </div>
           <details class="opt"><summary>Xem prompt gốc gửi AI vẽ</summary><pre id="promptView"></pre></details>
@@ -621,7 +621,7 @@ Việc 1 – Nhận diện: tìm TỪNG chai/lon/ly bia nhìn thấy trong ảnh
 Việc 2 – Cú cụng: các chai/lon có đang được nâng lên chạm vào nhau trong một cú cụng (hoặc chồng/xếp lại cùng nhau như một màn cụng) không? Cái nào thuộc cú cụng?
 Việc 3 – Liên tưởng: nhìn tổng thể hình khối mà các lon/chai, bàn tay, cánh tay tạo ra trong cú cụng (bố cục, góc nghiêng, cao thấp, số lượng). Tưởng tượng nó giống MỘT thứ cụ thể, đẹp, gần gũi trong đời sống người Việt. Chọn thứ khớp hình dáng thật nhất, đừng chọn bừa.
 Việc 4 – Lời chúc tiếng Việt 2–3 câu, ấm áp, hài hước nhẹ, gắn ý nghĩa của thứ đó với tình bạn, sum vầy, thành công; có thể nhắc 333 hoặc "Dô!" tự nhiên. Không cổ vũ uống nhiều.
-Việc 4b – "wish_short": bản rút gọn của lời chúc, tối đa 18 chữ, để viết tay lên tranh.
+Việc 4b – "wish_short": bản rút gọn của lời chúc, tối đa 18 chữ. "wish_keyword": 1–3 chữ đắt giá nhất của lời chúc (vd "THẮNG LỚN", "BÌNH AN", "DÔ!"), sẽ in to nhất. "wish_bits": 3–5 cụm ngắn 2–5 chữ cắt ra từ lời chúc, sẽ rải rác quanh poster.
 Việc 4c – "outline": đường bao hình khối tổng thể của cú cụng (các lon/chai + bàn tay/cánh tay đang nâng lên), là đa giác 6–16 điểm [[x,y],...] theo phần trăm ảnh, đi theo chiều kim đồng hồ.
 Việc 5 – Mô tả tác phẩm bằng TIẾNG ANH cho AI vẽ tranh (AI vẽ sẽ KHÔNG nhìn thấy ảnh, chỉ nhận một hình hoạ bố cục gồm đường bao xám và các khối đen đặt đúng vị trí các lon):
   - "object_en": tên thứ được liên tưởng bằng tiếng Anh.
@@ -629,7 +629,7 @@ Việc 5 – Mô tả tác phẩm bằng TIẾNG ANH cho AI vẽ tranh (AI vẽ 
   - "guide_mapping": 1–2 câu tiếng Anh nói các khối đen trong hình hoạ trở thành bộ phận nào của chủ thể (vd: "the six dark blocks become the stacked stone tiers of the pagoda, the top block is its finial").
 
 Chỉ trả về JSON:
-{"containers":[{"box":[x,y,w,h],"kind":"lon|chai|ly","is_333":true,"sku":"tên SKU trong danh sách hoặc 'khác'","evidence":"...","in_cheers":true,"angle":0}],"outline":[[x,y]],"wish_short":"...",
+{"containers":[{"box":[x,y,w,h],"kind":"lon|chai|ly","is_333":true,"sku":"tên SKU trong danh sách hoặc 'khác'","evidence":"...","in_cheers":true,"angle":0}],"outline":[[x,y]],"wish_short":"...","wish_keyword":"...","wish_bits":["...","..."],
 "cheers":true,"cheers_note":"1 câu","shape":"mô tả hình khối cú cụng, 1 câu","object":"thứ liên tưởng","emoji":"1 emoji","why":"vì sao giống, 1 câu","wish":"lời chúc","object_en":"...","art_brief":"...","guide_mapping":"..."}`;
   busy = new AbortController();
   let a;
@@ -672,9 +672,9 @@ $("againBtn").onclick = async () => {
   const prev = st.idea;
   $("obj").textContent = "Đang nghĩ một liên tưởng khác…"; $("wish").textContent = ""; $("why").textContent = "";
   try {
-    const n = await s.json(`${st.mode === "hand" ? "Một dáng bàn tay" : "Một cú cụng bia 333"} có hình khối: "${prev.shape || prev.why}". Lần trước đã liên tưởng thành "${prev.object}". Hãy liên tưởng sang MỘT thứ khác trong đời sống người Việt cũng khớp hình dáng đó (ảnh đính kèm), viết lời chúc tiếng Việt 2–3 câu ấm áp, hài hước nhẹ, và "wish_short" tối đa 18 chữ. Không cổ vũ uống nhiều.
+    const n = await s.json(`${st.mode === "hand" ? "Một dáng bàn tay" : "Một cú cụng bia 333"} có hình khối: "${prev.shape || prev.why}". Lần trước đã liên tưởng thành "${prev.object}". Hãy liên tưởng sang MỘT thứ khác trong đời sống người Việt cũng khớp hình dáng đó (ảnh đính kèm), viết lời chúc tiếng Việt 2–3 câu ấm áp, hài hước nhẹ, và "wish_short" tối đa 18 chữ. "wish_keyword": 1–3 chữ đắt giá nhất của lời chúc (vd "THẮNG LỚN", "BÌNH AN", "DÔ!"), sẽ in to nhất. "wish_bits": 3–5 cụm ngắn 2–5 chữ cắt ra từ lời chúc, sẽ rải rác quanh poster. Không cổ vũ uống nhiều.
 ${ART_SPEC}
-Chỉ trả về JSON: {"shape":"...","object":"...","emoji":"...","why":"...","wish":"...","wish_short":"...","object_en":"...","art_brief":"...","guide_mapping":"..."}`, { images: [await toBlob(st.mode === "hand" ? st.guide : st.canvas)], cache: false });
+Chỉ trả về JSON: {"shape":"...","object":"...","emoji":"...","why":"...","wish":"...","wish_short":"...","wish_keyword":"...","wish_bits":["..."],"object_en":"...","art_brief":"...","guide_mapping":"..."}`, { images: [await toBlob(st.mode === "hand" ? st.guide : st.canvas)], cache: false });
     st.idea = { ...prev, ...n }; showIdea(st.idea, "Liên tưởng bởi Claude"); st.mode === "hand" ? paintHand() : paint();
   } catch (e) { showIdea(prev, "Chưa nghĩ ra liên tưởng khác, thử lại sau."); }
 };
@@ -745,24 +745,35 @@ function shapeGuide(st) {
 }
 
 /* ---------- Prompt gốc gửi Higgsfield ---------- */
+/* Từ khoá + các cụm chữ rải rác (Claude chọn; dự phòng tự tách) */
+function wishParts(idea) {
+  const short = String(idea.wish_short || idea.wish || "").trim();
+  let kw = String(idea.wish_keyword || "").trim();
+  let bits = Array.isArray(idea.wish_bits) ? idea.wish_bits.map(b => String(b).trim()).filter(Boolean) : [];
+  if (!kw) kw = /dô/i.test(short) ? "DÔ!" : (short.split(/[,.!]/)[0].split(/\s+/).slice(-2).join(" ") || "DÔ!");
+  if (!bits.length) { const w = short.replace(/[.!]/g, "").split(/\s+/).filter(Boolean); for (let k = 0; k < w.length; k += 4) bits.push(w.slice(k, k + 4).join(" ")); }
+  bits = bits.filter(b => b.toLowerCase() !== kw.toLowerCase()).slice(0, 5);
+  return { kw: kw.toUpperCase(), bits };
+}
 function buildPrompt(st) {
   const idea = st.idea || {}, font = $("fontWish").checked, frame = $("frameOn").checked;
-  const wish = (idea.wish_short || idea.wish || "").replace(/"/g, "'");
+  const { kw, bits } = wishParts(idea);
+  const q = t => `"${String(t).replace(/"/g, "'")}"`;
   const subject = idea.object_en || idea.object || "a symbolic object";
   const sketch = st.mode === "hand"
-    ? "The attached image is a rough composition sketch for the artwork. Its black silhouette is the exact outer contour of the main subject. Draw the subject so that its overall shape, proportions, pose and placement on the page match this silhouette exactly. Do not draw the sketch itself or its flat black fill, and do not draw any hands or fingers."
-    : "The attached image is a rough composition sketch for the artwork. Its grey silhouette is the exact outer contour of the main subject, and the dark blocks mark the subject's main structural masses. Draw the subject so that its overall shape, proportions and placement on the page match this sketch exactly. Do not draw the sketch itself, its flat grey fill or its black blocks.";
+    ? "The attached image is a rough composition sketch. Its black silhouette is the exact outer contour of the main subject. Build the subject so that its overall shape, proportions, pose and placement match this silhouette. Do not reproduce the sketch itself or its flat black fill, and do not draw any hands or fingers."
+    : "The attached image is a rough composition sketch. Its grey silhouette is the exact outer contour of the main subject, and the dark blocks mark the subject's main structural masses. Build the subject so that its overall shape, proportions and placement match this sketch. Do not reproduce the sketch itself, its flat grey fill or its black blocks.";
   return `${sketch}
 
-Subject: ${subject}. ${idea.art_brief || ""} ${idea.guide_mapping || ""}
+Subject (imagined from the shape): ${subject}. ${idea.art_brief || ""} ${idea.guide_mapping || ""}
 
-Medium and style: fine-art line drawing on a rich deep-red velvet background (crimson velvet with soft plush texture and subtle light sheen). The subject is drawn entirely in elegant artistic linework: lustrous metallic gold lines as the main strokes, with metallic silver lines for secondary details, fine hatching and highlights, like gold-and-silver thread embroidery or gilded engraving. Expressive, flowing, varied line weight, ornamental flourishes, luxurious and festive; no flat color fills, the red velvet shows through between the lines. Behind the drawing, the number "333" is pressed into the velvet pile as a large, very faint, tone-on-tone embossed watermark.
+Output: a modern graphic design poster, not a painting. The subject is deconstructed and rebuilt from bold flat cut-out shapes — circles, rounded blobs, long bars, rectangles, diamonds — overlapping with translucent multiply blending, like a two- or three-colour screen print or risograph: visible grain, dry-brush scratches, worn ink texture and slight misregistration. Playful, rhythmic, asymmetric composition with lots of energy and generous empty space. Palette: cobalt blue, deep indigo navy, vermilion red-orange, teal, lime green and sunny yellow, with golden yellow (#F2B705) accents, on a clean warm off-white paper background.
 
-Layout: the drawing fills the upper ~70% of the velvet. ${font
-  ? "The bottom ~30% of the velvet is left empty, with no text."
-  : `In the bottom ~30% of the velvet, write exactly this Vietnamese text in elegant flowing handwritten script in metallic gold ink, centered, on 2-3 lines, with every Vietnamese diacritic correct: "${wish}"`}
-${frame ? "\nPresentation: the finished velvet artwork is mounted in an ornate thin gold picture frame, shown straight on and filling the image, against a plain light wall.\n" : ""}
-No other text and no logos except the faint 333 watermark. No photographic elements. Portrait 4:5.`;
+Typography: ${font
+  ? "leave clean empty areas for text along the right edge and the lower part; do not render any text."
+  : `expressive, improvised Vietnamese typography with every diacritic correct. The key word ${q(kw)} is the biggest element on the poster: a heavy black geometric sans-serif, set huge, running vertically up one edge or stacked, bold and confident. Scatter these smaller phrases freely in the open spaces, each with its own size, weight, colour from the palette and slight rotation, some uppercase, like a music festival poster: ${bits.map(q).join(", ")}. Add a small bold "333" mark near a corner. No other text.`}
+${frame ? "\nPresentation: shown as a printed poster in a thin black frame, straight on, filling the image, against a plain light wall.\n" : ""}
+No logos, no photographic elements, no realistic rendering. Portrait 4:5.`;
 }
 $("frameOn").onchange = () => { if (current?.group) $("promptView").textContent = buildPrompt(current); };
 $("fontWish").onchange = () => { if (current?.group) { $("promptView").textContent = buildPrompt(current); compose(current.art || null); } };
@@ -831,28 +842,42 @@ async function compose(artSrc) {
   const x = cv.getContext("2d");
   let ok = false;
   if (artSrc) { try { const im = await loadImg(artSrc); const s = Math.max(Wp / im.width, Hp / im.height); x.drawImage(im, (Wp - im.width * s) / 2, (Hp - im.height * s) / 2, im.width * s, im.height * s); ok = true; } catch {} }
-  if (!ok) { // bản nháp offline: giấy draft + shape in vàng + 333 chìm
-    const vg = x.createRadialGradient(Wp / 2, Hp * .4, 80, Wp / 2, Hp * .5, Hp * .8); vg.addColorStop(0, "#9e1426"); vg.addColorStop(.6, "#6d0b19"); vg.addColorStop(1, "#3a040c");
-    x.fillStyle = vg; x.fillRect(0, 0, Wp, Hp);
-    for (let i = 0; i < 14000; i++) { x.fillStyle = Math.random() < .5 ? `rgba(255,120,140,${Math.random() * 0.06})` : `rgba(0,0,0,${Math.random() * 0.08})`; x.fillRect(Math.random() * Wp, Math.random() * Hp, 1.5, 1.5); }
-    x.save(); x.globalAlpha = .08; x.fillStyle = "#000"; x.font = '800 420px "Be Vietnam Pro", sans-serif'; x.textAlign = "center"; x.fillText("333", Wp / 2, Hp * .5); x.restore();
+  if (!ok) { // bản nháp: giấy trắng ngà + shape in lụa lệch màu
+    x.fillStyle = "#f3f0ea"; x.fillRect(0, 0, Wp, Hp);
+    for (let i = 0; i < 12000; i++) { x.fillStyle = `rgba(60,50,40,${Math.random() * 0.05})`; x.fillRect(Math.random() * Wp, Math.random() * Hp, 1.5, 1.5); }
     if (st.guide) {
-      const g = document.createElement("canvas"); g.width = st.guide.width; g.height = st.guide.height; const gx = g.getContext("2d");
-      gx.drawImage(st.guide, 0, 0); const d = gx.getImageData(0, 0, g.width, g.height);
-      for (let i = 0; i < d.data.length; i += 4) { const v = d.data[i]; if (v > 245) d.data[i + 3] = 0; else if (v < 80) { d.data[i] = 230; d.data[i + 1] = 185; d.data[i + 2] = 70; d.data[i + 3] = 235; } else { d.data[i] = 205; d.data[i + 1] = 210; d.data[i + 2] = 218; d.data[i + 3] = v > 200 ? 30 : 220; } }
-      gx.putImageData(d, 0, 0); x.drawImage(g, 0, 0, Wp, Hp);
+      const tint = (col, keepGrey) => { const g = document.createElement("canvas"); g.width = st.guide.width; g.height = st.guide.height; const gx = g.getContext("2d"); gx.drawImage(st.guide, 0, 0); const d = gx.getImageData(0, 0, g.width, g.height);
+        for (let i = 0; i < d.data.length; i += 4) { const v = d.data[i]; const on = v < 80 || (keepGrey && v < 245); d.data[i] = col[0]; d.data[i + 1] = col[1]; d.data[i + 2] = col[2]; d.data[i + 3] = on ? (v < 80 ? 225 : 120) : 0; }
+        gx.putImageData(d, 0, 0); return g; };
+      x.save(); x.globalCompositeOperation = "multiply";
+      x.drawImage(tint([26, 188, 176], true), 18, -12, Wp, Hp);
+      x.drawImage(tint([255, 87, 51], false), -16, 14, Wp, Hp);
+      x.drawImage(tint([37, 99, 235], false), 0, 0, Wp, Hp);
+      x.restore();
     }
   }
-  if (logoData) { try { const lg = await loadImg(logoData); const lw = Wp * .62, lh = lw * lg.height / lg.width; x.save(); x.globalAlpha = .1; x.globalCompositeOperation = "multiply"; x.drawImage(lg, (Wp - lw) / 2, Hp * .36 - lh / 2, lw, lh); x.restore(); } catch {} }
+  if (logoData) { try { const lg = await loadImg(logoData); const lw = Wp * .22, lh = lw * lg.height / lg.width; x.drawImage(lg, 60, Hp - lh - 50, lw, lh); } catch {} }
   if (font || !ok) {
-    try { await document.fonts.load('56px "Patrick Hand"'); } catch {}
-    x.save(); x.fillStyle = "#e9c46a"; x.shadowColor = "rgba(0,0,0,.5)"; x.shadowBlur = 6; x.font = '56px "Patrick Hand", cursive'; x.textAlign = "center";
-    const lines = []; let line = "";
-    for (const w of String(idea.wish_short || idea.wish || "").split(/\s+/)) { const t = line ? line + " " + w : w; if (x.measureText(t).width > Wp - 200 && line) { lines.push(line); line = w; } else line = t; }
-    if (line) lines.push(line);
-    let y = Hp * .79 - (lines.length - 1) * 34;
-    for (const l of lines.slice(0, 4)) { x.save(); x.translate(Wp / 2, y); x.rotate((Math.random() - .5) * .02); x.fillText(l, 0, 0); x.restore(); y += 70; }
-    x.restore();
+    try { await document.fonts.load('800 80px "Be Vietnam Pro"'); } catch {}
+    const { kw, bits } = wishParts(idea);
+    const PAL = ["#2563eb", "#ff5733", "#14a39a", "#1e1b4b", "#eab308", "#65a30d"];
+    let seed = [...kw].reduce((a, c) => a + c.charCodeAt(0), 7); const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+    // từ khoá: chữ đen cực đậm chạy dọc mép phải
+    x.save(); x.fillStyle = "#111"; x.textBaseline = "alphabetic";
+    let fs = 230; x.font = `800 ${fs}px "Be Vietnam Pro", sans-serif`;
+    while (x.measureText(kw).width > Hp * .8 && fs > 60) { fs -= 8; x.font = `800 ${fs}px "Be Vietnam Pro", sans-serif`; }
+    x.translate(Wp - 50, Hp * .86); x.rotate(-Math.PI / 2); x.fillText(kw, 0, 0); x.restore();
+    // các cụm rải rác ở vùng trống phía dưới/trái
+    const spots = [[70, Hp * .74], [Wp * .42, Hp * .8], [90, Hp * .86], [Wp * .45, Hp * .92], [70, Hp * .955]];
+    bits.forEach((b, k) => {
+      const [bx, by] = spots[k % spots.length], size = 34 + Math.round(rnd() * 26);
+      x.save(); x.translate(bx, by); x.rotate((rnd() - .5) * .12);
+      x.fillStyle = PAL[k % PAL.length]; x.font = `${rnd() > .5 ? 800 : 600} ${size}px "Be Vietnam Pro", sans-serif`;
+      const t = rnd() > .5 ? b.toUpperCase() : b; let w = x.measureText(t).width; const max = Wp * .55;
+      if (w > max) x.font = `${rnd() > .5 ? 800 : 600} ${Math.floor(size * max / w)}px "Be Vietnam Pro", sans-serif`;
+      x.fillText(t, 0, 0); x.restore();
+    });
+    x.fillStyle = "#111"; x.font = '800 34px "Be Vietnam Pro", sans-serif'; x.fillText("333", 60, 80);
   }
   let url; try { url = cv.toDataURL("image/jpeg", 0.92); } catch { url = null; }
   const img = $("poster");
@@ -1126,14 +1151,14 @@ Dữ liệu đo được: ${JSON.stringify(info)}.
 
 Việc 1 – Mô tả dáng tay: tay đang tạo thành hình khối gì (vd: hai tay chụm thành trái tim, tay làm đầu chim, ngón tay như sừng hươu, bàn tay xoè như bông hoa…).
 Việc 2 – Tưởng tượng: hình bóng ở Ảnh 2 giống MỘT thứ cụ thể, đẹp, giàu ý nghĩa nhất (con vật, loài hoa, công trình, vật thể, biểu tượng trong đời sống người Việt). Chọn thứ khớp hình dáng thật nhất, đừng chọn bừa.
-Việc 3 – Lời chúc tiếng Việt 2–3 câu ấm áp, hài hước nhẹ, gắn ý nghĩa của thứ đó với tình bạn, may mắn, thành công; có thể nhắc 333 hoặc "Dô!" tự nhiên. Không cổ vũ uống nhiều. "wish_short": bản rút gọn tối đa 18 chữ.
+Việc 3 – Lời chúc tiếng Việt 2–3 câu ấm áp, hài hước nhẹ, gắn ý nghĩa của thứ đó với tình bạn, may mắn, thành công; có thể nhắc 333 hoặc "Dô!" tự nhiên. Không cổ vũ uống nhiều. "wish_short": bản rút gọn tối đa 18 chữ. "wish_keyword": 1–3 chữ đắt giá nhất của lời chúc (vd "THẮNG LỚN", "BÌNH AN", "DÔ!"), sẽ in to nhất. "wish_bits": 3–5 cụm ngắn 2–5 chữ cắt ra từ lời chúc, sẽ rải rác quanh poster.
 Việc 4 – Mô tả tác phẩm bằng TIẾNG ANH cho AI vẽ tranh (AI vẽ chỉ nhận hình bóng ở Ảnh 2):
   - "object_en": tên thứ được tưởng tượng.
   - "art_brief": 3–4 câu mô tả bức tranh về chính thứ đó như một tác phẩm độc lập, hình dáng tổng thể phải khớp hình bóng. TUYỆT ĐỐI không nhắc tới bàn tay, ngón tay, người.
   - "guide_mapping": 1–2 câu: các phần của hình bóng (ngón, lòng bàn tay…) trở thành bộ phận nào của chủ thể, nhưng diễn đạt KHÔNG dùng chữ hand/finger (vd: "the five upper branches become the antlers, the wide lower mass is the head").
 
 Chỉ trả về JSON:
-{"gesture":"...","shape":"...","object":"...","emoji":"1 emoji","why":"vì sao giống, 1 câu","wish":"...","wish_short":"...","object_en":"...","art_brief":"...","guide_mapping":"..."}`;
+{"gesture":"...","shape":"...","object":"...","emoji":"1 emoji","why":"vì sao giống, 1 câu","wish":"...","wish_short":"...","wish_keyword":"...","wish_bits":["..."],"object_en":"...","art_brief":"...","guide_mapping":"..."}`;
   busy = new AbortController();
   try {
     const a = await claudeClient.json(prompt, { images: [await toBlob($("cv")), await toBlob(guide)], signal: busy.signal });
