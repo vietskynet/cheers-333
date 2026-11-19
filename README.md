@@ -1,5 +1,7 @@
 # 333 Cheers Lab
 
+**Link app:** https://cheerbeerapp.netlify.app/
+
 Web app nhận diện cú cụng bia 333 bằng camera, đọc **hình dáng (shape)** của các lon đang cụng, liên tưởng thành một hình ảnh trong đời sống, rồi nhờ **Higgsfield** vẽ thành tranh (nền nhung đỏ, nét vàng hoạ bạc, số 333 chìm, lời chúc viết tay).
 
 ## Cấu trúc
