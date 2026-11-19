@@ -77,6 +77,64 @@
   .modes button.on{background:var(--gold);color:#1a1200}
   #liveHold{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:120px;height:120px;border-radius:50%;pointer-events:none;display:none}
   #live{position:fixed;inset:0;background:#000;z-index:50;display:none}
+  /* ---------- giao diện chính: trắng, clean ---------- */
+  body{background:#fff;color:#14161b}
+  #adv{position:fixed;inset:0;z-index:40;overflow:auto;background:var(--bg);color:var(--ink);display:none}
+  #adv.on{display:block}
+  .advClose{position:sticky;top:10px;margin:10px 16px 0 auto;display:block;border:0;border-radius:99px;padding:8px 14px;background:#ffffff1f;color:#fff;font:inherit;font-weight:700;z-index:2}
+  #app{max-width:520px;margin:0 auto;min-height:100vh;min-height:100dvh;position:relative}
+  .scr{display:none;flex-direction:column;align-items:center;min-height:100vh;min-height:100dvh;padding:calc(env(safe-area-inset-top) + 18px) 22px calc(env(safe-area-inset-bottom) + 22px);text-align:center;animation:fade .35s ease}
+  .scr.on{display:flex}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .brand{align-self:flex-start;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:#6b7280;display:flex;align-items:center;gap:8px}
+  .brand b{color:#14161b;font-weight:800}
+  .brand .dot{width:10px;height:10px;border-radius:50%;background:#F2B705;display:inline-block}
+  .hero{margin:auto 0 18px}
+  .hero h1{font-size:38px;line-height:1.08;font-weight:800;letter-spacing:-1px;margin-top:18px}
+  .hero h1 em{font-style:normal;background:linear-gradient(transparent 62%,#F2B70588 62%)}
+  .hero p{color:#6b7280;font-size:15px;line-height:1.55;margin:14px auto 0;max-width:360px}
+  .heroArt{position:relative;width:220px;height:200px;margin:0 auto}
+  .heroArt i{position:absolute;mix-blend-mode:multiply;opacity:.92}
+  .heroArt .s1{width:120px;height:120px;border-radius:50%;background:#2563eb;left:10px;top:40px;animation:bob 6s ease-in-out infinite}
+  .heroArt .s2{width:34px;height:170px;border-radius:6px;background:#1e1b4b;left:110px;top:10px;transform:rotate(14deg);animation:bob 5s ease-in-out infinite reverse}
+  .heroArt .s3{width:90px;height:90px;background:#ff5733;left:120px;top:90px;border-radius:18px;transform:rotate(45deg);animation:bob 7s ease-in-out infinite}
+  .heroArt .s4{width:70px;height:70px;border-radius:50%;background:#a3e635;left:60px;top:120px;animation:bob 4.5s ease-in-out infinite}
+  .heroArt .s5{width:46px;height:46px;border-radius:50%;background:#F2B705;left:150px;top:24px;animation:bob 5.5s ease-in-out infinite reverse}
+  @keyframes bob{0%,100%{translate:0 0}50%{translate:0 -10px}}
+  .seg{display:flex;gap:4px;background:#f3f4f6;border-radius:99px;padding:4px;margin:6px 0 16px}
+  .seg button{border:0;background:transparent;border-radius:99px;padding:10px 18px;font:inherit;font-weight:700;color:#6b7280;cursor:pointer}
+  .seg button.on{background:#fff;color:#14161b;box-shadow:0 1px 4px #0000001a}
+  .cta{width:100%;max-width:360px;border:0;border-radius:16px;padding:17px;font:inherit;font-weight:800;font-size:16px;background:#14161b;color:#fff;cursor:pointer;letter-spacing:.2px}
+  .cta.alt{background:#F2B705;color:#14161b}
+  .ghost{background:none;border:0;color:#6b7280;font:inherit;font-size:14px;padding:12px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+  .gear{position:absolute;top:calc(env(safe-area-inset-top) + 10px);right:14px;border:0;background:#f3f4f6;border-radius:50%;width:38px;height:38px;font-size:17px;cursor:pointer}
+  .legal{font-size:11px;color:#9ca3af;margin-top:10px}
+  /* màn chờ */
+  .stage{position:relative;width:min(86vw,360px);aspect-ratio:4/5;margin:auto 0 0;border-radius:24px;background:#f6f4ef;overflow:hidden}
+  .stage .sh{position:absolute;mix-blend-mode:multiply;opacity:.9;will-change:transform}
+  .stage .grain{position:absolute;inset:0;background-image:radial-gradient(#0000000d 1px,transparent 1px);background-size:4px 4px;pointer-events:none}
+  .stage .kw{position:absolute;right:10px;bottom:16px;writing-mode:vertical-rl;transform:rotate(180deg);font-weight:800;font-size:44px;letter-spacing:-1px;color:#14161b;opacity:0;transition:opacity .8s}
+  .stage .kw.on{opacity:1}
+  .waitText{width:100%;max-width:360px;margin:18px 0 auto}
+  .teaser{font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:#6b7280;min-height:18px}
+  .teaser b{color:#14161b}
+  .msg{font-size:19px;font-weight:700;margin-top:6px;min-height:28px;transition:opacity .3s}
+  .bar{height:4px;background:#f3f4f6;border-radius:99px;overflow:hidden;margin-top:16px}
+  .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#2563eb,#14a39a,#F2B705,#ff5733);border-radius:99px;transition:width .6s ease}
+  .eta{font-size:12px;color:#9ca3af;margin-top:8px}
+  /* kết quả */
+  #outImg{width:100%;border-radius:20px;box-shadow:0 24px 60px #0000002a;margin:18px 0 0;background:#f6f4ef;aspect-ratio:4/5;object-fit:cover}
+  .wishLine{color:#374151;font-size:15px;line-height:1.55;margin:16px 4px 6px}
+  .actions{display:flex;gap:10px;width:100%;max-width:360px;margin-top:10px}
+  .actions .cta{flex:1}
+  .actions.small{justify-content:center;margin-top:2px}
+  /* camera: điều khiển tông trắng */
+  #live .liveBottom{background:linear-gradient(#0000,#000a)}
+  #live .shutter{width:76px;height:76px;border-radius:50%;border:5px solid #fff;background:#ffffff33;font-size:0;cursor:pointer}
+  #live .round{width:46px;height:46px;border-radius:50%;border:0;background:#ffffffe6;color:#14161b;font-size:18px;cursor:pointer}
+  #live .liveRow{display:flex;align-items:center;justify-content:center;gap:26px}
+  #live .pill{background:#ffffffe6;color:#14161b;font-weight:600}
+
   #live.on{display:block}
   #liveStage{position:absolute;inset:0}
   #liveStage video{display:none}
@@ -93,6 +151,8 @@
 </style>
 </head>
 <body>
+<div id="adv">
+<button class="advClose" id="advClose">✕ Đóng</button>
 <header>
   <h1><b>333</b> Cheers Lab</h1>
   <p>Train nhận diện 3 SKU · Kiểm tra ảnh có đang cụng 333 · Liên tưởng hình dáng cú cụng & gửi lời chúc</p>
@@ -176,30 +236,84 @@
         <button class="btn main" id="saveBtn">⬇️ Lưu tranh</button>
       </div>
     </div>
-    </div>
   </section>
 </main>
+</div>
 <div id="live">
   <div id="liveStage"><video id="liveVid" playsinline muted></video><canvas id="liveCv"></canvas></div>
   <div class="liveTop"><span class="pill" id="liveInfo">Đang mở camera…</span><span class="sp"></span><span class="pill" id="liveFps"></span></div>
   <div id="liveCount"></div>
   <div id="liveHold"></div>
   <div class="liveBottom">
-    <label class="pill"><input type="checkbox" id="autoPaint" checked> Tự vẽ tranh</label>
+    <input type="checkbox" id="autoPaint" checked hidden>
     <label class="pill"><input type="checkbox" id="autoSnap" checked> <span id="autoSnapLbl">Tự chụp khi cụng</span></label>
-    <div class="row" style="justify-content:center">
-      <button class="btn" id="liveFlip">🔄</button>
-      <button class="btn main" id="liveSnap">📸 Chụp</button>
-      <button class="btn" id="liveTimer">⏱️ 3s</button>
-      <button class="btn" id="liveClose">✕</button>
+    <div class="liveRow">
+      <button class="round" id="liveClose" title="Đóng">✕</button>
+      <button class="shutter" id="liveSnap" title="Chụp">Chụp</button>
+      <button class="round" id="liveFlip" title="Đổi camera">⟲</button>
+      <button class="round" id="liveTimer" title="Hẹn giờ 3 giây" style="display:none">3s</button>
     </div>
   </div>
 </div>
-<footer>333 Cheers Lab · Mô hình nhận diện chạy trên trình duyệt · Thưởng thức có trách nhiệm – Đã uống rượu bia, không lái xe · 18+</footer>
+
+<!-- ================= GIAO DIỆN CHÍNH: SCAN → KẾT QUẢ ================= -->
+<main id="app">
+  <section class="scr on" id="scrStart">
+    <div class="brand"><span class="dot"></span>333 <b>Cheers Lab</b></div>
+    <div class="hero">
+      <div class="heroArt" aria-hidden="true"><i class="s1"></i><i class="s2"></i><i class="s3"></i><i class="s4"></i><i class="s5"></i></div>
+      <h1>Giơ tay lên,<br>nhận một <em>tác phẩm</em>.</h1>
+      <p>Tạo dáng bằng bàn tay hoặc cụng lon 333 trước camera. AI đọc hình dáng và biến nó thành một poster kèm lời chúc dành riêng cho bạn.</p>
+    </div>
+    <div class="seg" id="seg">
+      <button class="on" data-mode="hand">🤟 Dáng tay</button>
+      <button data-mode="cheers">🍻 Cụng lon</button>
+    </div>
+    <button class="cta" id="goScan">Bắt đầu scan</button>
+    <label class="ghost" for="photoIn2">hoặc chọn ảnh có sẵn</label><input type="file" id="photoIn2" accept="image/*">
+    <button class="gear" id="openAdv" title="Quản lý">⚙</button>
+    <p class="legal">Thưởng thức có trách nhiệm · Đã uống rượu bia, không lái xe · 18+</p>
+  </section>
+
+  <section class="scr" id="scrWait">
+    <div class="brand"><span class="dot"></span>333 <b>Cheers Lab</b></div>
+    <div class="stage" id="waitStage" aria-hidden="true"></div>
+    <div class="waitText">
+      <div class="teaser" id="teaser">&nbsp;</div>
+      <div class="msg" id="waitMsg">Đang đọc hình dáng…</div>
+      <div class="bar"><i id="waitBar"></i></div>
+      <div class="eta" id="waitEta"></div>
+    </div>
+  </section>
+
+  <section class="scr" id="scrResult">
+    <div class="brand"><span class="dot"></span>333 <b>Cheers Lab</b></div>
+    <img id="outImg" alt="Tác phẩm của bạn">
+    <p class="wishLine" id="wishLine"></p>
+    <div class="actions">
+      <button class="cta" id="outSave">Lưu ảnh</button>
+      <button class="cta alt" id="outShare">Chia sẻ</button>
+    </div>
+    <div class="actions small">
+      <button class="ghost" id="outAgain">↻ Tạo lại</button>
+      <button class="ghost" id="outNew">📷 Scan mới</button>
+    </div>
+  </section>
+
+  <section class="scr" id="scrErr">
+    <div class="brand"><span class="dot"></span>333 <b>Cheers Lab</b></div>
+    <div class="hero"><h1 style="font-size:30px">Ối, chưa được rồi</h1><p id="errMsg"></p></div>
+    <button class="cta" id="errRetry">Scan lại</button>
+  </section>
+</main>
+
 
 <script type="module">
 import { FilesetResolver, ObjectDetector, ImageEmbedder, HandLandmarker } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs";
 
+/* ============ SỰ KIỆN (giao diện chính lắng nghe tiến trình) ============ */
+const bus = new EventTarget();
+const emit = (t, d) => bus.dispatchEvent(new CustomEvent(t, { detail: d }));
 /* ============ CẤU HÌNH ============ */
 const CLASSES = [
   { id:"sku1", def:"SKU 1 – (đổi tên, vd: 333 Lon 330ml)", is333:true },
@@ -495,7 +609,7 @@ async function localAnalyse(c) {
     current.idea = { object: fb.obj, emoji: fb.emoji, why: fb.why, wish: fb.wish, shape: "", object_en: FALLBACK_EN[geo.key][0], art_brief: FALLBACK_EN[geo.key][1], guide_mapping: "" };
     showIdea(current.idea, "Liên tưởng từ thư viện có sẵn (chế độ offline).");
     paint();
-  }
+  } else emit("fail", `${verdict.t}. ${verdict.s || ""}`);
 }
 const shortName = id => clsName(id).split("–")[0].trim();
 
@@ -664,6 +778,7 @@ Chỉ trả về JSON:
   current = { canvas: c, objs, group: g, verdict, idea: a };
   draw(current); showVerdict(verdict, objs);
   if (g) { showIdea(a, "Nhận diện & liên tưởng bởi Claude"); paint(); }
+  else emit("fail", `${verdict.t}. ${verdict.s || ""} Hãy để các lon chạm nhau rõ trong khung hình rồi thử lại.`);
 }
 
 $("againBtn").onclick = async () => {
@@ -681,6 +796,7 @@ Chỉ trả về JSON: {"shape":"...","object":"...","emoji":"...","why":"...","
 $("copyBtn").onclick = async () => { try { await navigator.clipboard.writeText($("wish").textContent); $("copyBtn").textContent = "✓ Đã copy"; setTimeout(() => $("copyBtn").textContent = "📋 Copy lời chúc", 1500); } catch {} };
 
 function showIdea(o, src) {
+  emit("idea", o);
   $("imagine").style.display = "block";
   $("art").innerHTML = `<span>${esc(o.emoji || "🍻")}</span>`;
   $("shapeK").textContent = "Cú cụng của bạn giống…";
@@ -800,7 +916,7 @@ async function hfPaint() {
   const status = $("posterStatus"), btn = $("hfBtn"); btn.disabled = true;
   const step = t => status.innerHTML = `<span class="spin"></span>${t}`;
   try {
-    step("1/3 · Đang gửi shape guide + prompt sang Higgsfield…");
+    step("1/3 · Đang gửi shape guide + prompt…"); emit("painting");
     const small = document.createElement("canvas"); small.width = 768; small.height = 960;
     small.getContext("2d").drawImage(st.guide, 0, 0, 768, 960);
     const guide = small.toDataURL("image/jpeg", 0.9).split(",")[1];
@@ -812,7 +928,7 @@ async function hfPaint() {
       st.art = URL.createObjectURL(new Blob([bin], { type: d.mime || "image/png" }));
       await compose(st.art);
       status.textContent = `Tranh vẽ bởi ${d.model || "Nano Banana Pro"} (Google)`;
-      return;
+      emit("done"); return;
     }
     if (!r.ok || !d.request_id) throw new Error(d.message || ("HTTP " + r.status));
     let url = null;
@@ -828,9 +944,11 @@ async function hfPaint() {
     const blob = await (await api("/api/image?url=" + encodeURIComponent(url))).blob();
     st.art = URL.createObjectURL(blob); st.hfUrl = url;
     await compose(st.art);
+    emit("done");
     status.innerHTML = `Tranh vẽ bởi Higgsfield (${esc(d.model || "")}) · <a href="${esc(url)}" target="_blank" rel="noopener" style="color:var(--gold)">ảnh gốc độ phân giải cao ↗</a>`;
   } catch (e) {
     status.textContent = "Lỗi vẽ tranh: " + String(e.message || e).slice(0, 260);
+    emit("fail", "Khâu tạo hình bị lỗi: " + String(e.message || e).slice(0, 200));
   } finally { btn.disabled = false; }
 }
 
@@ -1061,11 +1179,8 @@ function snapLive(how) {
   const c = document.createElement("canvas"); c.width = Math.round(v.videoWidth * s); c.height = Math.round(v.videoHeight * s);
   c.getContext("2d").drawImage(v, 0, 0, c.width, c.height);
   clinkSound(); navigator.vibrate?.([30, 40, 60]);
-  AUTO_PAINT = $("autoPaint").checked;
   closeLive();
-  document.querySelector('nav button[data-tab="check"]').click();
-  $("checkLog").textContent = how + " – đang phân tích…";
-  analyseAny(c).finally(() => { AUTO_PAINT = false; });
+  startFlow(c);
 }
 
 
@@ -1136,6 +1251,7 @@ async function analyseHand(c) {
   if (!handsPx.length) {
     drawHandAnnot(c, []);
     showVerdict({ k: "no", t: "Không thấy bàn tay nào", s: "Đưa tay vào giữa khung hình, đủ sáng, nền đơn giản rồi thử lại." }, []);
+    emit("fail", "Mình chưa thấy bàn tay nào. Đưa tay vào giữa khung hình, đủ sáng, nền đơn giản rồi thử lại nhé.");
     log.textContent = ""; return;
   }
   drawHandAnnot(c, handsPx);
@@ -1184,6 +1300,112 @@ async function paintHand() {
   $("posterStatus").textContent = "Bản dưới là bản nháp. Bấm “Vẽ tranh” để có tranh hoàn chỉnh.";
   if (AUTO_PAINT) hfPaint();
 }
+
+/* ================= LUỒNG CHÍNH: SCAN → KẾT QUẢ ================= */
+const show = id => document.querySelectorAll(".scr").forEach(el => el.classList.toggle("on", el.id === id));
+document.querySelectorAll("#seg button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("#seg button").forEach(x => x.classList.toggle("on", x === b));
+  document.querySelector(`#modes button[data-mode="${b.dataset.mode}"]`)?.click();
+});
+document.querySelector('#modes button[data-mode="hand"]')?.click();   // mặc định: dáng tay
+$("openAdv").onclick = () => $("adv").classList.add("on");
+$("advClose").onclick = () => $("adv").classList.remove("on");
+$("goScan").onclick = () => openLive();
+$("errRetry").onclick = () => { show("scrStart"); openLive(); };
+$("outNew").onclick = () => { show("scrStart"); openLive(); };
+$("photoIn2").onchange = async e => { const f = e.target.files[0]; e.target.value = ""; if (f) startFlow(await fileToCanvas(f)); };
+
+/* Màn chờ: các mảng hình in lụa trôi và tự lắp ghép, chữ trạng thái đổi liên tục */
+const PALETTE = ["#2563eb", "#1e1b4b", "#ff5733", "#14a39a", "#a3e635", "#F2B705"];
+let waitTimer = null, waitStart = 0, waitPhase = 0;
+function buildStage() {
+  const st = $("waitStage"); st.innerHTML = "";
+  for (let i = 0; i < 16; i++) {
+    const el = document.createElement("i"); el.className = "sh";
+    const kind = i % 4, size = 30 + Math.random() * 90;
+    el.style.background = PALETTE[i % PALETTE.length];
+    if (kind === 0) { el.style.width = el.style.height = size + "px"; el.style.borderRadius = "50%"; }
+    else if (kind === 1) { el.style.width = size * .28 + "px"; el.style.height = size * 1.8 + "px"; el.style.borderRadius = "6px"; }
+    else if (kind === 2) { el.style.width = el.style.height = size * .8 + "px"; el.style.borderRadius = "14px"; }
+    else { el.style.width = size * 1.2 + "px"; el.style.height = size * .7 + "px"; el.style.borderRadius = "60% 40% 55% 45%"; }
+    el.style.left = (5 + Math.random() * 70) + "%"; el.style.top = (5 + Math.random() * 70) + "%";
+    el.animate([
+      { transform: `translate(${(Math.random() - .5) * 120}px, ${(Math.random() - .5) * 160}px) rotate(${Math.random() * 180}deg) scale(.6)` },
+      { transform: `translate(0,0) rotate(${(Math.random() - .5) * 40}deg) scale(1)` },
+    ], { duration: 2200 + Math.random() * 2600, direction: "alternate", iterations: Infinity, easing: "cubic-bezier(.6,.05,.3,1)", delay: -Math.random() * 3000 });
+    st.append(el);
+  }
+  const g = document.createElement("div"); g.className = "grain"; st.append(g);
+  const kw = document.createElement("div"); kw.className = "kw"; kw.id = "waitKw"; st.append(kw);
+}
+const MSGS = {
+  read: ["Đang đọc hình dáng…", "Đếm ngón tay, đo góc nghiêng…", "Phác lại silhouette…"],
+  idea: ["Claude đang tưởng tượng…", "Hình này giống gì nhỉ…", "Đang chọn lời chúc đắt nhất…"],
+  paint: ["Đang pha màu in lụa…", "Cắt giấy, xếp mảng hình…", "Căn chữ ngẫu hứng…", "Lăn mực, ép bản in…", "Sắp xong rồi, giữ máy nhé…"],
+};
+function waitSet(phase) {
+  waitPhase = phase; let k = 0;
+  const list = MSGS[phase], el = $("waitMsg");
+  clearInterval(waitTimer);
+  const tick = () => {
+    el.style.opacity = 0;
+    setTimeout(() => { el.textContent = list[k++ % list.length]; el.style.opacity = 1; }, 250);
+    const sec = (performance.now() - waitStart) / 1000;
+    const target = phase === "read" ? 12 : phase === "idea" ? 35 : Math.min(96, 40 + sec * 0.9);
+    $("waitBar").style.width = Math.max(parseFloat($("waitBar").style.width) || 4, target) + "%";
+    $("waitEta").textContent = `${Math.round(sec)} giây · thường mất 30–90 giây`;
+  };
+  tick(); waitTimer = setInterval(tick, 2600);
+}
+
+let flowId = 0;
+async function startFlow(c) {
+  const id = ++flowId;
+  buildStage(); $("teaser").innerHTML = "&nbsp;"; $("waitBar").style.width = "4%";
+  waitStart = performance.now(); show("scrWait"); waitSet("read");
+  const on = (t, f) => bus.addEventListener(t, e => { if (id === flowId) f(e.detail); });
+  const cleanup = () => { flowId++; clearInterval(waitTimer); };
+  on("idea", o => {
+    waitSet("idea");
+    const { kw } = wishParts(o || {});
+    $("teaser").innerHTML = o?.object ? `Trông giống · <b>${esc(o.object)}</b>` : "&nbsp;";
+    const k = $("waitKw"); if (k) { k.textContent = kw; k.classList.add("on"); }
+  });
+  on("painting", () => waitSet("paint"));
+  on("done", () => {
+    const cv = current?.posterCanvas; cleanup();
+    $("waitBar").style.width = "100%";
+    $("outImg").src = cv ? cv.toDataURL("image/jpeg", 0.92) : $("poster").src;
+    $("wishLine").textContent = current?.idea?.wish || "";
+    setTimeout(() => show("scrResult"), 250);
+  });
+  on("fail", msg => { cleanup(); $("errMsg").textContent = msg || "Có lỗi xảy ra, thử lại nhé."; show("scrErr"); });
+  AUTO_PAINT = true;
+  try { await analyseAny(c); }
+  catch (e) { if (id === flowId) { cleanup(); $("errMsg").textContent = "Không tải được mô hình nhận diện: " + (e.message || e); show("scrErr"); } }
+  finally { setTimeout(() => { AUTO_PAINT = false; }, 0); }
+}
+$("outAgain").onclick = () => {
+  if (!current?.group) return;
+  const id = ++flowId; buildStage(); waitStart = performance.now(); show("scrWait"); waitSet("paint");
+  const { kw } = wishParts(current.idea || {}); const k = $("waitKw"); if (k) { k.textContent = kw; k.classList.add("on"); }
+  $("teaser").innerHTML = current.idea?.object ? `Trông giống · <b>${esc(current.idea.object)}</b>` : "&nbsp;";
+  const once = (t, f) => bus.addEventListener(t, e => { if (id === flowId) f(e.detail); });
+  once("done", () => { flowId++; clearInterval(waitTimer); $("outImg").src = current.posterCanvas.toDataURL("image/jpeg", .92); show("scrResult"); });
+  once("fail", msg => { flowId++; clearInterval(waitTimer); $("errMsg").textContent = msg; show("scrErr"); });
+  hfPaint();
+};
+$("outSave").onclick = async () => {
+  const cv = current?.posterCanvas; if (!cv) return;
+  const blob = await toBlob(cv, .94);
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "333-cheers.jpg"; document.body.append(a); a.click(); a.remove();
+};
+$("outShare").onclick = async () => {
+  const cv = current?.posterCanvas; if (!cv) return;
+  const file = new File([await toBlob(cv, .92)], "333-cheers.jpg", { type: "image/jpeg" });
+  if (navigator.canShare?.({ files: [file] })) { try { await navigator.share({ files: [file], text: current.idea?.wish || "333 Cheers Lab" }); } catch {} }
+  else $("outSave").click();
+};
 initStore();
 </script>
 </body>
