@@ -920,9 +920,14 @@ async function hfPaint() {
     const small = document.createElement("canvas"); small.width = 768; small.height = 960;
     small.getContext("2d").drawImage(st.guide, 0, 0, 768, 960);
     const guide = small.toDataURL("image/jpeg", 0.9).split(",")[1];
-    const r = await api("/api/paint", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ guide, prompt: buildPrompt(st) }) });
-    step("2/3 · Đang vẽ tranh… (Nano Banana Pro thường mất 20–60 giây)");
+    const send = provider => api("/api/paint", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ guide, prompt: buildPrompt(st), provider }) });
+    let r = await send();
+    step("2/3 · Đang vẽ tranh…");
     let d = {}; try { d = JSON.parse((await r.text()).trim()); } catch {}
+    if (d.error === "gemini") { // Nano Banana Pro lỗi → tự chuyển sang Higgsfield
+      console.warn("Gemini lỗi, chuyển sang Higgsfield:", d.message);
+      r = await send("higgsfield"); d = {}; try { d = JSON.parse((await r.text()).trim()); } catch {}
+    }
     if (d.image) { // Nano Banana Pro (Gemini) trả ảnh trực tiếp
       const bin = Uint8Array.from(atob(d.image), c => c.charCodeAt(0));
       st.art = URL.createObjectURL(new Blob([bin], { type: d.mime || "image/png" }));

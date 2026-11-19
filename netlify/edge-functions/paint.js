@@ -52,8 +52,8 @@ export default async (req) => {
   if (req.method !== "POST") return json({ error: "method" }, 405);
   const denied = checkPass(req); if (denied) return denied;
   try {
-    const { guide, prompt } = await req.json();
-    if (guide && prompt && env("GEMINI_API_KEY") && (env("IMAGE_PROVIDER") || "gemini") !== "higgsfield") return geminiPaint(guide, prompt);
+    const { guide, prompt, provider } = await req.json();
+    if (guide && prompt && provider !== "higgsfield" && env("GEMINI_API_KEY") && (env("IMAGE_PROVIDER") || "gemini") !== "higgsfield") return geminiPaint(guide, prompt);
     if (!guide || !prompt) return json({ error: "bad_request", message: "thiếu guide hoặc prompt" }, 400);
     const bytes = Uint8Array.from(atob(guide), c => c.charCodeAt(0));
     if (bytes.length > 4_000_000) return json({ error: "too_large" }, 413);
