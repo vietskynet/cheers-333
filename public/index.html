@@ -72,6 +72,10 @@
   .opt{font-size:13px;color:var(--mute);margin-bottom:10px;display:block}
   .opt input[type=checkbox]{accent-color:var(--gold);margin-right:6px}
   pre#promptView{white-space:pre-wrap;font-size:11px;color:var(--ink);background:#151f36;padding:8px;border-radius:8px;margin-top:6px;max-height:220px;overflow:auto}
+  .modes{display:flex;background:#0d1424;border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px}
+  .modes button{flex:1;border:0;border-radius:9px;padding:10px;font:inherit;font-weight:700;background:transparent;color:var(--mute);cursor:pointer}
+  .modes button.on{background:var(--gold);color:#1a1200}
+  #liveHold{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:120px;height:120px;border-radius:50%;pointer-events:none;display:none}
   #live{position:fixed;inset:0;background:#000;z-index:50;display:none}
   #live.on{display:block}
   #liveStage{position:absolute;inset:0}
@@ -114,7 +118,12 @@
   </section>
 
   <section class="tab" id="tab-check">
-    <button class="btn main" id="liveBtn" style="width:100%;justify-content:center;padding:16px;font-size:16px;margin-bottom:12px">🎥 Mở camera trực tiếp – tự bắt khoảnh khắc cụng</button>
+    <div class="modes" id="modes">
+      <button class="on" data-mode="cheers">🍻 Cú cụng lon</button>
+      <button data-mode="hand">🤟 Hình bàn tay</button>
+    </div>
+    <p class="note" id="modeNote" style="margin:6px 0 10px">Cụng lon trước camera – app đọc hình dáng các lon và vẽ thành tranh.</p>
+    <button class="btn main" id="liveBtn" style="width:100%;justify-content:center;padding:16px;font-size:16px;margin-bottom:12px">🎥 Mở camera trực tiếp</button>
     <label class="drop" id="drop" for="photoIn">
       <strong>📷 Tải lên 1 tấm ảnh</strong>
       Chạm để chọn ảnh, hoặc kéo thả vào đây
@@ -174,9 +183,10 @@
   <div id="liveStage"><video id="liveVid" playsinline muted></video><canvas id="liveCv"></canvas></div>
   <div class="liveTop"><span class="pill" id="liveInfo">Đang mở camera…</span><span class="sp"></span><span class="pill" id="liveFps"></span></div>
   <div id="liveCount"></div>
+  <div id="liveHold"></div>
   <div class="liveBottom">
     <label class="pill"><input type="checkbox" id="autoPaint" checked> Tự vẽ tranh</label>
-    <label class="pill"><input type="checkbox" id="autoSnap" checked> Tự chụp khi cụng</label>
+    <label class="pill"><input type="checkbox" id="autoSnap" checked> <span id="autoSnapLbl">Tự chụp khi cụng</span></label>
     <div class="row" style="justify-content:center">
       <button class="btn" id="liveFlip">🔄</button>
       <button class="btn main" id="liveSnap">📸 Chụp</button>
@@ -588,7 +598,8 @@ const ART_SPEC = `Việc 5 – Mô tả tác phẩm bằng TIẾNG ANH cho AI v�
   - "object_en": tên thứ được liên tưởng bằng tiếng Anh.
   - "art_brief": 3–4 câu tiếng Anh mô tả bức tranh về chính thứ đó như một tác phẩm độc lập: chủ thể, chi tiết, bối cảnh, ánh sáng. Hình dáng tổng thể của chủ thể phải khớp đường bao của cú cụng. TUYỆT ĐỐI không nhắc tới bia, lon, chai, cụng ly, người, bàn tay hay cánh tay.
   - "guide_mapping": 1–2 câu tiếng Anh nói các khối đen trong hình hoạ trở thành bộ phận nào của chủ thể (vd: "the six dark blocks become the stacked stone tiers of the pagoda, the top block is its finial").`;
-async function analyse(file) { return analyseCanvas(await fileToCanvas(file)); }
+async function analyse(file) { return analyseAny(await fileToCanvas(file)); }
+const analyseAny = c => MODE === "hand" ? analyseHand(c) : analyseCanvas(c);
 async function analyseCanvas(c) {
   const log = $("checkLog");
   ["verdict", "imagine", "posterBox"].forEach(id => $(id).style.display = "none");
@@ -661,10 +672,10 @@ $("againBtn").onclick = async () => {
   const prev = st.idea;
   $("obj").textContent = "Đang nghĩ một liên tưởng khác…"; $("wish").textContent = ""; $("why").textContent = "";
   try {
-    const n = await s.json(`Một cú cụng bia 333 có hình khối: "${prev.shape || prev.why}". Lần trước đã liên tưởng thành "${prev.object}". Hãy liên tưởng sang MỘT thứ khác trong đời sống người Việt cũng khớp hình dáng đó (ảnh đính kèm), viết lời chúc tiếng Việt 2–3 câu ấm áp, hài hước nhẹ, và "wish_short" tối đa 18 chữ. Không cổ vũ uống nhiều.
+    const n = await s.json(`${st.mode === "hand" ? "Một dáng bàn tay" : "Một cú cụng bia 333"} có hình khối: "${prev.shape || prev.why}". Lần trước đã liên tưởng thành "${prev.object}". Hãy liên tưởng sang MỘT thứ khác trong đời sống người Việt cũng khớp hình dáng đó (ảnh đính kèm), viết lời chúc tiếng Việt 2–3 câu ấm áp, hài hước nhẹ, và "wish_short" tối đa 18 chữ. Không cổ vũ uống nhiều.
 ${ART_SPEC}
-Chỉ trả về JSON: {"shape":"...","object":"...","emoji":"...","why":"...","wish":"...","wish_short":"...","object_en":"...","art_brief":"...","guide_mapping":"..."}`, { images: [await toBlob(st.canvas)], cache: false });
-    st.idea = { ...prev, ...n }; showIdea(st.idea, "Liên tưởng bởi Claude"); paint();
+Chỉ trả về JSON: {"shape":"...","object":"...","emoji":"...","why":"...","wish":"...","wish_short":"...","object_en":"...","art_brief":"...","guide_mapping":"..."}`, { images: [await toBlob(st.mode === "hand" ? st.guide : st.canvas)], cache: false });
+    st.idea = { ...prev, ...n }; showIdea(st.idea, "Liên tưởng bởi Claude"); st.mode === "hand" ? paintHand() : paint();
   } catch (e) { showIdea(prev, "Chưa nghĩ ra liên tưởng khác, thử lại sau."); }
 };
 $("copyBtn").onclick = async () => { try { await navigator.clipboard.writeText($("wish").textContent); $("copyBtn").textContent = "✓ Đã copy"; setTimeout(() => $("copyBtn").textContent = "📋 Copy lời chúc", 1500); } catch {} };
@@ -738,7 +749,10 @@ function buildPrompt(st) {
   const idea = st.idea || {}, font = $("fontWish").checked, frame = $("frameOn").checked;
   const wish = (idea.wish_short || idea.wish || "").replace(/"/g, "'");
   const subject = idea.object_en || idea.object || "a symbolic object";
-  return `The attached image is a rough composition sketch for the artwork. Its grey silhouette is the exact outer contour of the main subject, and the dark blocks mark the subject's main structural masses. Draw the subject so that its overall shape, proportions and placement on the page match this sketch exactly. Do not draw the sketch itself, its flat grey fill or its black blocks.
+  const sketch = st.mode === "hand"
+    ? "The attached image is a rough composition sketch for the artwork. Its black silhouette is the exact outer contour of the main subject. Draw the subject so that its overall shape, proportions, pose and placement on the page match this silhouette exactly. Do not draw the sketch itself or its flat black fill, and do not draw any hands or fingers."
+    : "The attached image is a rough composition sketch for the artwork. Its grey silhouette is the exact outer contour of the main subject, and the dark blocks mark the subject's main structural masses. Draw the subject so that its overall shape, proportions and placement on the page match this sketch exactly. Do not draw the sketch itself, its flat grey fill or its black blocks.";
+  return `${sketch}
 
 Subject: ${subject}. ${idea.art_brief || ""} ${idea.guide_mapping || ""}
 
@@ -879,7 +893,8 @@ async function openLive() {
     }
     await startStream();
     live.on = true; live.tracks = []; live.hist.clear(); live.last = performance.now();
-    $("liveInfo").textContent = "Giơ lon lên và cụng nhau trước camera 🍻";
+    $("liveInfo").textContent = MODE === "hand" ? "Đưa tay vào khung hình và tạo dáng 🤟" : "Giơ lon lên và cụng nhau trước camera 🍻";
+    live.prevHands = null; live.stillSince = 0;
     requestAnimationFrame(liveLoop);
   } catch (e) {
     $("liveInfo").textContent = location.protocol === "https:" || location.hostname === "localhost" ? "Không mở được camera: " + (e.message || e) : "Camera cần HTTPS";
@@ -914,17 +929,18 @@ function liveLoop() {
   const now = performance.now();
   x.drawImage(v, 0, 0, W, H);
   live.frame++;
-  const hands = (live.hand.detectForVideo(v, now).landmarks || []).map(lm => {
+  const hands = MODE === "hand" ? [] : (live.hand.detectForVideo(v, now).landmarks || []).map(lm => {
     const h = handInfo(lm, W, H);
     h.tip = { x: h.c.x + h.ax.x * h.size * LIVE_CFG.tipRatio, y: h.c.y + h.ax.y * h.size * LIVE_CFG.tipRatio };
     h.base = { x: h.c.x - h.ax.x * h.size * 1.1, y: h.c.y - h.ax.y * h.size * 1.1 };
     return h;
   });
-  if (live.frame % LIVE_CFG.detEvery === 0) {
+  if (MODE !== "hand" && live.frame % LIVE_CFG.detEvery === 0) {
     live.boxes = (live.det.detectForVideo(v, now).detections || []).map(d => ({ x: d.boundingBox.originX, y: d.boundingBox.originY, w: d.boundingBox.width, h: d.boundingBox.height }));
   }
   trackHands(hands, now);
 
+  if (MODE === "hand") live.boxes = [];
   // vẽ lớp phủ: trục lon trên từng bàn tay + khung chai/lon
   const lw = Math.max(3, W / 300);
   x.lineCap = "round"; x.lineWidth = lw;
@@ -934,6 +950,8 @@ function liveLoop() {
     x.fillStyle = "#fff"; x.beginPath(); x.arc(h.tip.x, h.tip.y, lw * 1.6, 0, 7); x.fill();
   }
   const auto = $("autoSnap").checked;
+  if (MODE === "hand") { liveHandMode(x, v, now, auto, lw); return; }
+  $("liveHold").style.display = "none";
   if (auto && !live.countdown && now - live.last > LIVE_CFG.cooldownMs) {
     const hit = liveCheers(now);
     if (hit) { live.last = now; snapLive("Tự chụp khi cụng"); return; }
@@ -942,6 +960,33 @@ function liveLoop() {
   if (live.frame % 15 === 0) {
     $("liveFps").textContent = Math.round(live.fps) + " fps";
     $("liveInfo").textContent = hands.length ? `${hands.length} tay · ${live.boxes.length} chai/lon – cụng đi!` : "Giơ lon lên và cụng nhau trước camera 🍻";
+  }
+}
+/* Chế độ tay: vẽ hình bóng tay vàng lên camera, tự chụp khi tay giữ yên ~1 giây */
+function liveHandMode(x, v, now, auto, lw) {
+  const W = v.videoWidth, H = v.videoHeight;
+  const res = live.lastRes = live.hand.detectForVideo(v, now + 0.1);
+  const handsPx = (res.landmarks || []).map(lm => lm.map(p => ({ x: p.x * W, y: p.y * H })));
+  if (handsPx.length) { x.globalAlpha = .45; drawHands(x, handsPx, p => p, 1, "#e8b63c"); x.globalAlpha = 1; x.strokeStyle = "#fff"; x.lineWidth = lw * .7; for (const lm of handsPx) for (const [a, b] of BONES) { x.beginPath(); x.moveTo(lm[a].x, lm[a].y); x.lineTo(lm[b].x, lm[b].y); x.stroke(); } }
+  // độ rung: chênh lệch trung bình các điểm so với khung trước, chia cho cỡ bàn tay
+  let still = false;
+  if (handsPx.length && live.prevHands?.length === handsPx.length) {
+    let sum = 0, n = 0;
+    handsPx.forEach((lm, i) => { const size = Math.hypot(lm[0].x - lm[9].x, lm[0].y - lm[9].y) || 1; lm.forEach((p, k) => { const q = live.prevHands[i][k]; sum += Math.hypot(p.x - q.x, p.y - q.y) / size; n++; }); });
+    still = sum / n < 0.035;
+  }
+  live.prevHands = handsPx;
+  live.stillSince = still ? (live.stillSince || now) : 0;
+  const held = live.stillSince ? (now - live.stillSince) / 1100 : 0;
+  const ring = $("liveHold");
+  ring.style.display = auto && held > 0.05 ? "block" : "none";
+  ring.style.background = `conic-gradient(#e8b63c ${Math.min(1, held) * 360}deg, #ffffff33 0)`;
+  ring.style.mask = ring.style.webkitMask = "radial-gradient(circle, transparent 52px, #000 53px)";
+  if (auto && !live.countdown && held >= 1 && now - live.last > LIVE_CFG.cooldownMs) { live.last = now; live.stillSince = 0; ring.style.display = "none"; snapLive("Tự chụp dáng tay"); return; }
+  const dt = now - live.tLast; live.tLast = now; live.fps = live.fps * .9 + (1000 / Math.max(dt, 1)) * .1;
+  if (live.frame % 15 === 0) {
+    $("liveFps").textContent = Math.round(live.fps) + " fps";
+    $("liveInfo").textContent = handsPx.length ? (still ? "Giữ yên… 📸" : `${handsPx.length} tay – tạo dáng rồi giữ yên 1 giây`) : "Đưa tay vào khung hình và tạo dáng 🤟";
   }
 }
 function trackHands(hands, now) {
@@ -987,9 +1032,125 @@ function snapLive(how) {
   closeLive();
   document.querySelector('nav button[data-tab="check"]').click();
   $("checkLog").textContent = how + " – đang phân tích…";
-  analyseCanvas(c).finally(() => { AUTO_PAINT = false; });
+  analyseAny(c).finally(() => { AUTO_PAINT = false; });
 }
 
+
+/* ============ CHẾ ĐỘ: CÚ CỤNG LON / HÌNH BÀN TAY ============ */
+let MODE = "cheers";
+const MODE_NOTE = {
+  cheers: "Cụng lon trước camera – app đọc hình dáng các lon và vẽ thành tranh.",
+  hand: "Tạo dáng bằng bàn tay (chim, trái tim, hươu, bông hoa…) và giữ yên 1 giây – app đồ lại dáng tay và tưởng tượng thành tác phẩm.",
+};
+document.querySelectorAll("#modes button").forEach(b => b.onclick = () => {
+  MODE = b.dataset.mode;
+  document.querySelectorAll("#modes button").forEach(x => x.classList.toggle("on", x === b));
+  $("modeNote").textContent = MODE_NOTE[MODE];
+  $("autoSnapLbl").textContent = MODE === "hand" ? "Tự chụp khi giữ yên" : "Tự chụp khi cụng";
+});
+
+/* Khung xương bàn tay của MediaPipe (21 điểm) */
+const BONES = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
+const PALM = [0, 1, 5, 9, 13, 17];
+const FINGERS = { "cái": [1, 2, 4], "trỏ": [5, 6, 8], "giữa": [9, 10, 12], "áp út": [13, 14, 16], "út": [17, 18, 20] };
+function fingerStates(lm) { // ngón nào đang duỗi (đầu ngón xa cổ tay hơn khớp giữa)
+  const d = (a, b) => Math.hypot(lm[a].x - lm[b].x, lm[a].y - lm[b].y);
+  return Object.entries(FINGERS).filter(([, [m, p, t]]) => d(t, 0) > d(p, 0) * 1.15).map(([n]) => n);
+}
+/* Vẽ hình bóng bàn tay: xương dày + lòng bàn tay đặc, đặt vừa khung guide */
+function drawHands(x, handsPx, M, scale, color) {
+  x.fillStyle = x.strokeStyle = color; x.lineCap = x.lineJoin = "round";
+  for (const lm of handsPx) {
+    const P = lm.map(M);
+    const palm = Math.hypot(lm[0].x - lm[9].x, lm[0].y - lm[9].y) * scale;
+    x.beginPath(); PALM.forEach((i, k) => k ? x.lineTo(P[i].x, P[i].y) : x.moveTo(P[i].x, P[i].y)); x.closePath(); x.fill();
+    x.lineWidth = palm * 0.34; x.stroke();
+    for (const [a, b] of BONES) { x.lineWidth = palm * (a === 0 || b === 0 ? 0.36 : 0.26); x.beginPath(); x.moveTo(P[a].x, P[a].y); x.lineTo(P[b].x, P[b].y); x.stroke(); }
+    for (const p of P) { x.beginPath(); x.arc(p.x, p.y, palm * 0.13, 0, 7); x.fill(); }
+  }
+}
+function handGuide(handsPx) {
+  const G = 1024, GH = 1280;
+  const cv = document.createElement("canvas"); cv.width = G; cv.height = GH;
+  const x = cv.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, G, GH);
+  const all = handsPx.flat();
+  const pad = Math.max(...handsPx.map(lm => Math.hypot(lm[0].x - lm[9].x, lm[0].y - lm[9].y))) * 0.35;
+  const minX = Math.min(...all.map(p => p.x)) - pad, maxX = Math.max(...all.map(p => p.x)) + pad;
+  const minY = Math.min(...all.map(p => p.y)) - pad, maxY = Math.max(...all.map(p => p.y)) + pad;
+  const area = { x: 90, y: 70, w: G - 180, h: GH * 0.68 - 70 };
+  const sc = Math.min(area.w / (maxX - minX), area.h / (maxY - minY));
+  const ox = area.x + (area.w - (maxX - minX) * sc) / 2 - minX * sc, oy = area.y + (area.h - (maxY - minY) * sc) / 2 - minY * sc;
+  drawHands(x, handsPx, p => ({ x: ox + p.x * sc, y: oy + p.y * sc }), sc, "#111");
+  return cv;
+}
+function drawHandAnnot(c, handsPx) {
+  const cv = $("cv"); cv.width = c.width; cv.height = c.height;
+  const x = cv.getContext("2d"); x.drawImage(c, 0, 0);
+  x.globalAlpha = .55; drawHands(x, handsPx, p => p, 1, "#e8b63c"); x.globalAlpha = 1;
+  x.strokeStyle = "#fff"; x.lineWidth = Math.max(2, c.width / 400);
+  for (const lm of handsPx) for (const [a, b] of BONES) { x.beginPath(); x.moveTo(lm[a].x, lm[a].y); x.lineTo(lm[b].x, lm[b].y); x.stroke(); }
+}
+
+async function analyseHand(c) {
+  const log = $("checkLog");
+  ["verdict", "imagine", "posterBox"].forEach(id => $(id).style.display = "none");
+  $("items").innerHTML = ""; busy?.abort();
+  await loadModels(log);
+  const W = c.width, H = c.height;
+  const handsPx = (models.hand.detect(c).landmarks || []).map(lm => lm.map(p => ({ x: p.x * W, y: p.y * H })));
+  current = { canvas: c, objs: [], group: null, mode: "hand" };
+  $("stage").style.display = "block";
+  if (!handsPx.length) {
+    drawHandAnnot(c, []);
+    showVerdict({ k: "no", t: "Không thấy bàn tay nào", s: "Đưa tay vào giữa khung hình, đủ sáng, nền đơn giản rồi thử lại." }, []);
+    log.textContent = ""; return;
+  }
+  drawHandAnnot(c, handsPx);
+  const guide = handGuide(handsPx);
+  const info = handsPx.map((lm, i) => ({ tay: i + 1, ngon_duoi: fingerStates(lm), tilt_deg: Math.round(handInfo(lm.map(p => ({ x: p.x / W, y: p.y / H })), W, H).tilt) }));
+  current = { canvas: c, objs: [], group: handsPx, guide, mode: "hand" };
+  showVerdict({ k: "yes", t: `🤟 Nhận diện ${handsPx.length} bàn tay`, s: info.map(h => `Tay ${h.tay}: duỗi ${h.ngon_duoi.join(", ") || "không ngón nào"}`).join(" · ") }, []);
+
+  log.innerHTML = `<span class="spin"></span>Claude đang ngắm dáng tay và tưởng tượng… (thường 10–30 giây)`;
+  const prompt = `Bạn là nghệ sĩ và copywriter vui tính cho bia 333 tại Việt Nam.
+Ảnh 1: ảnh người dùng đang tạo dáng bằng bàn tay (đã vẽ đè khung xương tay màu vàng). Ảnh 2: hình bóng (silhouette) màu đen của dáng tay đó, đồ lại từ khung xương.
+Dữ liệu đo được: ${JSON.stringify(info)}.
+
+Việc 1 – Mô tả dáng tay: tay đang tạo thành hình khối gì (vd: hai tay chụm thành trái tim, tay làm đầu chim, ngón tay như sừng hươu, bàn tay xoè như bông hoa…).
+Việc 2 – Tưởng tượng: hình bóng ở Ảnh 2 giống MỘT thứ cụ thể, đẹp, giàu ý nghĩa nhất (con vật, loài hoa, công trình, vật thể, biểu tượng trong đời sống người Việt). Chọn thứ khớp hình dáng thật nhất, đừng chọn bừa.
+Việc 3 – Lời chúc tiếng Việt 2–3 câu ấm áp, hài hước nhẹ, gắn ý nghĩa của thứ đó với tình bạn, may mắn, thành công; có thể nhắc 333 hoặc "Dô!" tự nhiên. Không cổ vũ uống nhiều. "wish_short": bản rút gọn tối đa 18 chữ.
+Việc 4 – Mô tả tác phẩm bằng TIẾNG ANH cho AI vẽ tranh (AI vẽ chỉ nhận hình bóng ở Ảnh 2):
+  - "object_en": tên thứ được tưởng tượng.
+  - "art_brief": 3–4 câu mô tả bức tranh về chính thứ đó như một tác phẩm độc lập, hình dáng tổng thể phải khớp hình bóng. TUYỆT ĐỐI không nhắc tới bàn tay, ngón tay, người.
+  - "guide_mapping": 1–2 câu: các phần của hình bóng (ngón, lòng bàn tay…) trở thành bộ phận nào của chủ thể, nhưng diễn đạt KHÔNG dùng chữ hand/finger (vd: "the five upper branches become the antlers, the wide lower mass is the head").
+
+Chỉ trả về JSON:
+{"gesture":"...","shape":"...","object":"...","emoji":"1 emoji","why":"vì sao giống, 1 câu","wish":"...","wish_short":"...","object_en":"...","art_brief":"...","guide_mapping":"..."}`;
+  busy = new AbortController();
+  try {
+    const a = await claudeClient.json(prompt, { images: [await toBlob($("cv")), await toBlob(guide)], signal: busy.signal });
+    current.idea = { ...a, shape: a.shape || a.gesture };
+    log.textContent = "";
+    showIdea(current.idea, "Tưởng tượng bởi Claude");
+    $("shapeK").textContent = "Dáng tay của bạn giống…";
+  } catch (e) {
+    if (e.code === "cancelled") return;
+    current.idea = { object: "Ngôi sao", emoji: "⭐", why: "", wish: "Chúc bạn luôn toả sáng theo cách của mình. Dô!", wish_short: "Chúc bạn luôn toả sáng. Dô!", object_en: "a radiant star", art_brief: FALLBACK_EN.star[1], guide_mapping: "", shape: "" };
+    log.textContent = `Không gọi được Claude (${e.message || e.code || "?"}) – dùng liên tưởng có sẵn.`;
+    showIdea(current.idea, "Liên tưởng có sẵn");
+  }
+  paintHand();
+}
+async function paintHand() {
+  const st = current;
+  $("posterBox").style.display = "block";
+  $("guideImg").src = st.guide.toDataURL("image/png");
+  $("promptView").textContent = buildPrompt(st);
+  await compose(null);
+  $("hfBtn").style.display = "";
+  $("posterStatus").textContent = "Bản dưới là bản nháp. Bấm “Vẽ tranh bằng Higgsfield” để có tranh hoàn chỉnh.";
+  if (AUTO_PAINT) hfPaint();
+}
 initStore();
 </script>
 </body>
