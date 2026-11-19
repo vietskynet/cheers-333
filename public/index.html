@@ -157,7 +157,7 @@
     <div id="posterBox" style="display:none;margin-top:16px">
       <div class="guide">
         <div>
-          <div class="k2">Shape guide gửi lên Higgsfield</div>
+          <div class="k2">Shape guide gửi cho AI vẽ</div>
           <img id="guideImg" alt="Shape cơ bản của cú cụng">
         </div>
         <div class="opts">
@@ -166,10 +166,10 @@
           <div class="opt">Logo 333 thật để in chìm (PNG nền trong, tuỳ chọn):
             <div class="row" style="margin-top:6px"><label class="btn" for="logoIn">⬆️ Tải logo</label><input type="file" id="logoIn" accept="image/png,image/svg+xml,image/webp"><img id="logoPrev" style="height:34px;display:none;background:#fff;border-radius:6px;padding:3px"><button class="btn" id="logoDel" style="display:none">Bỏ logo</button></div>
           </div>
-          <details class="opt"><summary>Xem prompt gốc gửi Higgsfield</summary><pre id="promptView"></pre></details>
+          <details class="opt"><summary>Xem prompt gốc gửi AI vẽ</summary><pre id="promptView"></pre></details>
         </div>
       </div>
-      <div class="row" style="margin:12px 0"><button class="btn main" id="hfBtn" style="display:none">🎨 Vẽ tranh bằng Higgsfield</button></div>
+      <div class="row" style="margin:12px 0"><button class="btn main" id="hfBtn" style="display:none">🎨 Vẽ tranh</button></div>
       <div class="log" id="posterStatus"></div>
       <img id="poster" alt="Bức tranh từ cú cụng" style="display:none;width:100%;border-radius:18px;box-shadow:0 20px 60px #0008">
       <div class="row" id="posterBtns" style="display:none;margin-top:10px">
@@ -699,7 +699,7 @@ async function paint() {
   $("promptView").textContent = buildPrompt(st);
   await compose(null);                       // bản nháp offline trên nền giấy
   $("hfBtn").style.display = "";
-  $("posterStatus").textContent = "Bản dưới là bản nháp. Bấm “Vẽ tranh bằng Higgsfield” để có tranh hoàn chỉnh.";
+  $("posterStatus").textContent = "Bản dưới là bản nháp. Bấm “Vẽ tranh” để có tranh hoàn chỉnh.";
   if (AUTO_PAINT) hfPaint();
 }
 
@@ -794,7 +794,15 @@ async function hfPaint() {
     small.getContext("2d").drawImage(st.guide, 0, 0, 768, 960);
     const guide = small.toDataURL("image/jpeg", 0.9).split(",")[1];
     const r = await api("/api/paint", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ guide, prompt: buildPrompt(st) }) });
-    const d = await r.json().catch(() => ({}));
+    step("2/3 · Đang vẽ tranh… (Nano Banana Pro thường mất 20–60 giây)");
+    let d = {}; try { d = JSON.parse((await r.text()).trim()); } catch {}
+    if (d.image) { // Nano Banana Pro (Gemini) trả ảnh trực tiếp
+      const bin = Uint8Array.from(atob(d.image), c => c.charCodeAt(0));
+      st.art = URL.createObjectURL(new Blob([bin], { type: d.mime || "image/png" }));
+      await compose(st.art);
+      status.textContent = `Tranh vẽ bởi ${d.model || "Nano Banana Pro"} (Google)`;
+      return;
+    }
     if (!r.ok || !d.request_id) throw new Error(d.message || ("HTTP " + r.status));
     let url = null;
     for (let i = 0; i < 60 && !url; i++) {
@@ -811,7 +819,7 @@ async function hfPaint() {
     await compose(st.art);
     status.innerHTML = `Tranh vẽ bởi Higgsfield (${esc(d.model || "")}) · <a href="${esc(url)}" target="_blank" rel="noopener" style="color:var(--gold)">ảnh gốc độ phân giải cao ↗</a>`;
   } catch (e) {
-    status.textContent = "Higgsfield báo lỗi: " + String(e.message || e).slice(0, 220);
+    status.textContent = "Lỗi vẽ tranh: " + String(e.message || e).slice(0, 260);
   } finally { btn.disabled = false; }
 }
 
@@ -1148,7 +1156,7 @@ async function paintHand() {
   $("promptView").textContent = buildPrompt(st);
   await compose(null);
   $("hfBtn").style.display = "";
-  $("posterStatus").textContent = "Bản dưới là bản nháp. Bấm “Vẽ tranh bằng Higgsfield” để có tranh hoàn chỉnh.";
+  $("posterStatus").textContent = "Bản dưới là bản nháp. Bấm “Vẽ tranh” để có tranh hoàn chỉnh.";
   if (AUTO_PAINT) hfPaint();
 }
 initStore();

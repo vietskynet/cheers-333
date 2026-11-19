@@ -17,7 +17,10 @@ export default async (req) => {
     HIGGSFIELD_KEY_ID: describe(env("HIGGSFIELD_KEY_ID")),
     HIGGSFIELD_KEY_SECRET: describe(env("HIGGSFIELD_KEY_SECRET")),
     HIGGSFIELD_MODEL: env("HIGGSFIELD_MODEL") || "(mặc định) xai/grok-imagine-image-2.0",
-    code_version: "2026-11-19c",
+    GEMINI_API_KEY: describe(env("GEMINI_API_KEY")),
+    GEMINI_IMAGE_MODEL: env("GEMINI_IMAGE_MODEL") || "(mặc định) gemini-3-pro-image",
+    model_ve_tranh_dang_dung: env("GEMINI_API_KEY") && env("IMAGE_PROVIDER") !== "higgsfield" ? "Nano Banana Pro (Gemini API)" : "Higgsfield",
+    code_version: "2026-11-19d",
   };
   try {
     const auth = hfAuth();
@@ -34,6 +37,13 @@ export default async (req) => {
       out.upload_headers_da_gui = put.sent;
     }
   } catch (e) { out.higgsfield_test = "Lỗi: " + e.message; }
+  if (env("GEMINI_API_KEY")) {
+    try {
+      const m = env("GEMINI_IMAGE_MODEL").trim() || "gemini-3-pro-image";
+      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}`, { headers: { "x-goog-api-key": env("GEMINI_API_KEY").trim() } });
+      out.gemini_test = r.ok ? `HTTP 200 – key hợp lệ, có model ${m} ✓` : `HTTP ${r.status} – ${(await r.text()).slice(0, 200)}`;
+    } catch (e) { out.gemini_test = "Lỗi: " + e.message; }
+  }
   return json(out);
 };
 
