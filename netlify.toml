@@ -1,0 +1,8 @@
+[build]
+  publish = "public"
+  # Không cần bước build: trang tĩnh nằm trong public/, API nằm trong netlify/edge-functions/
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Permissions-Policy = "camera=(self)"

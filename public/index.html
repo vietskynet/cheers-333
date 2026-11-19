@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>333 Cheers Lab</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700;800&family=Patrick+Hand&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0d1424;--panel:#151f36;--line:#26334f;--gold:#e8b63c;--gold2:#f6d77e;--ink:#eef2fa;--mute:#93a0bb;--ok:#3ccf8e;--bad:#ff6b6b}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:"Be Vietnam Pro",system-ui,sans-serif;font-size:15px;line-height:1.5;min-height:100vh}
+  header{padding:20px 16px 8px;max-width:880px;margin:0 auto}
+  h1{font-size:24px;font-weight:800;letter-spacing:-.3px}
+  h1 b{color:var(--gold)}
+  header p{color:var(--mute);font-size:13px;margin-top:2px}
+  nav{display:flex;gap:6px;max-width:880px;margin:10px auto 0;padding:0 16px}
+  nav button{flex:1;padding:11px 8px;border-radius:12px 12px 0 0;border:1px solid var(--line);border-bottom:0;background:transparent;color:var(--mute);font:inherit;font-weight:700;cursor:pointer}
+  nav button.on{background:var(--panel);color:var(--gold)}
+  main{max-width:880px;margin:0 auto;padding:0 16px 40px}
+  .tab{display:none;background:var(--panel);border:1px solid var(--line);border-radius:0 0 16px 16px;padding:16px}
+  .tab.on{display:block}
+  .note{font-size:13px;color:var(--mute);margin-bottom:14px}
+  .cls{border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:12px}
+  .cls .hd{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .cls input[type=text]{flex:1;min-width:140px;background:#0d1424;border:1px solid var(--line);border-radius:8px;color:var(--ink);font:inherit;font-weight:700;padding:7px 10px}
+  .tag{font-size:11px;font-weight:700;padding:3px 8px;border-radius:99px;background:#26334f;color:var(--mute);white-space:nowrap}
+  .tag.gold{background:var(--gold);color:#1a1200}
+  .thumbs{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .th{position:relative;width:64px;height:64px;border-radius:8px;overflow:hidden;background:#0d1424}
+  .th img{width:100%;height:100%;object-fit:cover}
+  .th button{position:absolute;top:2px;right:2px;width:20px;height:20px;border-radius:50%;border:0;background:#000a;color:#fff;font-size:12px;cursor:pointer;line-height:20px}
+  .btn{display:inline-flex;align-items:center;gap:6px;padding:9px 14px;border-radius:10px;border:1px solid var(--line);background:#1d2944;color:var(--ink);font:inherit;font-weight:700;font-size:14px;cursor:pointer}
+  .btn.main{background:var(--gold);color:#1a1200;border-color:var(--gold)}
+  .btn:disabled{opacity:.5;cursor:default}
+  input[type=file]{display:none}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .stats{margin-top:12px;font-size:13px;color:var(--mute)}
+  .stats b{color:var(--ink)}
+  .drop{border:2px dashed var(--line);border-radius:16px;padding:28px 16px;text-align:center;cursor:pointer;color:var(--mute)}
+  .drop.hot{border-color:var(--gold);color:var(--gold)}
+  .drop strong{display:block;color:var(--ink);font-size:17px;margin-bottom:4px}
+  #stage{position:relative;margin-top:14px;display:none}
+  #stage canvas{width:100%;border-radius:14px;display:block}
+  .verdict{margin-top:14px;padding:14px;border-radius:14px;font-weight:800;font-size:18px;display:none;align-items:center;gap:10px}
+  .verdict.yes{background:#13382a;color:var(--ok);display:flex}
+  .verdict.no{background:#3a1c22;color:var(--bad);display:flex}
+  .verdict.mid{background:#3a3115;color:var(--gold2);display:flex}
+  .verdict small{display:block;font-weight:500;font-size:13px;color:var(--ink);opacity:.8}
+  .items{margin-top:10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+  .item{background:#0d1424;border:1px solid var(--line);border-radius:10px;padding:8px;font-size:13px}
+  .item b{display:block;font-size:14px}
+  .imagine{margin-top:16px;border-radius:18px;background:linear-gradient(140deg,#fff8e6,#f4e2b0);color:#20180a;padding:18px;display:none}
+  .imagine .top{display:flex;gap:14px;align-items:center}
+  .imagine .art{width:96px;height:96px;flex:none;border-radius:16px;background:#20180a;display:grid;place-items:center;overflow:hidden}
+  .imagine .art img{width:84px;height:84px}
+  .imagine .art span{font-size:52px}
+  .imagine .k{font-size:11px;letter-spacing:1.2px;text-transform:uppercase;font-weight:800;color:#8a5f00}
+  .imagine .obj{font-size:22px;font-weight:800;line-height:1.2}
+  .imagine .why{font-size:13px;margin-top:4px;opacity:.8}
+  .imagine .wish{margin-top:14px;font-size:17px;line-height:1.55;font-weight:500}
+  .imagine .act{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap}
+  .imagine .act .btn{background:#20180a;color:#fff;border-color:#20180a}
+  .imagine .src{margin-top:10px;font-size:11px;opacity:.6}
+  .log{margin-top:10px;font-size:13px;color:var(--mute);min-height:20px}
+  .spin{display:inline-block;width:14px;height:14px;border:2px solid var(--mute);border-top-color:transparent;border-radius:50%;animation:s 0.8s linear infinite;vertical-align:-2px;margin-right:6px}
+  @keyframes s{to{transform:rotate(360deg)}}
+  input[type=range]{accent-color:var(--gold);width:160px}
+  .guide{display:grid;grid-template-columns:200px 1fr;gap:14px;align-items:start;background:#0d1424;border:1px solid var(--line);border-radius:14px;padding:12px}
+  @media(max-width:520px){.guide{grid-template-columns:1fr}}
+  .guide img#guideImg{width:100%;border-radius:8px;background:#fff;display:block}
+  .k2{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--mute);font-weight:700;margin-bottom:6px}
+  .opt{font-size:13px;color:var(--mute);margin-bottom:10px;display:block}
+  .opt input[type=checkbox]{accent-color:var(--gold);margin-right:6px}
+  pre#promptView{white-space:pre-wrap;font-size:11px;color:var(--ink);background:#151f36;padding:8px;border-radius:8px;margin-top:6px;max-height:220px;overflow:auto}
+  #live{position:fixed;inset:0;background:#000;z-index:50;display:none}
+  #live.on{display:block}
+  #liveStage{position:absolute;inset:0}
+  #liveStage video{display:none}
+  #liveStage canvas{width:100%;height:100%;object-fit:contain;display:block}
+  #liveStage.mirror canvas{transform:scaleX(-1)}
+  .liveTop{position:absolute;top:0;left:0;right:0;display:flex;gap:8px;padding:calc(env(safe-area-inset-top) + 10px) 12px 10px;background:linear-gradient(#000a,#0000)}
+  .liveTop .sp{flex:1}
+  .pill{font-size:12px;padding:5px 10px;border-radius:99px;background:#ffffff22;color:#fff;backdrop-filter:blur(6px)}
+  .pill.ok{background:var(--gold);color:#1a1200;font-weight:700}
+  .liveBottom{position:absolute;left:0;right:0;bottom:0;padding:10px 12px calc(env(safe-area-inset-bottom) + 14px);display:flex;flex-direction:column;gap:10px;align-items:center;background:linear-gradient(#0000,#000c)}
+  .liveBottom .pill input{accent-color:var(--gold);vertical-align:-2px}
+  #liveCount{position:absolute;inset:0;display:grid;place-items:center;font-size:120px;font-weight:800;color:var(--gold);pointer-events:none;text-shadow:0 4px 30px #000}
+  footer{max-width:880px;margin:0 auto;padding:0 16px 30px;font-size:12px;color:var(--mute);text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <h1><b>333</b> Cheers Lab</h1>
+  <p>Train nhận diện 3 SKU · Kiểm tra ảnh có đang cụng 333 · Liên tưởng hình dáng cú cụng & gửi lời chúc</p>
+</header>
+<nav>
+  <button data-tab="train" class="on">① Train SKU</button>
+  <button data-tab="check">② Kiểm tra ảnh</button>
+</nav>
+<main>
+  <section class="tab on" id="tab-train">
+    <p class="note">Mỗi SKU nên có 10–30 ảnh chụp ở nhiều góc, ánh sáng, khoảng cách khác nhau (cầm trên tay càng tốt). App tự cắt vùng chai/lon trong ảnh rồi học đặc trưng hình ảnh. Lớp <b>"Không phải 333"</b> giúp phân biệt với bia khác — nên thêm ảnh các brand đối thủ, ly, chai nước…</p>
+    <div id="classes"></div>
+    <div class="row" style="margin-top:6px">
+      <button class="btn main" id="trainBtn">⚙️ Train & đánh giá</button>
+      <label class="row" style="gap:6px;font-size:13px;color:var(--mute)">Ngưỡng tin cậy <input type="range" id="thr" min="0.35" max="0.85" step="0.01" value="0.55"> <b id="thrV" style="color:var(--ink)">0.55</b></label>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn" id="exportBtn">⬇️ Xuất dữ liệu train</button>
+      <label class="btn" for="importIn">⬆️ Nhập dữ liệu train</label><input type="file" id="importIn" accept="application/json,.json">
+    </div>
+    <div class="stats" id="stats"></div>
+    <div class="log" id="trainLog"></div>
+  </section>
+
+  <section class="tab" id="tab-check">
+    <button class="btn main" id="liveBtn" style="width:100%;justify-content:center;padding:16px;font-size:16px;margin-bottom:12px">🎥 Mở camera trực tiếp – tự bắt khoảnh khắc cụng</button>
+    <label class="drop" id="drop" for="photoIn">
+      <strong>📷 Tải lên 1 tấm ảnh</strong>
+      Chạm để chọn ảnh, hoặc kéo thả vào đây
+    </label>
+    <input type="file" id="photoIn" accept="image/*">
+    <div class="row" style="margin-top:10px">
+      <label class="btn main" for="camIn" style="flex:1;justify-content:center;padding:14px">📸 Chụp cú cụng bằng camera</label>
+      <input type="file" id="camIn" accept="image/*" capture="environment">
+    </div>
+    <p class="note" style="margin:8px 0 0">Mẹo chụp: đứng cách 1–2m, để lọt cả các lon và tay đang cụng, nhãn 333 quay về phía camera, bấm chụp đúng lúc lon chạm nhau.</p>
+    <div class="log" id="checkLog"></div>
+    <div id="stage"><canvas id="cv"></canvas></div>
+    <div class="verdict" id="verdict"></div>
+    <div class="items" id="items"></div>
+    <div class="imagine" id="imagine">
+      <div class="top">
+        <div class="art" id="art"></div>
+        <div>
+          <div class="k" id="shapeK">Hình dáng cú cụng</div>
+          <div class="obj" id="obj"></div>
+          <div class="why" id="why"></div>
+        </div>
+      </div>
+      <div class="wish" id="wish"></div>
+      <div class="act">
+        <button class="btn" id="againBtn">✨ Liên tưởng khác</button>
+        <button class="btn" id="copyBtn">📋 Copy lời chúc</button>
+      </div>
+      <div class="src" id="src"></div>
+    </div>
+    <div id="posterBox" style="display:none;margin-top:16px">
+      <div class="guide">
+        <div>
+          <div class="k2">Shape guide gửi lên Higgsfield</div>
+          <img id="guideImg" alt="Shape cơ bản của cú cụng">
+        </div>
+        <div class="opts">
+          <label class="opt"><input type="checkbox" id="frameOn" checked> Đặt tác phẩm trong khung tranh</label>
+          <label class="opt"><input type="checkbox" id="fontWish"> Chèn lời chúc bằng font viết tay (dùng khi AI viết sai dấu tiếng Việt)</label>
+          <div class="opt">Logo 333 thật để in chìm (PNG nền trong, tuỳ chọn):
+            <div class="row" style="margin-top:6px"><label class="btn" for="logoIn">⬆️ Tải logo</label><input type="file" id="logoIn" accept="image/png,image/svg+xml,image/webp"><img id="logoPrev" style="height:34px;display:none;background:#fff;border-radius:6px;padding:3px"><button class="btn" id="logoDel" style="display:none">Bỏ logo</button></div>
+          </div>
+          <details class="opt"><summary>Xem prompt gốc gửi Higgsfield</summary><pre id="promptView"></pre></details>
+        </div>
+      </div>
+      <div class="row" style="margin:12px 0"><button class="btn main" id="hfBtn" style="display:none">🎨 Vẽ tranh bằng Higgsfield</button></div>
+      <div class="log" id="posterStatus"></div>
+      <img id="poster" alt="Bức tranh từ cú cụng" style="display:none;width:100%;border-radius:18px;box-shadow:0 20px 60px #0008">
+      <div class="row" id="posterBtns" style="display:none;margin-top:10px">
+        <button class="btn main" id="saveBtn">⬇️ Lưu tranh</button>
+      </div>
+    </div>
+    </div>
+  </section>
+</main>
+<div id="live">
+  <div id="liveStage"><video id="liveVid" playsinline muted></video><canvas id="liveCv"></canvas></div>
+  <div class="liveTop"><span class="pill" id="liveInfo">Đang mở camera…</span><span class="sp"></span><span class="pill" id="liveFps"></span></div>
+  <div id="liveCount"></div>
+  <div class="liveBottom">
+    <label class="pill"><input type="checkbox" id="autoPaint" checked> Tự vẽ tranh</label>
+    <label class="pill"><input type="checkbox" id="autoSnap" checked> Tự chụp khi cụng</label>
+    <div class="row" style="justify-content:center">
+      <button class="btn" id="liveFlip">🔄</button>
+      <button class="btn main" id="liveSnap">📸 Chụp</button>
+      <button class="btn" id="liveTimer">⏱️ 3s</button>
+      <button class="btn" id="liveClose">✕</button>
+    </div>
+  </div>
+</div>
+<footer>333 Cheers Lab · Mô hình nhận diện chạy trên trình duyệt · Thưởng thức có trách nhiệm – Đã uống rượu bia, không lái xe · 18+</footer>
+
+<script type="module">
+import { FilesetResolver, ObjectDetector, ImageEmbedder, HandLandmarker } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs";
+
+/* ============ CẤU HÌNH ============ */
+const CLASSES = [
+  { id:"sku1", def:"SKU 1 – (đổi tên, vd: 333 Lon 330ml)", is333:true },
+  { id:"sku2", def:"SKU 2 – (đổi tên, vd: 333 Pilsner)",   is333:true },
+  { id:"sku3", def:"SKU 3 – (đổi tên, vd: 333 Chai)",      is333:true },
+  { id:"other", def:"Không phải 333",                       is333:false },
+];
+const K = 5;
+
+/* Thư viện liên tưởng dự phòng khi không gọi được Claude */
+const FALLBACK = {
+  mountain:{ obj:"Ngọn núi", emoji:"⛰️", why:"Hai chai nghiêng vào nhau, chạm đỉnh như một ngọn núi.", wish:"Cụng thành đỉnh núi rồi! Chúc anh em mình năm nay leo đâu thắng đó, đỉnh nào cũng chạm tới. Dô!" },
+  roof:{ obj:"Mái nhà", emoji:"🏠", why:"Hai cánh tay tạo thành hai mái dốc gặp nhau ở đỉnh.", wish:"Chung một mái nhà, chung một tiếng dô! Chúc gia đình mình luôn ấm êm, bữa cơm nào cũng đủ đầy tiếng cười." },
+  pillars:{ obj:"Cổng chào", emoji:"⛩️", why:"Hai chai thẳng đứng sát nhau như hai cột cổng.", wish:"Cổng đã mở, lộc đang về! Chúc tình bạn này vững như cột trụ, mưa gió chẳng lay." },
+  bridge:{ obj:"Cây cầu", emoji:"🌉", why:"Các chai nằm ngang nối liền nhau như nhịp cầu.", wish:"Mỗi cú cụng là một nhịp cầu. Chúc mình kết nối thêm thật nhiều bạn mới, cơ hội mới!" },
+  stairs:{ obj:"Bậc thang", emoji:"🪜", why:"Chai cao chai thấp nối tiếp như những bậc thang.", wish:"Từng bậc, từng bậc đi lên! Chúc sự nghiệp thăng tiến đều đều, năm sau cao hơn năm trước." },
+  star:{ obj:"Ngôi sao", emoji:"⭐", why:"Nhiều chai chụm vào một điểm, toả ra như cánh sao.", wish:"Cả hội cụng thành ngôi sao! Chúc anh em mình luôn đông đủ và cùng nhau toả sáng." },
+  victory:{ obj:"Chữ V chiến thắng", emoji:"✌️", why:"Hai chai chạm đáy, miệng chai toả ra hai phía thành chữ V.", wish:"V là Vui, V là Vượt qua, V là Vô địch! Chúc trận nào cũng thắng, kèo nào cũng vui." },
+  sail:{ obj:"Cánh buồm", emoji:"⛵", why:"Hai chai cùng nghiêng một hướng như cánh buồm căng gió.", wish:"Gió đã căng buồm! Chúc mọi việc sắp tới thuận buồm xuôi gió, đi đâu cũng tới." },
+};
+
+const FALLBACK_EN = {
+  mountain: ["a majestic mountain peak", "A majestic mountain peak rising above soft clouds, a radiant sun glowing at its summit, gentle terraced slopes and drifting mist."],
+  roof: ["a cozy traditional Vietnamese house", "A cozy traditional Vietnamese house with a steep tiled roof, warm lantern light glowing inside, a little garden around it."],
+  pillars: ["an ornate village gate", "An ornate Vietnamese village gate with two tall pillars and a curved roof, lanterns hanging, a path leading through it."],
+  bridge: ["an elegant arched bridge", "An elegant arched bridge spanning a calm river, reflections in the water, lanterns along the railing."],
+  stairs: ["a staircase rising to the sky", "A graceful staircase of stone steps rising toward a glowing sky, each step lit by a small light."],
+  star: ["a radiant star", "A radiant five-pointed star glowing in a twilight sky, rays of light spreading outward, small sparkles around it."],
+  victory: ["a blooming lotus flower", "A blooming lotus flower opening its petals in a V shape above a calm pond, morning light on the water."],
+  sail: ["a sailboat with full sails", "A traditional sailboat with full curved sails gliding on a calm sea at sunrise, gentle waves."],
+};
+/* ============ TIỆN ÍCH ============ */
+const $ = id => document.getElementById(id);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const dot = (a, b) => { let s = 0; for (let i = 0; i < a.length; i++) s += a[i] * b[i]; return s; };
+const norm = a => { const n = Math.hypot(...a) || 1; return a.map(v => v / n); };
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+
+/* ============ LƯU TRỮ (trên trình duyệt, có xuất/nhập) ============ */
+let names = {}, samples = []; // samples: {id, cls, embs:[[...],[...]], thumb}
+const LS = "cheers333";
+function lsSave() { try { localStorage.setItem(LS, JSON.stringify({ names, samples })); } catch { alertMsg("Bộ nhớ trình duyệt đầy – hãy Xuất dữ liệu rồi xoá bớt ảnh."); } }
+function lsLoad() { try { const d = JSON.parse(localStorage.getItem(LS) || "null"); if (d) { names = d.names || {}; samples = d.samples || []; } } catch {} }
+
+async function initStore() {
+  lsLoad(); renderClasses(); evaluate();
+  $("trainLog").textContent = samples.length ? `Đã tải ${samples.length} ảnh train lưu trên máy này.` : "Dữ liệu train lưu trên trình duyệt của máy này. Dùng nút Xuất/Nhập để chuyển sang máy khác.";
+}
+async function saveSample(s) { lsSave(); }
+async function deleteSample(id) {
+  samples = samples.filter(s => s.id !== id); lsSave();
+  renderClasses(); evaluate();
+}
+let nameTimer;
+function saveNames() {
+  clearTimeout(nameTimer);
+  nameTimer = setTimeout(lsSave, 600);
+}
+function alertMsg(m) { $("trainLog").textContent = m; }
+const clsName = id => names[id] || CLASSES.find(c => c.id === id).def;
+
+/* ============ MÔ HÌNH AI (MediaPipe, chạy trên trình duyệt) ============ */
+let models = null, modelsP = null, VISION = null;
+const MODEL_URLS = {
+  det: "https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/float32/1/efficientdet_lite0.tflite",
+  emb: "https://storage.googleapis.com/mediapipe-models/image_embedder/mobilenet_v3_small/float32/1/mobilenet_v3_small.tflite",
+  hand: "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
+};
+function loadModels(logEl) {
+  if (models) return Promise.resolve(models);
+  if (modelsP) return modelsP;
+  logEl.innerHTML = `<span class="spin"></span>Đang tải mô hình AI (~25MB, chỉ lần đầu)…`;
+  modelsP = (async () => {
+    const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm");
+    VISION = vision;
+    const base = p => ({ modelAssetPath: MODEL_URLS[p], delegate: "CPU" });
+    const [det, emb, hand] = await Promise.all([
+      ObjectDetector.createFromOptions(vision, { baseOptions: base("det"), runningMode: "IMAGE", scoreThreshold: 0.18, maxResults: 12, categoryAllowlist: ["bottle", "cup", "wine glass"] }),
+      ImageEmbedder.createFromOptions(vision, { baseOptions: base("emb"), runningMode: "IMAGE", l2Normalize: true, quantize: false }),
+      HandLandmarker.createFromOptions(vision, { baseOptions: base("hand"), runningMode: "IMAGE", numHands: 6, minHandDetectionConfidence: 0.35 }),
+    ]);
+    models = { det, emb, hand };
+    logEl.textContent = "";
+    return models;
+  })().catch(e => { modelsP = null; logEl.textContent = "Không tải được mô hình AI: " + (e.message || e); throw e; });
+  return modelsP;
+}
+
+async function fileToCanvas(file, max = 1280) {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = new Image(); img.src = url; await img.decode();
+    const s = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+    const c = document.createElement("canvas");
+    c.width = Math.round(img.naturalWidth * s); c.height = Math.round(img.naturalHeight * s);
+    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+    return c;
+  } finally { URL.revokeObjectURL(url); }
+}
+function crop(src, b, pad = 0.08, out = 224, flip = false) {
+  const px = b.w * pad, py = b.h * pad;
+  const x = Math.max(0, b.x - px), y = Math.max(0, b.y - py);
+  const w = Math.min(src.width - x, b.w + px * 2), h = Math.min(src.height - y, b.h + py * 2);
+  const s = out / Math.max(w, h);
+  const c = document.createElement("canvas"); c.width = Math.max(8, Math.round(w * s)); c.height = Math.max(8, Math.round(h * s));
+  const g = c.getContext("2d");
+  if (flip) { g.translate(c.width, 0); g.scale(-1, 1); }
+  g.drawImage(src, x, y, w, h, 0, 0, c.width, c.height);
+  return c;
+}
+const embedOf = c => Array.from(models.emb.embed(c).embeddings[0].floatEmbedding);
+const round = a => a.map(v => Math.round(v * 1000) / 1000);
+
+function detectContainers(c) {
+  const r = models.det.detect(c);
+  let boxes = (r.detections || []).map(d => ({ x: d.boundingBox.originX, y: d.boundingBox.originY, w: d.boundingBox.width, h: d.boundingBox.height, score: d.categories[0].score, label: d.categories[0].categoryName }));
+  // loại bỏ khung trùng nhau
+  boxes.sort((a, b) => b.score - a.score);
+  const keep = [];
+  for (const b of boxes) if (!keep.some(k => iou(k, b) > 0.5 || contains(k, b))) keep.push(b);
+  return keep;
+}
+function iou(a, b) {
+  const x1 = Math.max(a.x, b.x), y1 = Math.max(a.y, b.y), x2 = Math.min(a.x + a.w, b.x + b.w), y2 = Math.min(a.y + a.h, b.y + b.h);
+  const i = Math.max(0, x2 - x1) * Math.max(0, y2 - y1); return i / (a.w * a.h + b.w * b.h - i);
+}
+function contains(a, b) { // b nằm gần như trọn trong a
+  const x1 = Math.max(a.x, b.x), y1 = Math.max(a.y, b.y), x2 = Math.min(a.x + a.w, b.x + b.w), y2 = Math.min(a.y + a.h, b.y + b.h);
+  return Math.max(0, x2 - x1) * Math.max(0, y2 - y1) > 0.85 * b.w * b.h;
+}
+
+/* ============ TAB TRAIN ============ */
+function renderClasses() {
+  $("classes").innerHTML = CLASSES.map(c => {
+    const list = samples.filter(s => s.cls === c.id);
+    return `<div class="cls">
+      <div class="hd">
+        <span class="tag ${c.is333 ? "gold" : ""}">${c.is333 ? "333" : "KHÁC"}</span>
+        <input type="text" data-name="${c.id}" value="${esc(clsName(c.id))}" ${c.is333 ? "" : "readonly"}>
+        <span class="tag">${list.length} ảnh</span>
+        <label class="btn" for="in-${c.id}">＋ Thêm ảnh</label>
+        <input type="file" id="in-${c.id}" data-add="${c.id}" accept="image/*" multiple>
+      </div>
+      <div class="thumbs">${list.map(s => `<div class="th"><img src="${s.thumb}"><button data-del="${s.id}" title="Xoá">×</button></div>`).join("")}</div>
+    </div>`;
+  }).join("");
+}
+$("classes").addEventListener("input", e => { const id = e.target.dataset.name; if (id) { names[id] = e.target.value; saveNames(); } });
+$("classes").addEventListener("click", e => { const id = e.target.dataset.del; if (id) deleteSample(id); });
+$("classes").addEventListener("change", async e => {
+  const cls = e.target.dataset.add; if (!cls) return;
+  const files = [...e.target.files]; e.target.value = "";
+  const log = $("trainLog");
+  await loadModels(log);
+  let n = 0;
+  for (const f of files) {
+    log.innerHTML = `<span class="spin"></span>Đang học ảnh ${++n}/${files.length} cho “${esc(clsName(cls))}”…`;
+    await sleep(10);
+    try {
+      const c = await fileToCanvas(f, 1024);
+      const boxes = detectContainers(c);
+      // lấy vật thể lớn nhất (ảnh train thường chụp cận sản phẩm); không thấy thì dùng cả ảnh
+      const b = boxes.sort((a, b) => b.w * b.h * b.score - a.w * a.h * a.score)[0] || { x: 0, y: 0, w: c.width, h: c.height };
+      const e1 = round(embedOf(crop(c, b))), e2 = round(embedOf(crop(c, b, 0.08, 224, true)));
+      const tc = crop(c, b, 0.05, 96); const thumb = tc.toDataURL("image/jpeg", 0.7);
+      const s = { id: "s" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), cls, embs: [e1, e2], thumb };
+      samples.push(s); await saveSample(s);
+    } catch (err) { console.error(err); }
+  }
+  log.textContent = `Đã thêm ${files.length} ảnh. Bấm “Train & đánh giá” để xem độ chính xác.`;
+  renderClasses(); evaluate();
+});
+
+let THR = 0.55;
+$("thr").oninput = e => { THR = +e.target.value; $("thrV").textContent = THR.toFixed(2); };
+
+/* Phân loại kNN theo độ tương đồng cosine */
+function classify(q, pool = samples) {
+  if (!pool.length) return null;
+  const scored = pool.map(s => ({ cls: s.cls, sim: Math.max(...s.embs.map(e => dot(q, e))) })).sort((a, b) => b.sim - a.sim).slice(0, K);
+  const votes = {};
+  for (const s of scored) votes[s.cls] = (votes[s.cls] || 0) + Math.max(0, s.sim) ** 3;
+  const total = Object.values(votes).reduce((a, b) => a + b, 0) || 1;
+  const [cls, v] = Object.entries(votes).sort((a, b) => b[1] - a[1])[0];
+  const top = scored.find(s => s.cls === cls).sim;
+  const is333 = CLASSES.find(c => c.id === cls).is333 && top >= THR;
+  return { cls, conf: v / total, sim: top, is333 };
+}
+function evaluate() {
+  const per = {}; let ok = 0, n = 0;
+  for (const s of samples) {
+    const r = classify(s.embs[0], samples.filter(x => x.id !== s.id));
+    if (!r) continue;
+    per[s.cls] = per[s.cls] || { ok: 0, n: 0 }; per[s.cls].n++; n++;
+    if (r.cls === s.cls) { per[s.cls].ok++; ok++; }
+  }
+  const missing = CLASSES.filter(c => !samples.some(s => s.cls === c.id)).map(c => clsName(c.id));
+  $("stats").innerHTML = n
+    ? `Độ chính xác kiểm tra chéo (leave-one-out): <b>${Math.round(ok / n * 100)}%</b> trên ${n} ảnh<br>` +
+      CLASSES.filter(c => per[c.id]).map(c => `${esc(clsName(c.id))}: <b>${Math.round(per[c.id].ok / per[c.id].n * 100)}%</b>`).join(" · ") +
+      (missing.length ? `<br>⚠️ Chưa có ảnh: ${missing.map(esc).join(", ")}` : "")
+    : "Chưa có dữ liệu train. Thêm ảnh cho từng SKU ở trên.";
+}
+$("trainBtn").onclick = async () => { $("trainLog").innerHTML = `<span class="spin"></span>Đang đánh giá…`; await sleep(30); evaluate(); $("trainLog").textContent = "Xong. Mô hình đã sẵn sàng cho tab ② Kiểm tra ảnh."; };
+
+/* ============ TAB KIỂM TRA ============ */
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("nav button").forEach(x => x.classList.toggle("on", x === b));
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t.id === "tab-" + b.dataset.tab));
+});
+const drop = $("drop");
+["dragenter", "dragover"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("hot"); }));
+["dragleave", "drop"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove("hot"); }));
+drop.addEventListener("drop", e => { const f = e.dataTransfer.files[0]; if (f) analyse(f); });
+$("camIn").onchange = e => { const f = e.target.files[0]; e.target.value = ""; if (f) analyse(f); };
+$("photoIn").onchange = e => { const f = e.target.files[0]; e.target.value = ""; if (f) analyse(f); };
+
+let current = null;
+
+function handInfo(lm, W, H) {
+  const P = i => ({ x: lm[i].x * W, y: lm[i].y * H });
+  const pts = [0, 5, 9, 13, 17].map(P);
+  const c = { x: pts.reduce((s, p) => s + p.x, 0) / 5, y: pts.reduce((s, p) => s + p.y, 0) / 5 };
+  const size = Math.hypot(P(0).x - P(9).x, P(0).y - P(9).y);
+  let ax = { x: P(5).x - P(17).x, y: P(5).y - P(17).y }; const n = Math.hypot(ax.x, ax.y) || 1; ax = { x: ax.x / n, y: ax.y / n };
+  if (ax.y > 0) ax = { x: -ax.x, y: -ax.y };
+  return { c, size, ax, tilt: Math.atan2(ax.x, -ax.y) * 180 / Math.PI };
+}
+const near = (a, b, tol) => {
+  const gx = Math.max(0, Math.max(a.x, b.x) - Math.min(a.x + a.w, b.x + b.w));
+  const gy = Math.max(0, Math.max(a.y, b.y) - Math.min(a.y + a.h, b.y + b.h));
+  return gx <= tol * Math.min(a.w, b.w) && gy <= tol * Math.min(a.h, b.h);
+};
+
+/* Pipeline dự phòng (không có Claude): dò vật thể COCO + bàn tay, phân loại bằng model đã train */
+async function localAnalyse(c) {
+  const log = $("checkLog");
+  log.innerHTML = `<span class="spin"></span>Đang tìm chai/lon và bàn tay (chế độ offline)…`; await sleep(20);
+  const W = c.width, H = c.height;
+  let boxes = detectContainers(c);
+  const hands = (models.hand.detect(c).landmarks || []).map(lm => handInfo(lm, W, H));
+
+  // Lon bia hay bị nhận nhầm/không thấy: bổ sung vùng chai ước lượng từ bàn tay đang cầm
+  for (const h of hands) {
+    const inBox = boxes.some(b => h.c.x > b.x - h.size * 0.3 && h.c.x < b.x + b.w + h.size * 0.3 && h.c.y > b.y - h.size * 0.3 && h.c.y < b.y + b.h + h.size * 0.3);
+    if (inBox) continue;
+    const tip = { x: h.c.x + h.ax.x * h.size * 1.8, y: h.c.y + h.ax.y * h.size * 1.8 };
+    const bot = { x: h.c.x - h.ax.x * h.size * 1.0, y: h.c.y - h.ax.y * h.size * 1.0 };
+    const r = h.size * 0.55;
+    const x = Math.max(0, Math.min(tip.x, bot.x) - r), y = Math.max(0, Math.min(tip.y, bot.y) - r);
+    boxes.push({ x, y, w: Math.min(W - x, Math.abs(tip.x - bot.x) + 2 * r), h: Math.min(H - y, Math.abs(tip.y - bot.y) + 2 * r), score: 0.3, label: "từ bàn tay" });
+  }
+
+  // Phân loại SKU từng vật thể
+  const objs = boxes.map((b, i) => {
+    const r = samples.length ? classify(embedOf(crop(c, b))) : null;
+    const hand = hands.find(h => h.c.x > b.x - h.size * 0.4 && h.c.x < b.x + b.w + h.size * 0.4 && h.c.y > b.y - h.size * 0.4 && h.c.y < b.y + b.h + h.size * 0.4);
+    return { id: i + 1, ...b, r, hand };
+  });
+
+  // Tìm cụm vật thể chạm nhau (cú cụng)
+  const groups = []; const seen = new Set();
+  for (const o of objs) {
+    if (seen.has(o.id)) continue;
+    const g = [o]; seen.add(o.id);
+    for (let k = 0; k < g.length; k++) for (const p of objs) if (!seen.has(p.id) && near(g[k], p, 0.2)) { g.push(p); seen.add(p.id); }
+    if (g.length >= 2) groups.push(g);
+  }
+  groups.sort((a, b) => b.length - a.length);
+  const g = groups[0] || null;
+  const n333 = g ? g.filter(o => o.r?.is333).length : 0;
+  const any333 = objs.some(o => o.r?.is333);
+  let verdict;
+  if (g && n333 >= 1) verdict = { k: "yes", t: "🍻 ĐANG CỤNG BIA 333", s: `${g.length} chai/lon chạm nhau · ${n333} được nhận diện là 333` };
+  else if (g) verdict = { k: "mid", t: "Có cú cụng, nhưng chưa thấy 333", s: samples.length ? "Các chai/lon đang chạm nhau không khớp SKU 333 đã train (hoặc dưới ngưỡng tin cậy)." : "Chưa có dữ liệu train để xác định SKU." };
+  else if (any333) verdict = { k: "mid", t: "Có 333 trong ảnh, nhưng chưa cụng", s: "Không thấy các chai/lon chạm vào nhau." };
+  else verdict = { k: "no", t: "Không phát hiện cú cụng 333", s: objs.length ? `Thấy ${objs.length} chai/lon/ly nhưng không chạm nhau.` : "Không tìm thấy chai/lon nào trong ảnh." };
+
+  for (const o of objs) {
+    o.angle = o.hand ? Math.round(o.hand.tilt) : 0;
+    o.is333 = !!o.r?.is333;
+    o.tag = o.r ? (o.is333 ? shortName(o.r.cls) : "Không phải 333") + " " + Math.round(o.r.sim * 100) + "%" : o.label;
+    o.title = o.r ? (o.is333 ? clsName(o.r.cls) : "Không phải 333") : o.label;
+    o.detail = (o.r ? `Model: tương đồng ${Math.round(o.r.sim * 100)}%` : "Chưa có model SKU") + (o.hand ? " · đang cầm" : "");
+  }
+  const geo = g ? shapeGeometry(g, hands) : null;
+  current = { canvas: c, objs, group: g, verdict, geo };
+  draw(current, 0);
+  showVerdict(verdict, objs);
+  log.textContent = "";
+  if (g) {
+    const fb = FALLBACK[geo.key];
+    current.idea = { object: fb.obj, emoji: fb.emoji, why: fb.why, wish: fb.wish, shape: "", object_en: FALLBACK_EN[geo.key][0], art_brief: FALLBACK_EN[geo.key][1], guide_mapping: "" };
+    showIdea(current.idea, "Liên tưởng từ thư viện có sẵn (chế độ offline).");
+    paint();
+  }
+}
+const shortName = id => clsName(id).split("–")[0].trim();
+
+/* Đọc hình học của cú cụng: trục từng chai (từ bàn tay) + vị trí tương đối */
+function shapeGeometry(g, hands) {
+  const meet = { x: g.reduce((s, o) => s + o.x + o.w / 2, 0) / g.length, y: Math.min(...g.map(o => o.y)) + 0.15 * Math.max(...g.map(o => o.h)) };
+  const parts = g.map(o => {
+    let tilt = o.hand ? o.hand.tilt : (o.w > o.h * 1.3 ? (o.x + o.w / 2 < meet.x ? 75 : -75) : 0);
+    return { id: o.id, cx: o.x + o.w / 2, cy: o.y + o.h / 2, tilt: Math.round(tilt), fromHand: !!o.hand };
+  }).sort((a, b) => a.cx - b.cx);
+  let key = "sail";
+  if (g.length >= 3) key = "star";
+  else {
+    const [L, R] = parts; const s = Math.max(...g.map(o => Math.max(o.w, o.h)));
+    if (Math.abs(L.cy - R.cy) > s * 0.45) key = "stairs";
+    else if (Math.abs(L.tilt) > 60 && Math.abs(R.tilt) > 60) key = "bridge";
+    else if (Math.abs(L.tilt) < 14 && Math.abs(R.tilt) < 14) key = "pillars";
+    else if (L.tilt > 0 && R.tilt < 0) key = (L.tilt - R.tilt) / 2 < 38 ? "mountain" : "roof";
+    else if (L.tilt < 0 && R.tilt > 0) key = "victory";
+  }
+  return { key, meet, parts };
+}
+
+function draw(st) {
+  const { canvas: c, objs, group } = st;
+  const cv = $("cv"); cv.width = c.width; cv.height = c.height;
+  const x = cv.getContext("2d"); x.drawImage(c, 0, 0);
+  const lw = Math.max(2, c.width / 320);
+  x.font = `700 ${Math.max(11, c.width / 60)}px "Be Vietnam Pro", sans-serif`;
+  for (const o of objs) {
+    const inG = group?.includes(o);
+    x.strokeStyle = o.is333 ? "#e8b63c" : inG ? "#ff6b6b" : "#93a0bb"; x.lineWidth = lw; x.setLineDash(o.label === "từ bàn tay" ? [lw * 3, lw * 2] : []);
+    x.strokeRect(o.x, o.y, o.w, o.h); x.setLineDash([]);
+    const t = `#${o.id} ${o.tag}`;
+    const tw = x.measureText(t).width + 10, th = Math.max(16, c.width / 48);
+    x.fillStyle = x.strokeStyle; x.fillRect(o.x, Math.max(0, o.y - th), tw, th);
+    x.fillStyle = "#111"; x.fillText(t, o.x + 5, Math.max(th * 0.75, o.y - th * 0.25));
+  }
+}
+
+function showVerdict(v, objs) {
+  const el = $("verdict"); el.className = "verdict " + v.k; el.innerHTML = `<div>${v.t}<small>${esc(v.s)}</small></div>`;
+  $("stage").style.display = "block";
+  $("items").innerHTML = objs.map(o => `<div class="item"><b>#${o.id} ${esc(o.title)}</b>${esc(o.detail)}</div>`).join("");
+}
+
+/* ============ GỌI SERVER (Netlify) ============ */
+const PASS_KEY = "cheers333-pass";
+async function api(path, init = {}, retry = true) {
+  let pass = ""; try { pass = localStorage.getItem(PASS_KEY) || ""; } catch {}
+  const r = await fetch(path, { ...init, headers: { ...(init.headers || {}), "x-passcode": pass } });
+  if (r.status === 401 && retry) {
+    const p = window.prompt("Nhập mã truy cập của app:");
+    if (p) { try { localStorage.setItem(PASS_KEY, p); } catch {} return api(path, init, false); }
+  }
+  return r;
+}
+const blobToB64 = b => new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result).split(",")[1]); fr.onerror = rej; fr.readAsDataURL(b); });
+function parseJSON(text) {
+  const t = String(text).replace(/```(?:json)?/g, "");
+  const a = t.indexOf("{"), b = t.lastIndexOf("}");
+  if (a < 0 || b <= a) throw { code: "invalid_json", text };
+  return JSON.parse(t.slice(a, b + 1));
+}
+/* Claude qua server: cùng kiểu gọi như trước, sample.json(prompt, {images}) */
+const claudeClient = {
+  async json(prompt, opts = {}) {
+    const imgs = [];
+    for (const b of [].concat(opts.images || [])) imgs.push({ data: await blobToB64(b), media_type: b.type || "image/jpeg" });
+    const r = await api("/api/analyze", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ prompt, images: imgs }), signal: opts.signal });
+    if (!r.ok) { let m = ""; try { m = (await r.json()).message; } catch {} throw { code: r.status === 401 ? "not_granted" : "upstream_error", message: m || ("HTTP " + r.status) }; }
+    const text = await r.text();
+    if (text.includes("[[ERROR]]")) throw { code: "upstream_error", message: text.split("[[ERROR]]")[1].trim() };
+    try { return parseJSON(text); } catch { throw { code: "invalid_json", message: "Claude trả lời không đúng định dạng" }; }
+  },
+};
+let busy = null, maxImages = 2;
+async function getSample() { return claudeClient; }
+const toBlob = (cv, q = 0.88) => new Promise(r => cv.toBlob(r, "image/jpeg", q));
+const loadImg = src => new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; });
+
+/* Bảng ảnh mẫu các SKU đã train, gửi kèm để Claude phân biệt SKU */
+async function refSheet() {
+  const rows = CLASSES.filter(c => c.is333).map(c => ({ c, list: samples.filter(s => s.cls === c.id).slice(0, 5) })).filter(r => r.list.length);
+  if (!rows.length) return null;
+  const cell = 120, pad = 10, lab = 26;
+  const cv = document.createElement("canvas"); cv.width = pad + 5 * (cell + pad); cv.height = rows.length * (cell + lab + pad) + pad;
+  const x = cv.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, cv.width, cv.height);
+  x.font = "bold 18px sans-serif"; x.fillStyle = "#000";
+  let y = pad;
+  for (const r of rows) {
+    x.fillText(clsName(r.c.id), pad, y + 19); y += lab;
+    for (let i = 0; i < r.list.length; i++) { try { const im = await loadImg(r.list[i].thumb); const s = Math.min(cell / im.width, cell / im.height); x.drawImage(im, pad + i * (cell + pad) + (cell - im.width * s) / 2, y + (cell - im.height * s) / 2, im.width * s, im.height * s); } catch {} }
+    y += cell + pad;
+  }
+  return toBlob(cv, 0.85);
+}
+
+const ART_SPEC = `Việc 5 – Mô tả tác phẩm bằng TIẾNG ANH cho AI vẽ tranh (AI vẽ sẽ KHÔNG nhìn thấy ảnh, chỉ nhận một hình hoạ bố cục gồm đường bao xám và các khối đen đặt đúng vị trí các lon):
+  - "object_en": tên thứ được liên tưởng bằng tiếng Anh.
+  - "art_brief": 3–4 câu tiếng Anh mô tả bức tranh về chính thứ đó như một tác phẩm độc lập: chủ thể, chi tiết, bối cảnh, ánh sáng. Hình dáng tổng thể của chủ thể phải khớp đường bao của cú cụng. TUYỆT ĐỐI không nhắc tới bia, lon, chai, cụng ly, người, bàn tay hay cánh tay.
+  - "guide_mapping": 1–2 câu tiếng Anh nói các khối đen trong hình hoạ trở thành bộ phận nào của chủ thể (vd: "the six dark blocks become the stacked stone tiers of the pagoda, the top block is its finial").`;
+async function analyse(file) { return analyseCanvas(await fileToCanvas(file)); }
+async function analyseCanvas(c) {
+  const log = $("checkLog");
+  ["verdict", "imagine", "posterBox"].forEach(id => $(id).style.display = "none");
+  $("items").innerHTML = ""; busy?.abort();
+  await loadModels(log);
+  current = { canvas: c, objs: [], group: null }; draw(current); $("stage").style.display = "block";
+  const s = await getSample();
+  if (!s) return localAnalyse(c);
+
+  log.innerHTML = `<span class="spin"></span>Claude đang soi ảnh: tìm từng lon/chai, đọc nhãn 333, xem có đang cụng không… (thường 15–40 giây)`;
+  const skuNames = CLASSES.filter(k => k.is333).map(k => clsName(k.id));
+  const ref = await refSheet();
+  const images = [await toBlob(c)]; if (ref && maxImages >= 2) images.push(ref);
+  const prompt = `Bạn là hệ thống nhận diện sản phẩm và copywriter cho bia 333 tại Việt Nam.
+Ảnh 1 là ảnh người dùng tải lên (rộng ${c.width}px, cao ${c.height}px).${images.length > 1 ? " Ảnh 2 là bảng ảnh mẫu các SKU 333 đã được train, mỗi hàng có tên SKU ở trên." : ""}
+Danh sách SKU 333 hợp lệ: ${JSON.stringify(skuNames)}.
+
+Việc 1 – Nhận diện: tìm TỪNG chai/lon/ly bia nhìn thấy trong ảnh 1 (tối đa 15). Với mỗi cái, cho khung bao sát vật thể theo phần trăm kích thước ảnh [x, y, w, h] (x,y là góc trên trái, 0–100). Cho thêm "angle": góc nghiêng trục dọc của lon/chai so với phương thẳng đứng, độ (dương = đầu lon nghiêng sang phải). Xác định có phải bia 333 không dựa trên chữ/số "333", màu sắc và thiết kế bao bì; nếu là 333 thì chọn SKU khớp nhất trong danh sách (so với ảnh mẫu nếu có). Ghi bằng chứng ngắn (vd: "đọc được chữ 333 PILSNER trên thân lon").
+Việc 2 – Cú cụng: các chai/lon có đang được nâng lên chạm vào nhau trong một cú cụng (hoặc chồng/xếp lại cùng nhau như một màn cụng) không? Cái nào thuộc cú cụng?
+Việc 3 – Liên tưởng: nhìn tổng thể hình khối mà các lon/chai, bàn tay, cánh tay tạo ra trong cú cụng (bố cục, góc nghiêng, cao thấp, số lượng). Tưởng tượng nó giống MỘT thứ cụ thể, đẹp, gần gũi trong đời sống người Việt. Chọn thứ khớp hình dáng thật nhất, đừng chọn bừa.
+Việc 4 – Lời chúc tiếng Việt 2–3 câu, ấm áp, hài hước nhẹ, gắn ý nghĩa của thứ đó với tình bạn, sum vầy, thành công; có thể nhắc 333 hoặc "Dô!" tự nhiên. Không cổ vũ uống nhiều.
+Việc 4b – "wish_short": bản rút gọn của lời chúc, tối đa 18 chữ, để viết tay lên tranh.
+Việc 4c – "outline": đường bao hình khối tổng thể của cú cụng (các lon/chai + bàn tay/cánh tay đang nâng lên), là đa giác 6–16 điểm [[x,y],...] theo phần trăm ảnh, đi theo chiều kim đồng hồ.
+Việc 5 – Mô tả tác phẩm bằng TIẾNG ANH cho AI vẽ tranh (AI vẽ sẽ KHÔNG nhìn thấy ảnh, chỉ nhận một hình hoạ bố cục gồm đường bao xám và các khối đen đặt đúng vị trí các lon):
+  - "object_en": tên thứ được liên tưởng bằng tiếng Anh.
+  - "art_brief": 3–4 câu tiếng Anh mô tả bức tranh về chính thứ đó như một tác phẩm độc lập: chủ thể, chi tiết, bối cảnh, ánh sáng. Hình dáng tổng thể của chủ thể phải khớp đường bao của cú cụng. TUYỆT ĐỐI không nhắc tới bia, lon, chai, cụng ly, người, bàn tay hay cánh tay.
+  - "guide_mapping": 1–2 câu tiếng Anh nói các khối đen trong hình hoạ trở thành bộ phận nào của chủ thể (vd: "the six dark blocks become the stacked stone tiers of the pagoda, the top block is its finial").
+
+Chỉ trả về JSON:
+{"containers":[{"box":[x,y,w,h],"kind":"lon|chai|ly","is_333":true,"sku":"tên SKU trong danh sách hoặc 'khác'","evidence":"...","in_cheers":true,"angle":0}],"outline":[[x,y]],"wish_short":"...",
+"cheers":true,"cheers_note":"1 câu","shape":"mô tả hình khối cú cụng, 1 câu","object":"thứ liên tưởng","emoji":"1 emoji","why":"vì sao giống, 1 câu","wish":"lời chúc","object_en":"...","art_brief":"...","guide_mapping":"..."}`;
+  busy = new AbortController();
+  let a;
+  try { a = await s.json(prompt, { images, signal: busy.signal }); }
+  catch (e) {
+    if (e.code === "cancelled") return;
+    log.textContent = (e.code === "not_granted" ? "Bạn chưa cho phép trang dùng Claude" : e.code === "rate_limited" ? "Claude đang bận" : "Không phân tích được bằng Claude") + ` (mã lỗi: ${e.code || "?"}) – đang dùng chế độ offline với liên tưởng có sẵn.`;
+    const why = log.textContent; await localAnalyse(c); log.textContent = why; return;
+  }
+  log.textContent = "";
+  const W = c.width, H = c.height, cl = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+  const objs = (Array.isArray(a.containers) ? a.containers : []).slice(0, 15).map((k, i) => {
+    const [px, py, pw, ph] = (Array.isArray(k.box) ? k.box : [0, 0, 0, 0]).map(Number);
+    const box = { x: cl(px, 0, 100) / 100 * W, y: cl(py, 0, 100) / 100 * H, w: cl(pw, 1, 100) / 100 * W, h: cl(ph, 1, 100) / 100 * H };
+    const r = samples.length ? classify(embedOf(crop(c, box, 0.04))) : null;
+    const claude333 = k.is_333 === true;
+    const sku = claude333 && typeof k.sku === "string" && !/khác/i.test(k.sku) ? k.sku : (r?.is333 ? clsName(r.cls) : null);
+    const is333 = claude333 || !!r?.is333;
+    return { id: i + 1, ...box, r, angle: Number(k.angle) || 0, label: k.kind || "chai/lon", is333, inCheers: k.in_cheers === true,
+      tag: is333 ? (sku || "333").split("–")[0].trim() : "Không phải 333",
+      title: is333 ? (sku || "Bia 333") : `Không phải 333 (${k.kind || "?"})`,
+      detail: [k.evidence ? "Claude: " + k.evidence : "", r ? `Model đã train: ${r.is333 ? shortName(r.cls) : "không phải 333"} · tương đồng ${Math.round(r.sim * 100)}%` : "Model: chưa train"].filter(Boolean).join(" · ") };
+  });
+  const group = objs.filter(o => o.inCheers);
+  const g = a.cheers && group.length >= 2 ? group : null;
+  const n333 = g ? g.filter(o => o.is333).length : 0;
+  let verdict;
+  if (g && n333) verdict = { k: "yes", t: "🍻 ĐANG CỤNG BIA 333", s: `${g.length} chai/lon trong cú cụng · ${n333} là 333. ${a.cheers_note || ""}` };
+  else if (g) verdict = { k: "mid", t: "Có cú cụng, nhưng không phải 333", s: a.cheers_note || "" };
+  else if (objs.some(o => o.is333)) verdict = { k: "mid", t: "Có 333 trong ảnh, nhưng chưa cụng", s: a.cheers_note || "" };
+  else verdict = { k: "no", t: "Không phát hiện cú cụng 333", s: a.cheers_note || "" };
+  current = { canvas: c, objs, group: g, verdict, idea: a };
+  draw(current); showVerdict(verdict, objs);
+  if (g) { showIdea(a, "Nhận diện & liên tưởng bởi Claude"); paint(); }
+}
+
+$("againBtn").onclick = async () => {
+  const st = current; if (!st?.group) return;
+  const s = await getSample(); if (!s) return;
+  const prev = st.idea;
+  $("obj").textContent = "Đang nghĩ một liên tưởng khác…"; $("wish").textContent = ""; $("why").textContent = "";
+  try {
+    const n = await s.json(`Một cú cụng bia 333 có hình khối: "${prev.shape || prev.why}". Lần trước đã liên tưởng thành "${prev.object}". Hãy liên tưởng sang MỘT thứ khác trong đời sống người Việt cũng khớp hình dáng đó (ảnh đính kèm), viết lời chúc tiếng Việt 2–3 câu ấm áp, hài hước nhẹ, và "wish_short" tối đa 18 chữ. Không cổ vũ uống nhiều.
+${ART_SPEC}
+Chỉ trả về JSON: {"shape":"...","object":"...","emoji":"...","why":"...","wish":"...","wish_short":"...","object_en":"...","art_brief":"...","guide_mapping":"..."}`, { images: [await toBlob(st.canvas)], cache: false });
+    st.idea = { ...prev, ...n }; showIdea(st.idea, "Liên tưởng bởi Claude"); paint();
+  } catch (e) { showIdea(prev, "Chưa nghĩ ra liên tưởng khác, thử lại sau."); }
+};
+$("copyBtn").onclick = async () => { try { await navigator.clipboard.writeText($("wish").textContent); $("copyBtn").textContent = "✓ Đã copy"; setTimeout(() => $("copyBtn").textContent = "📋 Copy lời chúc", 1500); } catch {} };
+
+function showIdea(o, src) {
+  $("imagine").style.display = "block";
+  $("art").innerHTML = `<span>${esc(o.emoji || "🍻")}</span>`;
+  $("shapeK").textContent = "Cú cụng của bạn giống…";
+  $("obj").textContent = o.object || "";
+  $("why").textContent = [o.shape, o.why].filter(Boolean).join(" ");
+  $("wish").textContent = o.wish || "";
+  $("src").textContent = src;
+}
+
+let paintCtl = null;
+async function paint() {
+  const st = current; if (!st?.group) return;
+  $("posterBox").style.display = "block";
+  st.guide = shapeGuide(st);
+  $("guideImg").src = st.guide.toDataURL("image/png");
+  $("promptView").textContent = buildPrompt(st);
+  await compose(null);                       // bản nháp offline trên nền giấy
+  $("hfBtn").style.display = "";
+  $("posterStatus").textContent = "Bản dưới là bản nháp. Bấm “Vẽ tranh bằng Higgsfield” để có tranh hoàn chỉnh.";
+  if (AUTO_PAINT) hfPaint();
+}
+
+/* ---------- Vẽ shape cơ bản của cú cụng ---------- */
+function hull(pts) {
+  const p = pts.slice().sort((a, b) => a.x - b.x || a.y - b.y); if (p.length < 3) return p;
+  const cr = (o, a, b) => (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
+  const lo = [], up = [];
+  for (const q of p) { while (lo.length >= 2 && cr(lo[lo.length - 2], lo[lo.length - 1], q) <= 0) lo.pop(); lo.push(q); }
+  for (const q of p.reverse()) { while (up.length >= 2 && cr(up[up.length - 2], up[up.length - 1], q) <= 0) up.pop(); up.push(q); }
+  return lo.slice(0, -1).concat(up.slice(0, -1));
+}
+function canDims(o) { // kích thước thật của lon từ khung bao + góc nghiêng
+  const t = Math.abs(o.angle) * Math.PI / 180, c = Math.cos(t), s = Math.sin(t), c2 = c * c - s * s;
+  let cw = (o.w * c - o.h * s) / c2, ch = (o.h * c - o.w * s) / c2;
+  if (!(Math.abs(c2) > 0.25 && cw > 0 && ch > 0)) { cw = Math.min(o.w, o.h) * 0.75; ch = Math.max(o.w, o.h) * 0.9; }
+  return { cw, ch };
+}
+function shapeGuide(st) {
+  const G = 1024, GH = 1280, W = st.canvas.width, H = st.canvas.height;
+  const cv = document.createElement("canvas"); cv.width = G; cv.height = GH;
+  const x = cv.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, G, GH);
+  let outline = Array.isArray(st.idea?.outline) ? st.idea.outline.filter(p => Array.isArray(p) && p.length === 2).map(([a, b]) => ({ x: +a / 100 * W, y: +b / 100 * H })).filter(p => isFinite(p.x) && isFinite(p.y)) : [];
+  if (outline.length < 3) outline = hull(st.group.flatMap(o => [{ x: o.x, y: o.y }, { x: o.x + o.w, y: o.y }, { x: o.x, y: o.y + o.h }, { x: o.x + o.w, y: o.y + o.h }]));
+  const all = outline.concat(st.group.flatMap(o => [{ x: o.x, y: o.y }, { x: o.x + o.w, y: o.y + o.h }]));
+  const minX = Math.min(...all.map(p => p.x)), maxX = Math.max(...all.map(p => p.x)), minY = Math.min(...all.map(p => p.y)), maxY = Math.max(...all.map(p => p.y));
+  const area = { x: 90, y: 70, w: G - 180, h: GH * 0.68 - 70 };           // chừa 30% phía dưới cho chữ viết tay
+  const sc = Math.min(area.w / (maxX - minX || 1), area.h / (maxY - minY || 1));
+  const ox = area.x + (area.w - (maxX - minX) * sc) / 2 - minX * sc, oy = area.y + (area.h - (maxY - minY) * sc) / 2 - minY * sc;
+  const M = p => ({ x: ox + p.x * sc, y: oy + p.y * sc });
+  // hình học của shape (toạ độ trong khung 1024×1280) – dùng cho cả canvas và lệnh vẽ trên Higgsfield
+  const outlinePts = outline.map(M);
+  const cans = st.group.map(o => {
+    const { cw, ch } = canDims(o), c = M({ x: o.x + o.w / 2, y: o.y + o.h / 2 }), a = o.angle * Math.PI / 180;
+    const w = cw * sc / 2, h = ch * sc / 2, co = Math.cos(a), si = Math.sin(a);
+    return [[-w, -h], [w, -h], [w, h], [-w, h]].map(([u, v]) => ({ x: c.x + u * co - v * si, y: c.y + u * si + v * co }));
+  });
+  st.shapeGeo = { outline: outlinePts, cans };
+  const poly = pts => { x.beginPath(); pts.forEach((p, i) => i ? x.lineTo(p.x, p.y) : x.moveTo(p.x, p.y)); x.closePath(); };
+  poly(outlinePts); x.fillStyle = "#e6e6e6"; x.fill(); x.lineWidth = 10; x.lineJoin = "round"; x.strokeStyle = "#222"; x.stroke();
+  for (const c of cans) { poly(c); x.fillStyle = "#111"; x.fill(); }
+  return cv;
+}
+
+/* ---------- Prompt gốc gửi Higgsfield ---------- */
+function buildPrompt(st) {
+  const idea = st.idea || {}, font = $("fontWish").checked, frame = $("frameOn").checked;
+  const wish = (idea.wish_short || idea.wish || "").replace(/"/g, "'");
+  const subject = idea.object_en || idea.object || "a symbolic object";
+  return `The attached image is a rough composition sketch for the artwork. Its grey silhouette is the exact outer contour of the main subject, and the dark blocks mark the subject's main structural masses. Draw the subject so that its overall shape, proportions and placement on the page match this sketch exactly. Do not draw the sketch itself, its flat grey fill or its black blocks.
+
+Subject: ${subject}. ${idea.art_brief || ""} ${idea.guide_mapping || ""}
+
+Medium and style: fine-art line drawing on a rich deep-red velvet background (crimson velvet with soft plush texture and subtle light sheen). The subject is drawn entirely in elegant artistic linework: lustrous metallic gold lines as the main strokes, with metallic silver lines for secondary details, fine hatching and highlights, like gold-and-silver thread embroidery or gilded engraving. Expressive, flowing, varied line weight, ornamental flourishes, luxurious and festive; no flat color fills, the red velvet shows through between the lines. Behind the drawing, the number "333" is pressed into the velvet pile as a large, very faint, tone-on-tone embossed watermark.
+
+Layout: the drawing fills the upper ~70% of the velvet. ${font
+  ? "The bottom ~30% of the velvet is left empty, with no text."
+  : `In the bottom ~30% of the velvet, write exactly this Vietnamese text in elegant flowing handwritten script in metallic gold ink, centered, on 2-3 lines, with every Vietnamese diacritic correct: "${wish}"`}
+${frame ? "\nPresentation: the finished velvet artwork is mounted in an ornate thin gold picture frame, shown straight on and filling the image, against a plain light wall.\n" : ""}
+No other text and no logos except the faint 333 watermark. No photographic elements. Portrait 4:5.`;
+}
+$("frameOn").onchange = () => { if (current?.group) $("promptView").textContent = buildPrompt(current); };
+$("fontWish").onchange = () => { if (current?.group) { $("promptView").textContent = buildPrompt(current); compose(current.art || null); } };
+
+/* ---------- Logo 333 in chìm (tuỳ chọn) ---------- */
+let logoData = null;
+try { logoData = localStorage.getItem("cheers333-logo"); } catch {}
+function showLogo() { $("logoPrev").src = logoData || ""; $("logoPrev").style.display = logoData ? "" : "none"; $("logoDel").style.display = logoData ? "" : "none"; }
+showLogo();
+$("logoIn").onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+  const im = await loadImg(URL.createObjectURL(f)); const s = Math.min(1, 600 / Math.max(im.width, im.height));
+  const c = document.createElement("canvas"); c.width = Math.round(im.width * s) || 600; c.height = Math.round(im.height * s) || 600;
+  c.getContext("2d").drawImage(im, 0, 0, c.width, c.height);
+  logoData = c.toDataURL("image/png"); try { localStorage.setItem("cheers333-logo", logoData); } catch {}
+  showLogo(); if (current?.group) compose(current.art || null);
+};
+$("logoDel").onclick = () => { logoData = null; try { localStorage.removeItem("cheers333-logo"); } catch {} showLogo(); if (current?.group) compose(current.art || null); };
+
+/* ============ VẼ TRANH BẰNG HIGGSFIELD (qua server) ============ */
+let AUTO_PAINT = false;    // camera trực tiếp bật tự động vẽ
+async function hfPaint() {
+  const st = current; if (!st?.group || !st.guide) return;
+  const status = $("posterStatus"), btn = $("hfBtn"); btn.disabled = true;
+  const step = t => status.innerHTML = `<span class="spin"></span>${t}`;
+  try {
+    step("1/3 · Đang gửi shape guide + prompt sang Higgsfield…");
+    const small = document.createElement("canvas"); small.width = 768; small.height = 960;
+    small.getContext("2d").drawImage(st.guide, 0, 0, 768, 960);
+    const guide = small.toDataURL("image/jpeg", 0.9).split(",")[1];
+    const r = await api("/api/paint", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ guide, prompt: buildPrompt(st) }) });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok || !d.request_id) throw new Error(d.message || ("HTTP " + r.status));
+    let url = null;
+    for (let i = 0; i < 60 && !url; i++) {
+      step(`2/3 · Higgsfield đang vẽ… (${i * 3}s)`);
+      await sleep(3000);
+      const q = await (await api("/api/status?id=" + d.request_id)).json().catch(() => ({}));
+      if (["failed", "nsfw", "canceled"].includes(q.status)) throw new Error(q.status === "nsfw" ? "Higgsfield từ chối nội dung (nsfw), thử lại với ảnh khác" : "Higgsfield không vẽ được bức này");
+      if (q.status === "completed") url = q.url;
+    }
+    if (!url) throw new Error("quá thời gian chờ");
+    step("3/3 · Đang hoàn thiện tranh…");
+    const blob = await (await api("/api/image?url=" + encodeURIComponent(url))).blob();
+    st.art = URL.createObjectURL(blob); st.hfUrl = url;
+    await compose(st.art);
+    status.innerHTML = `Tranh vẽ bởi Higgsfield (${esc(d.model || "")}) · <a href="${esc(url)}" target="_blank" rel="noopener" style="color:var(--gold)">ảnh gốc độ phân giải cao ↗</a>`;
+  } catch (e) {
+    status.textContent = "Higgsfield báo lỗi: " + String(e.message || e).slice(0, 220);
+  } finally { btn.disabled = false; }
+}
+
+/* ---------- Hoàn thiện tranh: (tranh AI hoặc bản nháp) + logo chìm + chữ viết tay ---------- */
+async function compose(artSrc) {
+  const st = current, idea = st.idea || {}, font = $("fontWish").checked;
+  const Wp = 1080, Hp = 1350;
+  const cv = document.createElement("canvas"); cv.width = Wp; cv.height = Hp;
+  const x = cv.getContext("2d");
+  let ok = false;
+  if (artSrc) { try { const im = await loadImg(artSrc); const s = Math.max(Wp / im.width, Hp / im.height); x.drawImage(im, (Wp - im.width * s) / 2, (Hp - im.height * s) / 2, im.width * s, im.height * s); ok = true; } catch {} }
+  if (!ok) { // bản nháp offline: giấy draft + shape in vàng + 333 chìm
+    const vg = x.createRadialGradient(Wp / 2, Hp * .4, 80, Wp / 2, Hp * .5, Hp * .8); vg.addColorStop(0, "#9e1426"); vg.addColorStop(.6, "#6d0b19"); vg.addColorStop(1, "#3a040c");
+    x.fillStyle = vg; x.fillRect(0, 0, Wp, Hp);
+    for (let i = 0; i < 14000; i++) { x.fillStyle = Math.random() < .5 ? `rgba(255,120,140,${Math.random() * 0.06})` : `rgba(0,0,0,${Math.random() * 0.08})`; x.fillRect(Math.random() * Wp, Math.random() * Hp, 1.5, 1.5); }
+    x.save(); x.globalAlpha = .08; x.fillStyle = "#000"; x.font = '800 420px "Be Vietnam Pro", sans-serif'; x.textAlign = "center"; x.fillText("333", Wp / 2, Hp * .5); x.restore();
+    if (st.guide) {
+      const g = document.createElement("canvas"); g.width = st.guide.width; g.height = st.guide.height; const gx = g.getContext("2d");
+      gx.drawImage(st.guide, 0, 0); const d = gx.getImageData(0, 0, g.width, g.height);
+      for (let i = 0; i < d.data.length; i += 4) { const v = d.data[i]; if (v > 245) d.data[i + 3] = 0; else if (v < 80) { d.data[i] = 230; d.data[i + 1] = 185; d.data[i + 2] = 70; d.data[i + 3] = 235; } else { d.data[i] = 205; d.data[i + 1] = 210; d.data[i + 2] = 218; d.data[i + 3] = v > 200 ? 30 : 220; } }
+      gx.putImageData(d, 0, 0); x.drawImage(g, 0, 0, Wp, Hp);
+    }
+  }
+  if (logoData) { try { const lg = await loadImg(logoData); const lw = Wp * .62, lh = lw * lg.height / lg.width; x.save(); x.globalAlpha = .1; x.globalCompositeOperation = "multiply"; x.drawImage(lg, (Wp - lw) / 2, Hp * .36 - lh / 2, lw, lh); x.restore(); } catch {} }
+  if (font || !ok) {
+    try { await document.fonts.load('56px "Patrick Hand"'); } catch {}
+    x.save(); x.fillStyle = "#e9c46a"; x.shadowColor = "rgba(0,0,0,.5)"; x.shadowBlur = 6; x.font = '56px "Patrick Hand", cursive'; x.textAlign = "center";
+    const lines = []; let line = "";
+    for (const w of String(idea.wish_short || idea.wish || "").split(/\s+/)) { const t = line ? line + " " + w : w; if (x.measureText(t).width > Wp - 200 && line) { lines.push(line); line = w; } else line = t; }
+    if (line) lines.push(line);
+    let y = Hp * .79 - (lines.length - 1) * 34;
+    for (const l of lines.slice(0, 4)) { x.save(); x.translate(Wp / 2, y); x.rotate((Math.random() - .5) * .02); x.fillText(l, 0, 0); x.restore(); y += 70; }
+    x.restore();
+  }
+  let url; try { url = cv.toDataURL("image/jpeg", 0.92); } catch { url = null; }
+  const img = $("poster");
+  if (url) { img.src = url; img.style.display = "block"; current.posterCanvas = cv; }
+  $("posterBtns").style.display = "flex";
+}
+$("hfBtn").onclick = hfPaint;
+$("saveBtn").onclick = async () => {
+  const cv = current?.posterCanvas; if (!cv) return;
+  const blob = await toBlob(cv, 0.94);
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "cu-cung-333.jpg"; document.body.append(a); a.click(); a.remove();
+};
+
+
+/* ============ XUẤT / NHẬP DỮ LIỆU TRAIN ============ */
+$("exportBtn").onclick = () => {
+  const blob = new Blob([JSON.stringify({ v: 1, names, samples })], { type: "application/json" });
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "cheers333-train.json"; document.body.append(a); a.click(); a.remove();
+};
+$("importIn").onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+  try {
+    const d = JSON.parse(await f.text());
+    if (!Array.isArray(d.samples)) throw 0;
+    const have = new Set(samples.map(x => x.id));
+    samples = samples.concat(d.samples.filter(x => x && x.id && !have.has(x.id) && Array.isArray(x.embs)));
+    names = { ...(d.names || {}), ...names };
+    lsSave(); renderClasses(); evaluate(); alertMsg(`Đã nhập, hiện có ${samples.length} ảnh train.`);
+  } catch { alertMsg("File không đúng định dạng dữ liệu train."); }
+};
+
+/* ============ CAMERA TRỰC TIẾP: theo dõi tay + lon, tự bắt khoảnh khắc cụng ============ */
+const LIVE_CFG = { touchRatio: 1.0, approachRatio: 1.2, windowMs: 450, cooldownMs: 4000, tipRatio: 1.3, detEvery: 4 };
+const live = { on: false, stream: null, facing: "environment", hand: null, det: null, tracks: [], next: 1, hist: new Map(), last: 0, frame: 0, boxes: [], tLast: 0, fps: 0, countdown: 0 };
+async function liveTask(Cls, opts) {
+  try { return await Cls.createFromOptions(VISION, { ...opts, baseOptions: { ...opts.baseOptions, delegate: "GPU" } }); }
+  catch { return await Cls.createFromOptions(VISION, { ...opts, baseOptions: { ...opts.baseOptions, delegate: "CPU" } }); }
+}
+async function openLive() {
+  $("live").classList.add("on"); $("liveInfo").textContent = "Đang tải mô hình…";
+  try {
+    await loadModels($("checkLog"));
+    if (!live.hand) {
+      live.hand = await liveTask(HandLandmarker, { baseOptions: { modelAssetPath: MODEL_URLS.hand }, runningMode: "VIDEO", numHands: 6, minHandDetectionConfidence: 0.4, minTrackingConfidence: 0.4 });
+      live.det = await liveTask(ObjectDetector, { baseOptions: { modelAssetPath: MODEL_URLS.det }, runningMode: "VIDEO", scoreThreshold: 0.25, maxResults: 8, categoryAllowlist: ["bottle", "cup", "wine glass"] });
+    }
+    await startStream();
+    live.on = true; live.tracks = []; live.hist.clear(); live.last = performance.now();
+    $("liveInfo").textContent = "Giơ lon lên và cụng nhau trước camera 🍻";
+    requestAnimationFrame(liveLoop);
+  } catch (e) {
+    $("liveInfo").textContent = location.protocol === "https:" || location.hostname === "localhost" ? "Không mở được camera: " + (e.message || e) : "Camera cần HTTPS";
+  }
+}
+async function startStream() {
+  live.stream?.getTracks().forEach(t => t.stop());
+  live.stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: live.facing, width: { ideal: 1280 }, height: { ideal: 720 } } });
+  const v = $("liveVid"); v.srcObject = live.stream; await v.play();
+  $("liveStage").classList.toggle("mirror", live.facing === "user");
+}
+function closeLive() {
+  live.on = false; live.countdown = 0;
+  live.stream?.getTracks().forEach(t => t.stop()); live.stream = null;
+  $("live").classList.remove("on"); $("liveCount").textContent = "";
+}
+$("liveBtn").onclick = openLive;
+$("liveClose").onclick = closeLive;
+$("liveFlip").onclick = async () => { live.facing = live.facing === "user" ? "environment" : "user"; try { await startStream(); } catch {} };
+$("liveSnap").onclick = () => snapLive("Chụp tay");
+$("liveTimer").onclick = async () => {
+  for (let n = 3; n > 0 && live.on; n--) { $("liveCount").textContent = n; await sleep(1000); }
+  $("liveCount").textContent = ""; if (live.on) snapLive("Hẹn giờ");
+};
+
+function liveLoop() {
+  if (!live.on) return;
+  requestAnimationFrame(liveLoop);
+  const v = $("liveVid"); if (v.readyState < 2) return;
+  const W = v.videoWidth, H = v.videoHeight, cv = $("liveCv"), x = cv.getContext("2d");
+  if (cv.width !== W) { cv.width = W; cv.height = H; }
+  const now = performance.now();
+  x.drawImage(v, 0, 0, W, H);
+  live.frame++;
+  const hands = (live.hand.detectForVideo(v, now).landmarks || []).map(lm => {
+    const h = handInfo(lm, W, H);
+    h.tip = { x: h.c.x + h.ax.x * h.size * LIVE_CFG.tipRatio, y: h.c.y + h.ax.y * h.size * LIVE_CFG.tipRatio };
+    h.base = { x: h.c.x - h.ax.x * h.size * 1.1, y: h.c.y - h.ax.y * h.size * 1.1 };
+    return h;
+  });
+  if (live.frame % LIVE_CFG.detEvery === 0) {
+    live.boxes = (live.det.detectForVideo(v, now).detections || []).map(d => ({ x: d.boundingBox.originX, y: d.boundingBox.originY, w: d.boundingBox.width, h: d.boundingBox.height }));
+  }
+  trackHands(hands, now);
+
+  // vẽ lớp phủ: trục lon trên từng bàn tay + khung chai/lon
+  const lw = Math.max(3, W / 300);
+  x.lineCap = "round"; x.lineWidth = lw;
+  for (const b of live.boxes) { x.strokeStyle = "rgba(232,182,60,.8)"; x.strokeRect(b.x, b.y, b.w, b.h); }
+  for (const h of hands) {
+    x.strokeStyle = "#f6d77e"; x.beginPath(); x.moveTo(h.base.x, h.base.y); x.lineTo(h.tip.x, h.tip.y); x.stroke();
+    x.fillStyle = "#fff"; x.beginPath(); x.arc(h.tip.x, h.tip.y, lw * 1.6, 0, 7); x.fill();
+  }
+  const auto = $("autoSnap").checked;
+  if (auto && !live.countdown && now - live.last > LIVE_CFG.cooldownMs) {
+    const hit = liveCheers(now);
+    if (hit) { live.last = now; snapLive("Tự chụp khi cụng"); return; }
+  }
+  const dt = now - live.tLast; live.tLast = now; live.fps = live.fps * .9 + (1000 / Math.max(dt, 1)) * .1;
+  if (live.frame % 15 === 0) {
+    $("liveFps").textContent = Math.round(live.fps) + " fps";
+    $("liveInfo").textContent = hands.length ? `${hands.length} tay · ${live.boxes.length} chai/lon – cụng đi!` : "Giơ lon lên và cụng nhau trước camera 🍻";
+  }
+}
+function trackHands(hands, now) {
+  const used = new Set(), next = [];
+  for (const h of hands) {
+    let best = null, bd = Infinity;
+    for (const t of live.tracks) { if (used.has(t.id)) continue; const d = Math.hypot(t.h.c.x - h.c.x, t.h.c.y - h.c.y); if (d < bd && d < h.size * 3) { bd = d; best = t; } }
+    if (best) { used.add(best.id); next.push({ id: best.id, h, seen: now }); } else next.push({ id: live.next++, h, seen: now });
+  }
+  for (const t of live.tracks) if (!used.has(t.id) && now - t.seen < 200) next.push(t);
+  live.tracks = next;
+  for (let i = 0; i < next.length; i++) for (let j = i + 1; j < next.length; j++) {
+    const A = next[i], B = next[j], key = Math.min(A.id, B.id) + "-" + Math.max(A.id, B.id);
+    const s = (A.h.size + B.h.size) / 2, arr = live.hist.get(key) || [];
+    arr.push({ t: now, d: Math.hypot(A.h.tip.x - B.h.tip.x, A.h.tip.y - B.h.tip.y) / s });
+    while (arr.length && now - arr[0].t > 1000) arr.shift();
+    live.hist.set(key, arr);
+  }
+  for (const [k, arr] of live.hist) if (!arr.length || now - arr[arr.length - 1].t > 500) live.hist.delete(k);
+}
+function liveCheers(now) {
+  for (const arr of live.hist.values()) {
+    if (arr.length < 3) continue;
+    const cur = arr[arr.length - 1]; if (cur.d > LIVE_CFG.touchRatio) continue;
+    const maxD = Math.max(...arr.filter(p => now - p.t <= LIVE_CFG.windowMs).map(p => p.d));
+    if (maxD - cur.d >= LIVE_CFG.approachRatio) return true;
+  }
+  return false;
+}
+function clinkSound() {
+  try {
+    const ac = new (window.AudioContext || window.webkitAudioContext)(), t = ac.currentTime;
+    [2637, 3520, 4186].forEach((f, i) => { const o = ac.createOscillator(), g = ac.createGain(); o.frequency.value = f; g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.25 / (i + 1), t + .005); g.gain.exponentialRampToValueAtTime(.0001, t + .9); o.connect(g).connect(ac.destination); o.start(t); o.stop(t + 1); });
+  } catch {}
+}
+function snapLive(how) {
+  const v = $("liveVid"); if (!v.videoWidth) return;
+  const s = Math.min(1, 1280 / Math.max(v.videoWidth, v.videoHeight));
+  const c = document.createElement("canvas"); c.width = Math.round(v.videoWidth * s); c.height = Math.round(v.videoHeight * s);
+  c.getContext("2d").drawImage(v, 0, 0, c.width, c.height);
+  clinkSound(); navigator.vibrate?.([30, 40, 60]);
+  AUTO_PAINT = $("autoPaint").checked;
+  closeLive();
+  document.querySelector('nav button[data-tab="check"]').click();
+  $("checkLog").textContent = how + " – đang phân tích…";
+  analyseCanvas(c).finally(() => { AUTO_PAINT = false; });
+}
+
+initStore();
+</script>
+</body>
+</html>

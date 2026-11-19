@@ -1,0 +1,46 @@
+# 333 Cheers Lab
+
+Web app nhận diện cú cụng bia 333 bằng camera, đọc **hình dáng (shape)** của các lon đang cụng, liên tưởng thành một hình ảnh trong đời sống, rồi nhờ **Higgsfield** vẽ thành tranh (nền nhung đỏ, nét vàng hoạ bạc, số 333 chìm, lời chúc viết tay).
+
+## Cấu trúc
+
+| Thư mục / file | Vai trò |
+|---|---|
+| `public/index.html` | Toàn bộ giao diện + logic trên trình duyệt (MediaPipe, camera, train SKU, shape guide, poster) |
+| `netlify/edge-functions/analyze.js` | `POST /api/analyze` – gọi Claude (Anthropic API) để nhận diện lon 333, cú cụng, liên tưởng, lời chúc |
+| `netlify/edge-functions/paint.js` | `POST /api/paint` – tải shape guide lên Higgsfield và gửi yêu cầu vẽ |
+| `netlify/edge-functions/status.js` | `GET /api/status?id=` – hỏi trạng thái tranh |
+| `netlify/edge-functions/image.js` | `GET /api/image?url=` – lấy tranh về cùng tên miền để ghép poster |
+| `netlify/lib/shared.js` | Hàm dùng chung (đọc biến môi trường, mã truy cập, gọi Higgsfield) |
+
+API key chỉ nằm trên Netlify (biến môi trường), không bao giờ gửi xuống trình duyệt.
+
+## Biến môi trường trên Netlify
+
+| Tên | Bắt buộc | Giá trị |
+|---|---|---|
+| `ANTHROPIC_API_KEY` | ✔ | Key `sk-ant-...` từ console.anthropic.com |
+| `HIGGSFIELD_KEY_ID` | ✔ | Key ID từ open.higgsfield.ai |
+| `HIGGSFIELD_KEY_SECRET` | ✔ | Key Secret từ open.higgsfield.ai |
+| `APP_PASSCODE` | nên có | Mã truy cập tự đặt (vd `333dô`). Người dùng nhập 1 lần trên mỗi máy. Không đặt thì ai có link cũng dùng được key của bạn. |
+| `ANTHROPIC_MODEL` | tuỳ chọn | Mặc định `claude-sonnet-5-5` |
+| `HIGGSFIELD_MODEL` | tuỳ chọn | Đường dẫn model Higgsfield, mặc định `xai/grok-imagine-image-2.0` (nhận ảnh tham chiếu). Có thể thử `ideogram/v4.0`. |
+
+Sau khi thêm/sửa biến: **Deploys → Trigger deploy → Deploy site**.
+
+## Cách dùng
+
+1. **① Train SKU**: thêm 10–30 ảnh cho mỗi SKU 333 và ảnh bia khác vào lớp "Không phải 333", bấm *Train & đánh giá*. Dữ liệu lưu trên trình duyệt của máy đó; dùng *Xuất / Nhập dữ liệu train* để chuyển sang máy khác (vd máy ở booth).
+2. **② Kiểm tra ảnh**:
+   - **🎥 Mở camera trực tiếp**: app theo dõi tay + lon, tự chụp đúng lúc các lon chạm nhau (hoặc bấm *📸 Chụp* / *⏱️ 3s*). Bật *Tự vẽ tranh* để tự gửi Higgsfield ngay.
+   - Hoặc tải ảnh lên / chụp ảnh.
+3. App hiện: kết quả nhận diện từng lon, shape guide, ý tưởng liên tưởng, prompt gửi Higgsfield, bản nháp và tranh hoàn chỉnh. Bấm *Lưu tranh* để tải về.
+
+Camera chỉ chạy trên HTTPS (link `*.netlify.app` đã là HTTPS).
+
+## Chạy thử trên máy
+
+```bash
+npm i -g netlify-cli
+netlify dev        # cần file .env chứa các biến ở trên
+```
