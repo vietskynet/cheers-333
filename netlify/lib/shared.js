@@ -30,3 +30,13 @@ export async function hfFetch(path, init = {}) {
   if (!r.ok) { const e = new Error(`Higgsfield ${r.status}: ${(body.detail || body.message || body.error || text).toString().slice(0, 300)}`); e.status = r.status; throw e; }
   return body;
 }
+
+// PUT ảnh lên link tải lên có chữ ký của Higgsfield: gửi ĐÚNG các header Higgsfield trả về,
+// chỉ thêm content-type nếu Higgsfield không đưa (tránh nhân đôi header làm sai chữ ký → 403)
+export async function hfPutUpload(up, bytes, contentType = "image/jpeg") {
+  const headers = new Headers();
+  for (const [k, v] of Object.entries(up.upload_headers || {})) headers.set(k, String(v));
+  if (!headers.has("content-type")) headers.set("content-type", up.content_type || contentType);
+  const r = await fetch(up.upload_url, { method: "PUT", headers, body: bytes });
+  return { ok: r.ok, status: r.status, text: r.ok ? "" : (await r.text()).slice(0, 300), sent: [...headers.keys()] };
+}

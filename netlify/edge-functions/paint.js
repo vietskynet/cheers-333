@@ -1,6 +1,6 @@
 // POST /api/paint  {guide: base64 JPEG của shape guide, prompt}
 // Tải shape guide lên kho của Higgsfield rồi gửi yêu cầu vẽ tranh. Trả về request_id.
-import { env, json, checkPass, hfFetch } from "../lib/shared.js";
+import { env, json, checkPass, hfFetch, hfPutUpload } from "../lib/shared.js";
 
 // Model mặc định có nhận ảnh tham chiếu. Đổi bằng biến HIGGSFIELD_MODEL trên Netlify.
 const DEFAULT_MODEL = "xai/grok-imagine-image-2.0";
@@ -23,8 +23,8 @@ export default async (req) => {
 
     // 1) xin link tải lên + 2) PUT ảnh (không gửi key Higgsfield tới link này)
     const up = await hfFetch("/files/generate-upload-url", { method: "POST", body: JSON.stringify({ content_type: "image/jpeg" }) });
-    const put = await fetch(up.upload_url, { method: "PUT", headers: { "content-type": "image/jpeg", ...(up.upload_headers || {}) }, body: bytes });
-    if (!put.ok) return json({ error: "upload", message: `Tải shape guide lên thất bại (${put.status})` }, 502);
+    const put = await hfPutUpload(up, bytes);
+    if (!put.ok) return json({ error: "upload", message: `Tải shape guide lên thất bại (${put.status}) ${put.text}` }, 502);
 
     // 3) gửi yêu cầu vẽ
     const model = env("HIGGSFIELD_MODEL") || DEFAULT_MODEL;
