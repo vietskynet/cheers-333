@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>333 Cheers Lab</title>
+<title>HandMagination</title>
+<meta name="description" content="Tạo dáng bằng bàn tay – AI tưởng tượng và tặng bạn một poster kèm lời chúc.">
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{--bg:#0d1424;--panel:#151f36;--line:#26334f;--gold:#e8b63c;--gold2:#f6d77e;--ink:#eef2fa;--mute:#93a0bb;--ok:#3ccf8e;--bad:#ff6b6b}
@@ -86,7 +87,7 @@
   .scr{display:none;flex-direction:column;align-items:center;min-height:100vh;min-height:100dvh;padding:calc(env(safe-area-inset-top) + 18px) 22px calc(env(safe-area-inset-bottom) + 22px);text-align:center;animation:fade .35s ease}
   .scr.on{display:flex}
   @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-  .brand{align-self:flex-start;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:#6b7280;display:flex;align-items:center;gap:8px}
+  .brand{align-self:flex-start;font-size:16px;letter-spacing:-.2px;color:#6b7280;font-weight:600;display:flex;align-items:center;gap:8px}
   .brand b{color:#14161b;font-weight:800}
   .brand .dot{width:10px;height:10px;border-radius:50%;background:#F2B705;display:inline-block}
   .hero{margin:auto 0 18px}
@@ -154,7 +155,7 @@
 <div id="adv">
 <button class="advClose" id="advClose">✕ Đóng</button>
 <header>
-  <h1><b>333</b> Cheers Lab</h1>
+  <h1><b>Hand</b>Magination · quản lý</h1>
   <p>Train nhận diện 3 SKU · Kiểm tra ảnh có đang cụng 333 · Liên tưởng hình dáng cú cụng & gửi lời chúc</p>
 </header>
 <nav>
@@ -259,24 +260,20 @@
 <!-- ================= GIAO DIỆN CHÍNH: SCAN → KẾT QUẢ ================= -->
 <main id="app">
   <section class="scr on" id="scrStart">
-    <div class="brand"><span class="dot"></span>333 <b>Cheers Lab</b></div>
+    <div class="brand"><span class="dot"></span><b>Hand</b>Magination</div>
     <div class="hero">
       <div class="heroArt" aria-hidden="true"><i class="s1"></i><i class="s2"></i><i class="s3"></i><i class="s4"></i><i class="s5"></i></div>
       <h1>Giơ tay lên,<br>nhận một <em>tác phẩm</em>.</h1>
-      <p>Tạo dáng bằng bàn tay hoặc cụng lon 333 trước camera. AI đọc hình dáng và biến nó thành một poster kèm lời chúc dành riêng cho bạn.</p>
+      <p>Tạo một dáng bất kỳ bằng bàn tay trước camera. AI đọc hình dáng, tưởng tượng nó thành một hình ảnh và tặng bạn một poster kèm lời chúc riêng.</p>
     </div>
-    <div class="seg" id="seg">
-      <button class="on" data-mode="hand">🤟 Dáng tay</button>
-      <button data-mode="cheers">🍻 Cụng lon</button>
-    </div>
-    <button class="cta" id="goScan">Bắt đầu scan</button>
+    <button class="cta" id="goScan" style="margin-top:22px">Bắt đầu scan tay</button>
     <label class="ghost" for="photoIn2">hoặc chọn ảnh có sẵn</label><input type="file" id="photoIn2" accept="image/*">
     <button class="gear" id="openAdv" title="Quản lý">⚙</button>
-    <p class="legal">Thưởng thức có trách nhiệm · Đã uống rượu bia, không lái xe · 18+</p>
+    <p class="legal">Hand + Imagination · Ảnh chỉ dùng để tạo poster của bạn</p>
   </section>
 
   <section class="scr" id="scrWait">
-    <div class="brand"><span class="dot"></span>333 <b>Cheers Lab</b></div>
+    <div class="brand"><span class="dot"></span><b>Hand</b>Magination</div>
     <div class="stage" id="waitStage" aria-hidden="true"></div>
     <div class="waitText">
       <div class="teaser" id="teaser">&nbsp;</div>
@@ -287,7 +284,7 @@
   </section>
 
   <section class="scr" id="scrResult">
-    <div class="brand"><span class="dot"></span>333 <b>Cheers Lab</b></div>
+    <div class="brand"><span class="dot"></span><b>Hand</b>Magination</div>
     <img id="outImg" alt="Tác phẩm của bạn">
     <p class="wishLine" id="wishLine"></p>
     <div class="actions">
@@ -301,7 +298,7 @@
   </section>
 
   <section class="scr" id="scrErr">
-    <div class="brand"><span class="dot"></span>333 <b>Cheers Lab</b></div>
+    <div class="brand"><span class="dot"></span><b>Hand</b>Magination</div>
     <div class="hero"><h1 style="font-size:30px">Ối, chưa được rồi</h1><p id="errMsg"></p></div>
     <button class="cta" id="errRetry">Scan lại</button>
   </section>
@@ -735,7 +732,7 @@ Việc 1 – Nhận diện: tìm TỪNG chai/lon/ly bia nhìn thấy trong ảnh
 Việc 2 – Cú cụng: các chai/lon có đang được nâng lên chạm vào nhau trong một cú cụng (hoặc chồng/xếp lại cùng nhau như một màn cụng) không? Cái nào thuộc cú cụng?
 Việc 3 – Liên tưởng: nhìn tổng thể hình khối mà các lon/chai, bàn tay, cánh tay tạo ra trong cú cụng (bố cục, góc nghiêng, cao thấp, số lượng). Tưởng tượng nó giống MỘT thứ cụ thể, đẹp, gần gũi trong đời sống người Việt. Chọn thứ khớp hình dáng thật nhất, đừng chọn bừa.
 Việc 4 – Lời chúc tiếng Việt 2–3 câu, ấm áp, hài hước nhẹ, gắn ý nghĩa của thứ đó với tình bạn, sum vầy, thành công; có thể nhắc 333 hoặc "Dô!" tự nhiên. Không cổ vũ uống nhiều.
-Việc 4b – "wish_short": bản rút gọn của lời chúc, tối đa 18 chữ. "wish_keyword": 1–3 chữ đắt giá nhất của lời chúc (vd "THẮNG LỚN", "BÌNH AN", "DÔ!"), sẽ in to nhất. "wish_bits": 3–5 cụm ngắn 2–5 chữ cắt ra từ lời chúc, sẽ rải rác quanh poster.
+Việc 4b – "wish_short": bản rút gọn của lời chúc, tối đa 18 chữ. "wish_keyword": 1–3 chữ đắt giá nhất của lời chúc (vd "THẮNG LỚN", "BÌNH AN", "TOẢ SÁNG"), sẽ in to nhất. "wish_bits": 3–5 cụm ngắn 2–5 chữ cắt ra từ lời chúc, sẽ rải rác quanh poster.
 Việc 4c – "outline": đường bao hình khối tổng thể của cú cụng (các lon/chai + bàn tay/cánh tay đang nâng lên), là đa giác 6–16 điểm [[x,y],...] theo phần trăm ảnh, đi theo chiều kim đồng hồ.
 Việc 5 – Mô tả tác phẩm bằng TIẾNG ANH cho AI vẽ tranh (AI vẽ sẽ KHÔNG nhìn thấy ảnh, chỉ nhận một hình hoạ bố cục gồm đường bao xám và các khối đen đặt đúng vị trí các lon):
   - "object_en": tên thứ được liên tưởng bằng tiếng Anh.
@@ -787,7 +784,7 @@ $("againBtn").onclick = async () => {
   const prev = st.idea;
   $("obj").textContent = "Đang nghĩ một liên tưởng khác…"; $("wish").textContent = ""; $("why").textContent = "";
   try {
-    const n = await s.json(`${st.mode === "hand" ? "Một dáng bàn tay" : "Một cú cụng bia 333"} có hình khối: "${prev.shape || prev.why}". Lần trước đã liên tưởng thành "${prev.object}". Hãy liên tưởng sang MỘT thứ khác trong đời sống người Việt cũng khớp hình dáng đó (ảnh đính kèm), viết lời chúc tiếng Việt 2–3 câu ấm áp, hài hước nhẹ, và "wish_short" tối đa 18 chữ. "wish_keyword": 1–3 chữ đắt giá nhất của lời chúc (vd "THẮNG LỚN", "BÌNH AN", "DÔ!"), sẽ in to nhất. "wish_bits": 3–5 cụm ngắn 2–5 chữ cắt ra từ lời chúc, sẽ rải rác quanh poster. Không cổ vũ uống nhiều.
+    const n = await s.json(`${st.mode === "hand" ? "Một dáng bàn tay" : "Một cú cụng bia 333"} có hình khối: "${prev.shape || prev.why}". Lần trước đã liên tưởng thành "${prev.object}". Hãy liên tưởng sang MỘT thứ khác trong đời sống người Việt cũng khớp hình dáng đó (ảnh đính kèm), viết lời chúc tiếng Việt 2–3 câu ấm áp, hài hước nhẹ, và "wish_short" tối đa 18 chữ. "wish_keyword": 1–3 chữ đắt giá nhất của lời chúc (vd "THẮNG LỚN", "BÌNH AN", "TOẢ SÁNG"), sẽ in to nhất. "wish_bits": 3–5 cụm ngắn 2–5 chữ cắt ra từ lời chúc, sẽ rải rác quanh poster. Không cổ vũ uống nhiều.
 ${ART_SPEC}
 Chỉ trả về JSON: {"shape":"...","object":"...","emoji":"...","why":"...","wish":"...","wish_short":"...","wish_keyword":"...","wish_bits":["..."],"object_en":"...","art_brief":"...","guide_mapping":"..."}`, { images: [await toBlob(st.mode === "hand" ? st.guide : st.canvas)], cache: false });
     st.idea = { ...prev, ...n }; showIdea(st.idea, "Liên tưởng bởi Claude"); st.mode === "hand" ? paintHand() : paint();
@@ -866,7 +863,7 @@ function wishParts(idea) {
   const short = String(idea.wish_short || idea.wish || "").trim();
   let kw = String(idea.wish_keyword || "").trim();
   let bits = Array.isArray(idea.wish_bits) ? idea.wish_bits.map(b => String(b).trim()).filter(Boolean) : [];
-  if (!kw) kw = /dô/i.test(short) ? "DÔ!" : (short.split(/[,.!]/)[0].split(/\s+/).slice(-2).join(" ") || "DÔ!");
+  if (!kw) kw = short.split(/[,.!]/)[0].split(/\s+/).slice(-2).join(" ") || "TOẢ SÁNG";
   if (!bits.length) { const w = short.replace(/[.!]/g, "").split(/\s+/).filter(Boolean); for (let k = 0; k < w.length; k += 4) bits.push(w.slice(k, k + 4).join(" ")); }
   bits = bits.filter(b => b.toLowerCase() !== kw.toLowerCase()).slice(0, 5);
   return { kw: kw.toUpperCase(), bits };
@@ -887,7 +884,7 @@ Output: a modern graphic design poster, not a painting. The subject is deconstru
 
 Typography: ${font
   ? "leave clean empty areas for text along the right edge and the lower part; do not render any text."
-  : `expressive, improvised Vietnamese typography with every diacritic correct. The key word ${q(kw)} is the biggest element on the poster: a heavy black geometric sans-serif, set huge, running vertically up one edge or stacked, bold and confident. Scatter these smaller phrases freely in the open spaces, each with its own size, weight, colour from the palette and slight rotation, some uppercase, like a music festival poster: ${bits.map(q).join(", ")}. Add a small bold "333" mark near a corner. No other text.`}
+  : `expressive, improvised Vietnamese typography with every diacritic correct. The key word ${q(kw)} is the biggest element on the poster: a heavy black geometric sans-serif, set huge, running vertically up one edge or stacked, bold and confident. Scatter these smaller phrases freely in the open spaces, each with its own size, weight, colour from the palette and slight rotation, some uppercase, like a music festival poster: ${bits.map(q).join(", ")}. Add a tiny "HandMagination" wordmark in a corner. No other text.`}
 ${frame ? "\nPresentation: shown as a printed poster in a thin black frame, straight on, filling the image, against a plain light wall.\n" : ""}
 No logos, no photographic elements, no realistic rendering. Portrait 4:5.`;
 }
@@ -1000,7 +997,7 @@ async function compose(artSrc) {
       if (w > max) x.font = `${rnd() > .5 ? 800 : 600} ${Math.floor(size * max / w)}px "Be Vietnam Pro", sans-serif`;
       x.fillText(t, 0, 0); x.restore();
     });
-    x.fillStyle = "#111"; x.font = '800 34px "Be Vietnam Pro", sans-serif'; x.fillText("333", 60, 80);
+    x.fillStyle = "#111"; x.font = '800 26px "Be Vietnam Pro", sans-serif'; x.fillText("HandMagination", 60, 76);
   }
   let url; try { url = cv.toDataURL("image/jpeg", 0.92); } catch { url = null; }
   const img = $("poster");
@@ -1191,6 +1188,7 @@ function snapLive(how) {
 
 /* ============ CHẾ ĐỘ: CÚ CỤNG LON / HÌNH BÀN TAY ============ */
 let MODE = "cheers";
+let HAND_ONLY = true;   // HandMagination: chỉ dùng dáng tay (chế độ cụng lon được cất đi)
 const MODE_NOTE = {
   cheers: "Cụng lon trước camera – app đọc hình dáng các lon và vẽ thành tranh.",
   hand: "Tạo dáng bằng bàn tay (chim, trái tim, hươu, bông hoa…) và giữ yên 1 giây – app đồ lại dáng tay và tưởng tượng thành tác phẩm.",
@@ -1266,13 +1264,13 @@ async function analyseHand(c) {
   showVerdict({ k: "yes", t: `🤟 Nhận diện ${handsPx.length} bàn tay`, s: info.map(h => `Tay ${h.tay}: duỗi ${h.ngon_duoi.join(", ") || "không ngón nào"}`).join(" · ") }, []);
 
   log.innerHTML = `<span class="spin"></span>Claude đang ngắm dáng tay và tưởng tượng… (thường 10–30 giây)`;
-  const prompt = `Bạn là nghệ sĩ và copywriter vui tính cho bia 333 tại Việt Nam.
+  const prompt = `Bạn là nghệ sĩ và copywriter vui tính, ấm áp, viết cho người Việt.
 Ảnh 1: ảnh người dùng đang tạo dáng bằng bàn tay (đã vẽ đè khung xương tay màu vàng). Ảnh 2: hình bóng (silhouette) màu đen của dáng tay đó, đồ lại từ khung xương.
 Dữ liệu đo được: ${JSON.stringify(info)}.
 
 Việc 1 – Mô tả dáng tay: tay đang tạo thành hình khối gì (vd: hai tay chụm thành trái tim, tay làm đầu chim, ngón tay như sừng hươu, bàn tay xoè như bông hoa…).
 Việc 2 – Tưởng tượng: hình bóng ở Ảnh 2 giống MỘT thứ cụ thể, đẹp, giàu ý nghĩa nhất (con vật, loài hoa, công trình, vật thể, biểu tượng trong đời sống người Việt). Chọn thứ khớp hình dáng thật nhất, đừng chọn bừa.
-Việc 3 – Lời chúc tiếng Việt 2–3 câu ấm áp, hài hước nhẹ, gắn ý nghĩa của thứ đó với tình bạn, may mắn, thành công; có thể nhắc 333 hoặc "Dô!" tự nhiên. Không cổ vũ uống nhiều. "wish_short": bản rút gọn tối đa 18 chữ. "wish_keyword": 1–3 chữ đắt giá nhất của lời chúc (vd "THẮNG LỚN", "BÌNH AN", "DÔ!"), sẽ in to nhất. "wish_bits": 3–5 cụm ngắn 2–5 chữ cắt ra từ lời chúc, sẽ rải rác quanh poster.
+Việc 3 – Lời chúc tiếng Việt 2–3 câu ấm áp, hài hước nhẹ, gắn ý nghĩa của thứ đó với tình bạn, may mắn, thành công, sức sáng tạo của chính người đó. "wish_short": bản rút gọn tối đa 18 chữ. "wish_keyword": 1–3 chữ đắt giá nhất của lời chúc (vd "THẮNG LỚN", "BÌNH AN", "TOẢ SÁNG"), sẽ in to nhất. "wish_bits": 3–5 cụm ngắn 2–5 chữ cắt ra từ lời chúc, sẽ rải rác quanh poster.
 Việc 4 – Mô tả tác phẩm bằng TIẾNG ANH cho AI vẽ tranh (AI vẽ chỉ nhận hình bóng ở Ảnh 2):
   - "object_en": tên thứ được tưởng tượng.
   - "art_brief": 3–4 câu mô tả bức tranh về chính thứ đó như một tác phẩm độc lập, hình dáng tổng thể phải khớp hình bóng. TUYỆT ĐỐI không nhắc tới bàn tay, ngón tay, người.
@@ -1289,7 +1287,7 @@ Chỉ trả về JSON:
     $("shapeK").textContent = "Dáng tay của bạn giống…";
   } catch (e) {
     if (e.code === "cancelled") return;
-    current.idea = { object: "Ngôi sao", emoji: "⭐", why: "", wish: "Chúc bạn luôn toả sáng theo cách của mình. Dô!", wish_short: "Chúc bạn luôn toả sáng. Dô!", object_en: "a radiant star", art_brief: FALLBACK_EN.star[1], guide_mapping: "", shape: "" };
+    current.idea = { object: "Ngôi sao", emoji: "⭐", why: "", wish: "Chúc bạn luôn toả sáng theo cách của riêng mình!", wish_short: "Chúc bạn luôn toả sáng!", wish_keyword: "TOẢ SÁNG", object_en: "a radiant star", art_brief: FALLBACK_EN.star[1], guide_mapping: "", shape: "" };
     log.textContent = `Không gọi được Claude (${e.message || e.code || "?"}) – dùng liên tưởng có sẵn.`;
     showIdea(current.idea, "Liên tưởng có sẵn");
   }
@@ -1312,7 +1310,12 @@ document.querySelectorAll("#seg button").forEach(b => b.onclick = () => {
   document.querySelectorAll("#seg button").forEach(x => x.classList.toggle("on", x === b));
   document.querySelector(`#modes button[data-mode="${b.dataset.mode}"]`)?.click();
 });
-document.querySelector('#modes button[data-mode="hand"]')?.click();   // mặc định: dáng tay
+document.querySelector('#modes button[data-mode="hand"]')?.click();   // chỉ dùng dáng tay
+if (HAND_ONLY) {
+  document.querySelector('#modes button[data-mode="cheers"]')?.remove();
+  document.querySelector('nav button[data-tab="train"]')?.remove();
+  document.querySelector('nav button[data-tab="check"]')?.click();
+}
 $("openAdv").onclick = () => $("adv").classList.add("on");
 $("advClose").onclick = () => $("adv").classList.remove("on");
 $("goScan").onclick = () => openLive();
@@ -1403,12 +1406,12 @@ $("outAgain").onclick = () => {
 $("outSave").onclick = async () => {
   const cv = current?.posterCanvas; if (!cv) return;
   const blob = await toBlob(cv, .94);
-  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "333-cheers.jpg"; document.body.append(a); a.click(); a.remove();
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "handmagination.jpg"; document.body.append(a); a.click(); a.remove();
 };
 $("outShare").onclick = async () => {
   const cv = current?.posterCanvas; if (!cv) return;
-  const file = new File([await toBlob(cv, .92)], "333-cheers.jpg", { type: "image/jpeg" });
-  if (navigator.canShare?.({ files: [file] })) { try { await navigator.share({ files: [file], text: current.idea?.wish || "333 Cheers Lab" }); } catch {} }
+  const file = new File([await toBlob(cv, .92)], "handmagination.jpg", { type: "image/jpeg" });
+  if (navigator.canShare?.({ files: [file] })) { try { await navigator.share({ files: [file], text: current.idea?.wish || "HandMagination" }); } catch {} }
   else $("outSave").click();
 };
 initStore();

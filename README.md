@@ -1,8 +1,12 @@
-# 333 Cheers Lab
+# HandMagination
 
 **Link app:** https://cheerbeerapp.netlify.app/
 
-Web app nhận diện cú cụng bia 333 bằng camera, đọc **hình dáng (shape)** của các lon đang cụng, liên tưởng thành một hình ảnh trong đời sống, rồi nhờ **Higgsfield** vẽ thành tranh (poster đồ hoạ hiện đại kiểu in lụa, từ khoá lời chúc to nhất, chữ rải rác).
+Tạo dáng bằng bàn tay trước camera → app đồ lại hình bóng bàn tay → Claude tưởng tượng nó giống thứ gì và viết lời chúc → AI vẽ thành poster đồ hoạ hiện đại (từ khoá lời chúc to nhất, chữ rải rác).
+
+Luồng chỉ 2 bước: **Scan tay → Ra hình**. Trong lúc chờ có màn hình động. Nút ⚙ là khu quản lý (xem prompt, tự xếp chữ, logo, khung).
+
+> Tính năng "cụng bia 333" (nhận diện lon, train SKU) đã được cất đi: code vẫn còn trong `public/index.html`, đặt `HAND_ONLY = false` để bật lại.
 
 ## Cấu trúc
 
