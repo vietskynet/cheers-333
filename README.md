@@ -22,8 +22,7 @@ API key chỉ nằm trên Netlify (biến môi trường), không bao giờ gử
 | Tên | Bắt buộc | Giá trị |
 |---|---|---|
 | `ANTHROPIC_API_KEY` | ✔ | Key `sk-ant-...` từ console.anthropic.com |
-| `HIGGSFIELD_KEY_ID` | ✔ | Key ID từ open.higgsfield.ai |
-| `HIGGSFIELD_KEY_SECRET` | ✔ | Key Secret từ open.higgsfield.ai |
+| `HIGGSFIELD_API_KEY` | ✔ | Nguyên chuỗi API key copy từ open.higgsfield.ai (dán y nguyên, không thêm chữ `Key`) |
 | `APP_PASSCODE` | nên có | Mã truy cập tự đặt (vd `333dô`). Người dùng nhập 1 lần trên mỗi máy. Không đặt thì ai có link cũng dùng được key của bạn. |
 | `ANTHROPIC_MODEL` | tuỳ chọn | Mặc định `claude-sonnet-5-5` |
 | `HIGGSFIELD_MODEL` | tuỳ chọn | Đường dẫn model Higgsfield, mặc định `xai/grok-imagine-image-2.0` (nhận ảnh tham chiếu). Có thể thử `ideogram/v4.0`. |

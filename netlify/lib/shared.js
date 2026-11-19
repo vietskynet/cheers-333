@@ -13,9 +13,15 @@ export function checkPass(req) {
 
 export const HF_BASE = "https://api.higgsfield.ai";
 export function hfAuth() {
-  const id = env("HIGGSFIELD_KEY_ID"), secret = env("HIGGSFIELD_KEY_SECRET");
-  if (!id || !secret) throw new Error("Chưa cấu hình HIGGSFIELD_KEY_ID / HIGGSFIELD_KEY_SECRET trên Netlify");
-  return `Key ${id}:${secret}`;
+  // Key mới từ open.higgsfield.ai là MỘT chuỗi hoàn chỉnh: Authorization: Key <api-key>
+  // Vẫn hỗ trợ kiểu cũ (Key ID + Key Secret) nếu bạn đã nhập 2 biến.
+  const clean = v => String(v || "").trim().replace(/^Key\s+/i, "");
+  const one = clean(env("HIGGSFIELD_API_KEY"));
+  if (one) return `Key ${one}`;
+  const id = clean(env("HIGGSFIELD_KEY_ID")), secret = clean(env("HIGGSFIELD_KEY_SECRET"));
+  if (id && secret && !id.includes(":")) return `Key ${id}:${secret}`;
+  if (id) return `Key ${id}`;
+  throw new Error("Chưa cấu hình HIGGSFIELD_API_KEY trên Netlify");
 }
 export async function hfFetch(path, init = {}) {
   const r = await fetch(HF_BASE + path, { ...init, headers: { authorization: hfAuth(), "content-type": "application/json", ...(init.headers || {}) } });
