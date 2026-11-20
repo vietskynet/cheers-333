@@ -38,6 +38,36 @@
   @keyframes hit{0%{transform:scale(1)}40%{transform:scale(1.05)}100%{transform:scale(1)}}
   #toast{position:fixed;left:50%;top:42%;transform:translate(-50%,-50%) scale(.8);background:#14161b;color:#fff;font-weight:800;font-size:22px;padding:14px 22px;border-radius:18px;opacity:0;pointer-events:none;transition:all .35s cubic-bezier(.2,1.4,.4,1);white-space:nowrap;z-index:4}
   #toast.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  .chips{display:none}
+  #sheetBg{display:none}
+  .grab{display:none}
+  @media (max-width:700px){
+    .chips{position:fixed;top:calc(env(safe-area-inset-top) + 50px);left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:3;background:#ffffffd9;backdrop-filter:blur(8px);padding:5px;border-radius:99px;box-shadow:0 4px 16px #00000014}
+    .chips button{width:36px;height:36px;border-radius:50%;border:0;background:transparent;font-size:18px;line-height:1;cursor:pointer;position:relative;transition:transform .2s}
+    .chips button.done{background:#F2B70566}
+    .chips button.done::after{content:"✓";position:absolute;right:-2px;bottom:-2px;width:14px;height:14px;border-radius:50%;background:#14a39a;color:#fff;font-size:9px;font-weight:800;display:grid;place-items:center}
+    .chips button.hit{animation:pop .6s ease}
+    .chips .q{font-size:14px;font-weight:800;background:#14161b;color:#fff}
+    @keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.35)}100%{transform:scale(1)}}
+    /* bảng combo thành ngăn kéo dưới */
+    .combo{top:auto;bottom:0;left:0;right:0;width:auto;border-radius:22px 22px 0 0;padding:8px 18px calc(env(safe-area-inset-bottom) + 16px);transform:translateY(105%);transition:transform .35s cubic-bezier(.2,.9,.3,1);z-index:6;background:#fff;max-height:62vh;overflow:auto}
+    .combo.open{transform:none}
+    .combo.min ol{display:block}
+    .grab{display:block;width:40px;height:4px;border-radius:9px;background:#d1d5db;margin:0 auto 8px;order:-1}
+    .cHead{font-size:13px}
+    .combo li{padding:9px 4px}
+    #sheetBg{position:fixed;inset:0;background:#0003;z-index:5;opacity:0;pointer-events:none;transition:opacity .3s;display:block}
+    #sheetBg.on{opacity:1;pointer-events:auto}
+    .top{padding:calc(env(safe-area-inset-top) + 10px) 14px 6px}
+    .brand{font-size:14px}
+    .tag{font-size:10px;padding:3px 7px}
+    .dock{gap:10px;padding:8px 12px calc(env(safe-area-inset-bottom) + 12px)}
+    .round{width:42px;height:42px;font-size:16px}
+    .shot{width:58px;height:58px;border-width:4px}
+    #preview{width:70px;left:12px;bottom:calc(env(safe-area-inset-bottom) + 78px);border-radius:12px}
+    .hint{bottom:calc(env(safe-area-inset-bottom) + 84px);font-size:12px}
+    #toast{font-size:17px;padding:11px 16px;top:24%;white-space:normal;max-width:86vw;text-align:center}
+  }
   /* màn mở đầu */
   #start{position:fixed;inset:0;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;z-index:5}
   #start h1{font-size:36px;line-height:1.08;font-weight:800;letter-spacing:-1px;margin-top:22px}
@@ -59,7 +89,10 @@
 </div>
 <div id="preview" class="hide"><video id="vid" playsinline muted></video></div>
 <div class="hint" id="hint">Giơ cả hai tay trước camera ✋ 🤚</div>
+<div id="chips" class="chips"></div>
+<div id="sheetBg"></div>
 <div id="combo" class="combo">
+  <div class="grab"></div>
   <div class="cHead">Combo đặc biệt <button id="cToggle">–</button></div>
   <ol id="cList"></ol>
 </div>
@@ -314,9 +347,9 @@ function drawWord() {
   if (word !== wordShown) { wordAlpha -= .08; if (wordAlpha <= 0) { wordShown = word; wordAlpha = 0; } }
   else if (wordAlpha < 1) wordAlpha = Math.min(1, wordAlpha + .08);
   x.save(); x.globalAlpha = wordAlpha; x.fillStyle = "#14161b";
-  let fs = Math.min(W, H) * .2; x.font = `800 ${fs}px "Be Vietnam Pro", sans-serif`;
-  while (x.measureText(wordShown).width > H * .7 && fs > 30) { fs -= 4; x.font = `800 ${fs}px "Be Vietnam Pro", sans-serif`; }
-  x.translate(W - 22, H * .86); x.rotate(-Math.PI / 2); x.fillText(wordShown, 0, 0);
+  let fs = Math.min(W, H) * (W <= 700 ? .15 : .2); x.font = `800 ${fs}px "Be Vietnam Pro", sans-serif`;
+  while (x.measureText(wordShown).width > H * (W <= 700 ? .6 : .7) && fs > 30) { fs -= 4; x.font = `800 ${fs}px "Be Vietnam Pro", sans-serif`; }
+  x.translate(W - (W <= 700 ? 14 : 22), H * (W <= 700 ? .84 : .86)); x.rotate(-Math.PI / 2); x.fillText(wordShown, 0, 0);
   x.restore();
 }
 
@@ -329,7 +362,14 @@ const COMBOS = [
   { id: "win", ic: "✌️", name: "CHIẾN THẮNG", how: "Cả hai tay cùng làm chữ V" },
 ];
 $("cList").innerHTML = COMBOS.map(c => `<li id="c-${c.id}"><span class="ic">${c.ic}</span><div><b>${c.name}</b><span>${c.how}</span></div></li>`).join("");
-$("cToggle").onclick = () => { $("combo").classList.toggle("min"); $("cToggle").textContent = $("combo").classList.contains("min") ? "+" : "–"; };
+const isMobile = () => innerWidth <= 700;
+$("chips").innerHTML = COMBOS.map(c => `<button id="k-${c.id}" title="${c.name}">${c.ic}</button>`).join("") + `<button class="q" id="kHelp" title="Hướng dẫn">?</button>`;
+const openSheet = on => { $("combo").classList.toggle("open", on); $("sheetBg").classList.toggle("on", on); $("cToggle").textContent = isMobile() ? "✕" : ($("combo").classList.contains("min") ? "+" : "–"); };
+$("cToggle").onclick = () => { if (isMobile()) return openSheet(false); $("combo").classList.toggle("min"); $("cToggle").textContent = $("combo").classList.contains("min") ? "+" : "–"; };
+$("sheetBg").onclick = () => openSheet(false);
+$("kHelp").onclick = () => openSheet(true);
+COMBOS.forEach(c => $("k-" + c.id).onclick = () => showToast(`${c.ic} ${c.name}<br><small style="font-weight:600;opacity:.8">${c.how}</small>`, 2600));
+function showToast(html, ms = 1300) { const tt = $("toast"); tt.innerHTML = html; tt.classList.add("on"); clearTimeout(showToast.t); showToast.t = setTimeout(() => tt.classList.remove("on"), ms); }
 const lastFire = {}; let lastAny = 0, comboWord = "", comboUntil = 0;
 const pending = [];          // pháo hoa nổ lần lượt
 function fireCombo(id, ctx = {}) {
@@ -339,7 +379,8 @@ function fireCombo(id, ctx = {}) {
   const c = COMBOS.find(k => k.id === id);
   comboWord = c.name; comboUntil = now + 2600;
   const li = $("c-" + id); li.classList.remove("hit"); void li.offsetWidth; li.classList.add("hit", "done");
-  const tt = $("toast"); tt.textContent = `${c.ic} ${c.name}`; tt.classList.add("on"); clearTimeout(fireCombo.t); fireCombo.t = setTimeout(() => tt.classList.remove("on"), 1300);
+  showToast(`${c.ic} ${c.name}`);
+  const chip = $("k-" + id); chip.classList.remove("hit"); void chip.offsetWidth; chip.classList.add("hit", "done");
   navigator.vibrate?.([20, 30, 40]);
   const cols = [PAL.red, PAL.yellow, PAL.blue, PAL.teal, PAL.lime];
   if (id === "bloom") { bloom = 1; const p = ctx.at || { x: W * .3, y: H * .5 }; burstKind(p.x, p.y, 46, ["petal"], [PAL.red, PAL.yellow, "#ff8a3d"], 7, 2); }
@@ -458,8 +499,8 @@ function loop(now) {
   bloom = Math.max(0, bloom - .012); spin = Math.max(0, spin - .012);
 
   // chữ nhỏ + vân in
-  x.save(); x.fillStyle = "#14161b"; x.font = '700 12px "Be Vietnam Pro", sans-serif'; x.globalAlpha = .55;
-  x.fillText("TAY TRÁI · BÔNG HOA", 18, H - 150); x.fillText("TAY PHẢI · VŨ CÔNG", 18, H - 132); x.restore();
+  if (W > 700) { x.save(); x.fillStyle = "#14161b"; x.font = '700 12px "Be Vietnam Pro", sans-serif'; x.globalAlpha = .55;
+  x.fillText("TAY TRÁI · BÔNG HOA", 18, H - 150); x.fillText("TAY PHẢI · VŨ CÔNG", 18, H - 132); x.restore(); }
   if (grain) { x.save(); x.fillStyle = grain; x.globalCompositeOperation = "multiply"; x.fillRect(0, 0, W, H); x.restore(); }
 
   const dt = now - tPrev; tPrev = now; fps = fps * .9 + (1000 / Math.max(dt, 1)) * .1;
@@ -481,6 +522,7 @@ async function begin(isDemo) {
     $("start").style.display = "none";
     resize(); running = true; requestAnimationFrame(loop);
     if (demo) $("hint").textContent = "Chế độ demo · bấm Bật camera để dùng tay thật";
+    if (isMobile()) setTimeout(() => showToast("Chạm các biểu tượng phía trên<br><small style='font-weight:600;opacity:.8'>để xem cách làm 5 combo</small>", 3200), 600);
   } catch (e) {
     $("go").disabled = false; $("go").textContent = "Bật camera";
     $("err").textContent = location.protocol !== "https:" && location.hostname !== "localhost" ? "Camera cần HTTPS." : "Không mở được camera: " + (e.message || e);
