@@ -25,7 +25,8 @@ Luồng chỉ 2 bước: **Scan tay → Ra hình**. Trong lúc chờ có màn h�
 ## Game `/combat/`
 
 `public/combat/index.html` – đối kháng thời gian thực 2 máy qua mã phòng 4 ký tự.
-- **Kết nối**: WebRTC peer-to-peer (PeerJS, file `peerjs.min.js` tự host; ghép phòng qua máy chủ PeerJS miễn phí, có TURN dự phòng). Kênh `state` không gửi lại (vị trí ~45 lần/giây), kênh `event` chắc chắn (đòn đánh, KO). Nhân vật của mình phản hồi tức thì; đối thủ được dự đoán theo vận tốc để bù trễ. Hiển thị ping.
+- **Kết nối**: ưu tiên WebRTC peer-to-peer (PeerJS tự host, nhiều STUN + TURN PeerJS). Nếu sau ~6,5 giây không nối thẳng được (NAT 4G…) hoặc máy chủ ghép phòng lỗi → **tự chuyển sang chuyển tiếp** qua máy chủ MQTT công cộng (WebSocket: HiveMQ → EMQX → Mosquitto, `mqtt.min.js` tự host). Phòng chờ hiện bảng chẩn đoán; HUD hiện `P2P`/`RELAY` + ping.
+- **TURN riêng (tuỳ chọn, khuyên dùng cho sự kiện)**: đặt `CF_TURN_KEY_ID` + `CF_TURN_API_TOKEN` (Cloudflare Realtime TURN) trên Netlify, `/api/ice` sẽ cấp thêm TURN để P2P nối được qua 4G. Kênh `state` không gửi lại (vị trí ~45 lần/giây), kênh `event` chắc chắn (đòn đánh, KO). Nhân vật của mình phản hồi tức thì; đối thủ được dự đoán theo vận tốc để bù trễ. Hiển thị ping.
 - **Điều khiển**: tay trái = joystick (sang trái/phải để chạy, giơ nhanh lên để nhảy, nắm để đỡ). Tay phải = ra đòn: ✊ + đẩy nhanh: Đấm (0⚡) · ✌️ + vung: Chém (15⚡) · ✋ + đẩy: Chưởng bay (30⚡) · ☝️ giữ 0,5s: Tuyệt chiêu (100⚡).
 - **Ống năng lượng**: tự nạp theo thời gian, +7 khi đánh trúng, +4 khi bị đánh; đầy thì phát sáng "TUYỆT CHIÊU SẴN SÀNG".
 - Máu 100, đồng hồ 99 giây, K.O. / hết giờ, đấu lại. Có bảng hướng dẫn thao tác, camera nhỏ hiển thị khung xương tay.

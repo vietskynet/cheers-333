@@ -41,6 +41,9 @@
   .howto b{display:block;font-size:13px}
   .howto span{color:var(--mute)}
   .note{font-size:12px;color:var(--mute);text-align:center;max-width:360px;margin-top:10px;line-height:1.5}
+  .diag{font-size:11px;color:var(--mute);background:#f6f4ef;border-radius:12px;padding:8px 12px;margin-top:8px;max-width:360px;width:100%;line-height:1.6;display:none}
+  .diag.on{display:block}
+  .diag b{color:var(--ink)}
   /* ===== GAME ===== */
   #game{padding:0;background:var(--paper);overflow:hidden}
   #arenaWrap{position:relative;width:100%;flex:none}
@@ -139,6 +142,7 @@
   <button class="cta" id="bCam">Bật camera & sẵn sàng</button>
   <button class="ghost" id="bKeys">Chơi bằng bàn phím / nút bấm (không camera)</button>
   <div class="err" id="roomErr"></div>
+  <div class="diag" id="diag"></div>
   <button class="ghost" id="bLeave">← Rời phòng</button>
 </section>
 
@@ -186,6 +190,7 @@
 </section>
 
 <script src="./peerjs.min.js"></script>
+<script src="./mqtt.min.js"></script>
 <script type="module">
 import { FilesetResolver, HandLandmarker } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs";
 
@@ -209,41 +214,110 @@ const ATK = {   // ms: tổng thời gian, khung có hiệu lực; dmg, đẩy l
 const EN = { regen: 3.5, onHit: 7, onHurt: 4 };
 const ROUND_SEC = 99;
 
-/* ======================= MẠNG: PeerJS (WebRTC P2P) ======================= */
-// Hai kênh: "state" không gửi lại (nhanh nhất) cho vị trí, "event" chắc chắn tới nơi cho đòn đánh.
-const net = { peer: null, st: null, ev: null, host: false, code: "", rtt: 0, connected: false, local: null };
-const LOCAL = location.hash === "#local";   // chế độ test 2 tab trên cùng trình duyệt
+/* ======================= MẠNG ======================= */
+// Ưu tiên WebRTC P2P (PeerJS): kênh "state" không gửi lại cho vị trí, kênh "event" chắc chắn cho đòn đánh.
+// Không nối thẳng được (NAT 4G…) → tự chuyển sang CHUYỂN TIẾP qua máy chủ MQTT công cộng (WebSocket).
+const net = { peer: null, st: null, ev: null, host: false, code: "", rtt: 0, connected: false, local: null, mode: "", relay: null, relayUp: false };
+const LOCAL = location.hash === "#local";   // chế độ test 2 cửa sổ trên cùng trình duyệt
 const ID = c => "hmcombat-v1-" + c.toUpperCase();
+const P2P_WAIT = 6500;
+let ICE = [
+  { urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] },
+  { urls: "stun:stun.cloudflare.com:3478" },
+  { urls: "turn:eu-0.turn.peerjs.com:3478", username: "peerjs", credential: "peerjsp" },
+  { urls: "turn:us-0.turn.peerjs.com:3478", username: "peerjs", credential: "peerjsp" },
+];
+const iceReady = fetch("/api/ice").then(r => r.json()).then(d => { if (d.iceServers?.length) { ICE = [...d.iceServers, ...ICE]; diagSet("turn", "có TURN riêng ✓"); } }).catch(() => {});
+const BROKERS = ["wss://broker.hivemq.com:8884/mqtt", "wss://broker.emqx.io:8084/mqtt", "wss://test.mosquitto.org:8081"];
+const diagState = {};
+function diagSet(k, v) {
+  diagState[k] = v;
+  const L = { sig: "Máy chủ ghép phòng", p2p: "Kết nối trực tiếp", ice: "Trạng thái ICE", relay: "Chuyển tiếp", turn: "TURN" };
+  $("diag").innerHTML = Object.entries(diagState).map(([a, b]) => `${L[a] || a}: <b>${b}</b>`).join("<br>");
+  $("diag").classList.add("on");
+}
 function newCode() { const A = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; return Array.from({ length: 4 }, () => A[Math.floor(Math.random() * A.length)]).join(""); }
 function send(msg, reliable = true) {
   if (LOCAL) { net.local?.postMessage({ from: net.host ? "h" : "g", msg }); return; }
+  if (net.mode === "relay") { relaySend(msg); return; }
   const c = reliable ? net.ev : net.st;
   if (c && c.open) { try { c.send(msg); } catch {} }
+  else if (net.relayUp && msg.t !== "s") relaySend(msg);
 }
 function wire(c) {
   if (c.label === "state") net.st = c; else net.ev = c;
-  c.on("data", onMsg);
-  c.on("open", () => { if (net.st?.open && net.ev?.open) onConnected(); });
-  c.on("close", onDisconnect);
+  c.on("data", m => { if (net.mode !== "relay") onMsg(m); });
+  c.on("open", () => { if (net.st?.open && net.ev?.open && !net.connected) { net.mode = "p2p"; diagSet("p2p", "đã nối ✓"); onConnected(); } });
+  c.on("close", () => { if (net.mode === "p2p") onDisconnect(); });
   c.on("error", e => console.warn("conn", e));
+  const t = setInterval(() => { const st = c.peerConnection?.iceConnectionState; if (st) diagSet("ice", st); if (net.connected || st === "failed") clearInterval(t); }, 400);
+}
+/* ---- chuyển tiếp qua MQTT ---- */
+const topic = dir => `hmcombat/v1/${net.code}/${dir}`;
+function relayStart() {
+  if (net.relay || typeof mqtt === "undefined") return Promise.resolve(false);
+  return new Promise(res => {
+    let i = 0, done = false;
+    const tryNext = () => {
+      if (i >= BROKERS.length) { diagSet("relay", "không vào được máy chủ chuyển tiếp ✗"); return res(false); }
+      const url = BROKERS[i++];
+      const cl = mqtt.connect(url, { clientId: "hmc_" + Math.random().toString(36).slice(2, 10), clean: true, connectTimeout: 5000, reconnectPeriod: 2000, keepalive: 30 });
+      const fail = setTimeout(() => { if (!done) { cl.end(true); tryNext(); } }, 5500);
+      cl.on("connect", () => {
+        if (done) return; done = true; clearTimeout(fail);
+        net.relay = cl; net.relayUp = true;
+        cl.subscribe(topic(net.host ? "toHost" : "toGuest"), { qos: 0 });
+        diagSet("relay", "sẵn sàng (" + new URL(url).hostname + ")");
+        res(true);
+      });
+      cl.on("message", (tp, buf) => { let m; try { m = JSON.parse(buf.toString()); } catch { return; } onRelayMsg(m); });
+      cl.on("error", () => {});
+    };
+    tryNext();
+  });
+}
+function relaySend(msg) { if (net.relay && net.relayUp) net.relay.publish(topic(net.host ? "toGuest" : "toHost"), JSON.stringify(msg), { qos: 0 }); }
+function onRelayMsg(m) {
+  if (m.t === "rhello") {               // bên kia xin nối qua chuyển tiếp
+    if (net.mode === "p2p" && net.connected) return;
+    net.mode = "relay";
+    if (net.host) relaySend({ t: "rhello" });
+    diagSet("p2p", "không nối thẳng được → dùng chuyển tiếp"); onConnected(); return;
+  }
+  if (net.mode === "relay" || !net.connected) onMsg(m);
+}
+async function goRelay(reason) {
+  if (net.connected) return;
+  diagSet("p2p", reason);
+  const ok = await relayStart();
+  if (!ok) { $("roomErr").textContent = "Không kết nối được. Thử lại sau hoặc đổi mạng (wifi ↔ 4G)."; return; }
+  relaySend({ t: "rhello" });
+  const iv = setInterval(() => { if (net.connected) return clearInterval(iv); relaySend({ t: "rhello" }); }, 1500);
+  setTimeout(() => { if (!net.connected) $("roomErr").textContent = "Chưa vào được phòng. Kiểm tra lại mã phòng, và để máy chủ phòng mở màn hình chờ."; }, 12000);
 }
 async function createRoom() {
   net.host = true; $("lobbyErr").textContent = ""; show("room");
   $("p1St").textContent = "Bạn (chủ phòng)"; $("p2St").textContent = "Đang chờ…";
   if (LOCAL) return localOpen(newCode());
-  for (let tries = 0; tries < 4; tries++) {
+  await iceReady;
+  let ok = false;
+  for (let tries = 0; tries < 4 && !ok; tries++) {
     const code = newCode();
-    try { await openPeer(ID(code)); net.code = code; break; }
-    catch (e) { if (e?.type !== "unavailable-id") { $("roomErr").textContent = "Không tạo được phòng: " + (e?.type || e); return; } }
+    try { await openPeer(ID(code)); net.code = code; ok = true; }
+    catch (e) { if (e?.type !== "unavailable-id") break; }
   }
+  if (!ok) { net.code = newCode(); diagSet("sig", "lỗi – chỉ dùng chuyển tiếp"); }
+  else { diagSet("sig", "đã kết nối ✓"); net.peer.on("connection", wire); }
   $("codeBig").textContent = net.code; $("roomStatus").textContent = "Phòng đã mở. Chờ đối thủ nhập mã…";
-  net.peer.on("connection", wire);
+  relayStart();                        // chủ phòng luôn nghe cả kênh chuyển tiếp
 }
 function openPeer(id) {
   return new Promise((res, rej) => {
-    const p = id ? new Peer(id, { debug: 0 }) : new Peer({ debug: 0 });
-    p.on("open", () => { net.peer = p; res(p); });
-    p.on("error", e => { if (!net.peer) { p.destroy(); rej(e); } else onPeerError(e); });
+    const opt = { debug: 0, config: { iceServers: ICE } };
+    const p = id ? new Peer(id, opt) : new Peer(opt);
+    const to = setTimeout(() => { if (!net.peer) { p.destroy(); rej({ type: "timeout" }); } }, 8000);
+    p.on("open", () => { clearTimeout(to); net.peer = p; res(p); });
+    p.on("error", e => { if (!net.peer) { clearTimeout(to); p.destroy(); rej(e); } else onPeerError(e); });
     p.on("disconnected", () => { try { p.reconnect(); } catch {} });
   });
 }
@@ -254,27 +328,32 @@ async function joinRoom(code) {
   $("codeBig").textContent = code; $("roomStatus").textContent = "Đang kết nối…";
   $("p1St").textContent = "Chủ phòng"; $("p2St").textContent = "Bạn";
   if (LOCAL) return localOpen(code);
-  try { await openPeer(); } catch (e) { $("roomErr").textContent = "Không kết nối được máy chủ ghép phòng."; return; }
+  await iceReady;
+  relayStart();                        // chuẩn bị sẵn đường chuyển tiếp
+  try { await openPeer(); diagSet("sig", "đã kết nối ✓"); }
+  catch (e) { diagSet("sig", "lỗi (" + (e?.type || "?") + ")"); return goRelay("bỏ qua – máy chủ ghép phòng lỗi"); }
+  diagSet("p2p", "đang thử…");
   const opts = { serialization: "json" };
   wire(net.peer.connect(ID(code), { ...opts, label: "state", reliable: false }));
   wire(net.peer.connect(ID(code), { ...opts, label: "event", reliable: true }));
-  setTimeout(() => { if (!net.connected) $("roomErr").textContent = "Chưa vào được phòng. Kiểm tra lại mã, hoặc thử mạng khác (wifi ↔ 4G)."; }, 9000);
+  setTimeout(() => { if (!net.connected) goRelay("không nối thẳng được (NAT/4G) → chuyển tiếp"); }, P2P_WAIT);
 }
 function onPeerError(e) {
-  if (e?.type === "peer-unavailable") { $("roomErr").textContent = "Không tìm thấy phòng " + net.code + "."; }
+  if (e?.type === "peer-unavailable") { diagSet("p2p", "không thấy phòng qua P2P"); goRelay("không thấy phòng qua P2P → thử chuyển tiếp"); }
   else if (e?.type) console.warn("peer", e.type);
 }
 function localOpen(code) {
-  net.code = code; $("codeBig").textContent = code;
+  net.code = code; $("codeBig").textContent = code; net.mode = "local";
   net.local = new BroadcastChannel("hmcombat-" + code);
   net.local.onmessage = e => { const { from, msg } = e.data; if ((from === "h") === net.host) return; onMsg(msg); };
-  if (net.host) $("roomStatus").textContent = "Chế độ test 2 tab · chờ tab kia vào…";
+  if (net.host) $("roomStatus").textContent = "Chế độ test 2 cửa sổ · chờ cửa sổ kia vào…";
   else send({ t: "hello" });
 }
 function onConnected() {
   if (net.connected) return;
   net.connected = true;
-  $("roomStatus").textContent = "Đã kết nối! Cả hai bấm “Sẵn sàng”.";
+  $("roomErr").textContent = "";
+  $("roomStatus").textContent = (net.mode === "relay" ? "Đã kết nối qua chuyển tiếp." : "Đã kết nối trực tiếp!") + " Cả hai bấm “Sẵn sàng”.";
   (net.host ? $("p2Card") : $("p1Card")).classList.add("ok");
   (net.host ? $("p2St") : $("p1St")).textContent = "Đã vào phòng";
   setInterval(() => send({ t: "ping", ts: performance.now() }), 1000);
@@ -303,7 +382,7 @@ function onMsg(m) {
     return;
   }
   if (m.t === "ping") return send({ t: "pong", ts: m.ts });
-  if (m.t === "pong") { net.rtt = net.rtt ? net.rtt * .7 + (performance.now() - m.ts) * .3 : performance.now() - m.ts; $("ping").textContent = Math.round(net.rtt) + " ms"; return; }
+  if (m.t === "pong") { net.rtt = net.rtt ? net.rtt * .7 + (performance.now() - m.ts) * .3 : performance.now() - m.ts; $("ping").textContent = (net.mode === "relay" ? "RELAY " : net.mode === "p2p" ? "P2P " : "") + Math.round(net.rtt) + " ms"; return; }
   if (m.t === "ready") { op.ready = true; (net.host ? $("p2St") : $("p1St")).textContent = "Sẵn sàng ✓"; maybeStart(); return; }
   if (m.t === "go") { startRound(Math.max(0, 2400 - net.rtt / 2)); return; }
   if (m.t === "hit") { if (seenHits.has(m.id)) return; seenHits.add(m.id); takeHit(m); return; }
@@ -535,7 +614,7 @@ function stepOp(dt, now) {
 }
 let lastSend = 0;
 function sendState(now) {
-  if (game.ai || now - lastSend < 22) return; lastSend = now;
+  if (game.ai || now - lastSend < (net.mode === "relay" ? 40 : 22)) return; lastSend = now;
   send({ t: "s", x: Math.round(me.x), y: Math.round(me.y), vx: Math.round(me.vx), vy: Math.round(me.vy), f: me.face, hp: me.hp, en: Math.round(me.en), a: me.act, ae: me.act ? Math.round(now - me.actAt) : 0, b: me.block ? 1 : 0, p: me.proj.map(p => [Math.round(p.x), Math.round(p.y), p.dir]), u: me.beam, k: me.ko ? 1 : 0, tm: net.host ? game.timer : undefined }, false);
 }
 
