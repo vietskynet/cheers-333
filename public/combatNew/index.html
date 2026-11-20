@@ -366,9 +366,9 @@ function onDisconnect() {
 const KP = { nose: 0, earL: 7, earR: 8, ls: 11, rs: 12, le: 13, re: 14, lw: 15, rw: 16, lh: 23, rh: 24 };
 const KEYS = Object.keys(KP);
 const ARM = { lw: { s: "ls", e: "le", name: "TRÁI", sign: 1 }, rw: { s: "rs", e: "re", name: "PHẢI", sign: -1 } };
-const TUNE = { v: 1.35, swingMs: 280, fistR: .06, specialR: .15, headR: .12, torsoR: .15, guardR: .06, gloveR: .075, assist: { straight: 0, hook: .2, upper: .22, special: .03 } };
+const TUNE = { v: 1.6, travel: .14, swingMs: 280, fistR: .06, specialR: .15, headR: .12, torsoR: .15, guardR: .06, gloveR: .075, assist: { straight: 0, hook: .2, upper: .22, special: .03 } };
 const me = { side: 0, hp: 100, en: 20, ready: false, ko: false, guard: false, bodyGuard: false, dodge: false, combo: 0, comboAt: 0, pose: null, reach: .63, twist: 0, flinch: 0, swing: null };
-const op = { hp: 100, en: 20, ko: false, ready: false, pose: null, tgt: null, reach: .63, twist: 0, flinch: 0, recvAt: 0 };
+const op = { buf: [], gap: 33, lastRx: 0, hp: 100, en: 20, ko: false, ready: false, pose: null, tgt: null, reach: .63, twist: 0, flinch: 0, recvAt: 0 };
 const game = { phase: "lobby", startAt: 0, timer: ROUND_SEC, ai: false, hitId: 0, shake: 0 };
 const fx = [], texts = [];
 let seenHits = new Set();
@@ -412,7 +412,7 @@ function onMsg(m) {
   if (!m || !m.t) return;
   if (m.t === "hello") { if (net.host) send({ t: "hello" }); onConnected(); return; }
   if (m.t === "s") {
-    if (m.r) op.tgt = unpackPose(m.r);
+    if (m.r) { const t = performance.now(); op.buf.push({ t, P: unpackPose(m.r) }); if (op.buf.length > 12) op.buf.shift(); if (op.lastRx) op.gap = op.gap * .85 + (t - op.lastRx) * .15; op.lastRx = t; op.tgt = op.buf[op.buf.length - 1].P; }
     if (m.rc) op.reach = m.rc;
     Object.assign(op, { hp: m.hp, en: m.en, ko: !!m.k, recvAt: performance.now() });
     if (!net.host && typeof m.tm === "number") game.timer = m.tm;
@@ -456,25 +456,58 @@ let pose = null, stream = null;
 const vid = document.createElement("video"); vid.playsInline = true; vid.muted = true;
 async function startCamera() {
   const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm");
-  const o = d => ({ baseOptions: { modelAssetPath: "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task", delegate: d }, runningMode: "VIDEO", numPoses: 1, minPoseDetectionConfidence: .5, minPosePresenceConfidence: .5, minTrackingConfidence: .5 });
+  visionFs = vision;
   const [p, s] = await Promise.all([
-    PoseLandmarker.createFromOptions(vision, o("GPU")).catch(() => PoseLandmarker.createFromOptions(vision, o("CPU"))),
-    navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 60 } } }),
+    makePose(vision, "full"),
+    navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30 } } }),
   ]);
-  pose = p; stream = s; vid.srcObject = s; await vid.play();
+  pose = p; poseKind = "full"; stream = s; vid.srcObject = s; await vid.play();
 }
+let visionFs = null, poseKind = "", perf = { n: 0, ms: 0 }, switching = false;
+/* Model "full" ổn định hơn nhiều (ít giật); máy yếu chạy chậm thì tự hạ xuống "lite" */
+function makePose(vision, kind) {
+  const o = d => ({ baseOptions: { modelAssetPath: `https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_${kind}/float16/1/pose_landmarker_${kind}.task`, delegate: d }, runningMode: "VIDEO", numPoses: 1, minPoseDetectionConfidence: .5, minPosePresenceConfidence: .6, minTrackingConfidence: .6 });
+  return PoseLandmarker.createFromOptions(vision, o("GPU")).catch(() => PoseLandmarker.createFromOptions(vision, o("CPU")));
+}
+/* Bộ lọc One-Euro: đứng yên thì lọc mạnh (hết rung), cử động nhanh thì lọc nhẹ (không trễ) */
+class OneEuro {
+  constructor(minCut, beta, dCut = 1) { this.mc = minCut; this.b = beta; this.dc = dCut; this.x = null; this.dx = 0; this.t = 0; }
+  static a(cut, dt) { const tau = 1 / (2 * Math.PI * cut); return 1 / (1 + tau / dt); }
+  f(v, t) {
+    if (this.x === null) { this.x = v; this.t = t; return v; }
+    const dt = Math.max(1 / 120, (t - this.t) / 1000); this.t = t;
+    const dx = (v - this.x) / dt; this.dx += (dx - this.dx) * OneEuro.a(this.dc, dt);
+    this.x += (v - this.x) * OneEuro.a(this.mc + this.b * Math.abs(this.dx), dt); return this.x;
+  }
+}
+const mkF = (mc, b) => Object.fromEntries(KEYS.map(k => [k, [new OneEuro(mc, b), new OneEuro(mc, b), new OneEuro(mc, b)]]));
+let F1 = mkF(1.0, 6), F2 = mkF(1.6, 8);
+const filt = (FF, P, t) => { const Q = {}; KEYS.forEach(k => { const f = FF[k]; Q[k] = V3(f[0].f(P[k].L, t), f[1].f(P[k].F, t), f[2].f(P[k].U, t)); }); return Q; };
 let raw = null;
 const calib = { u: 0, f: 0, neutral: null };
+let lastVT = -1, lastP = null;
 function readPose(now) {
-  if (!pose || vid.readyState < 2) return;
+  if (!pose || vid.readyState < 2 || switching) return;
+  if (vid.currentTime === lastVT) return;            // chỉ xử lý khung hình MỚI → vận tốc không bị nhảy
+  lastVT = vid.currentTime;
+  const t0 = performance.now();
   const r = pose.detectForVideo(vid, now);
+  perf.ms += performance.now() - t0; perf.n++;
+  if (perf.n === 45 && poseKind === "full" && perf.ms / perf.n > 42) {   // máy yếu → model lite
+    switching = true; makePose(visionFs, "lite").then(p => { pose = p; poseKind = "lite"; switching = false; lastVT = -1; }).catch(() => switching = false);
+  }
   const wl = r.worldLandmarks?.[0]; raw = r.landmarks?.[0] || null;
   if (!wl) return;
   // Ảnh camera trước KHÔNG lật gương: tay trái người chơi nằm bên phải ảnh = x dương → L = +x.
   const s = SWAP ? -1 : 1;
   const P = {};
-  KEYS.forEach(k => { let i = KP[k]; if (SWAP) i = { 7: 8, 8: 7, 11: 12, 12: 11, 13: 14, 14: 13, 15: 16, 16: 15, 23: 24, 24: 23 }[i] ?? i; P[k] = V3(wl[i].x * s, -wl[i].z, -wl[i].y); });
-  ingest(reconstruct(P), now);
+  KEYS.forEach(k => {
+    let i = KP[k]; if (SWAP) i = { 7: 8, 8: 7, 11: 12, 12: 11, 13: 14, 14: 13, 15: 16, 16: 15, 23: 24, 24: 23 }[i] ?? i;
+    // điểm khuất (ra khỏi khung) → giữ vị trí cũ thay vì nhảy lung tung
+    P[k] = (wl[i].visibility ?? 1) < .35 && lastP ? { ...lastP[k] } : V3(wl[i].x * s, -wl[i].z, -wl[i].y);
+  });
+  lastP = P;
+  ingest(filt(F2, reconstruct(filt(F1, P, now)), now), now);
 }
 /* Tay đưa thẳng về camera thì ảnh 2D bị "co ngắn", độ sâu z của model lại hay thiếu.
    Bù lại: biết chiều dài cánh tay → độ sâu = √(dài² − hình chiếu²). */
@@ -493,19 +526,21 @@ function reconstruct(P) {
 const hist = { lw: [], rw: [] }, armCD = { lw: 0, rw: 0 };
 function ingest(P, now) {
   if (!me.pose) me.pose = clone(P);
-  KEYS.forEach(k => { const c = me.pose[k], p = P[k], d = len(sub(p, c)), a = Math.min(.95, .45 + d * 10); c.L += (p.L - c.L) * a; c.F += (p.F - c.F) * a; c.U += (p.U - c.U) * a; });
+  KEYS.forEach(k => Object.assign(me.pose[k], P[k]));
   analyse(me.pose, now);
 }
 function analyse(R, now) {
   const hc = headC(R);
   // ---- phòng thủ (để hiện trạng thái; đỡ/né thật được tính bằng va chạm) ----
-  const nearHead = a => len(sub(R[a], hc)) < .24 && R[a].F > hc.F;
+  const gR = me.guard ? .29 : .24;
+  const nearHead = a => len(sub(R[a], hc)) < gR && R[a].F > hc.F - .02;
   me.guard = nearHead("lw") && nearHead("rw");
   const lowG = a => R[a].U < R.ls.U - .1 && R[a].U > .05 && R[a].F > .1 && Math.abs(R[a].L) < .2;
   me.bodyGuard = !me.guard && lowG("lw") && lowG("rw");
   if (!calib.neutral && game.phase === "fight") calib.neutral = { ...hc };
   const nb = calib.neutral || hc;
-  me.dodge = Math.abs(hc.L - nb.L) > .1 || nb.U - hc.U > .1 || nb.F - hc.F > .09;
+  const dz = me.dodge ? .075 : .12;
+  me.dodge = Math.abs(hc.L - nb.L) > dz || nb.U - hc.U > dz || nb.F - hc.F > dz * .9;
   me.dL = hc.L - nb.L; me.dU = nb.U - hc.U; me.dF = nb.F - hc.F;
   // ---- tấn công ----
   const V = {};
@@ -516,7 +551,7 @@ function analyse(R, now) {
     const b = H[H.length - 1]; let o = H[0]; for (const h of H) if (b.t - h.t <= 100) { o = h; break; }
     if (o === b) o = H[H.length - 2];
     const dt = Math.max(.016, (b.t - o.t) / 1000), v = mul(sub(b.p, o.p), 1 / dt);
-    V[a] = { v, from: o.p, to: b.p, sp: len(v) };
+    V[a] = { v, from: o.p, to: b.p, sp: len(v), tr: len(sub(b.p, H[0].p)) };
   });
   if (me.swing) stepSwing(now);
   if (game.phase !== "fight" || !V.lw || !V.rw || me.swing) return;
@@ -525,7 +560,7 @@ function analyse(R, now) {
   const close = len(sub(R.lw, R.rw)) < .2;
   if (close && V.lw.v.F > T * .9 && V.rw.v.F > T * .9 && V.lw.v.F > Math.abs(V.lw.v.U) && V.rw.v.F > Math.abs(V.rw.v.U) && me.en >= MOVES.special.cost && now > armCD.lw && now > armCD.rw) return startSwing("special", "rw", now, len(V.rw.v));
   for (const a of ["lw", "rw"]) {
-    const { v, from } = V[a]; if (now < armCD[a] || len(v) < T) continue;
+    const { v, from, tr } = V[a]; if (now < armCD[a] || len(v) < T || tr < TUNE.travel) continue;
     const S = R[ARM[a].s], E = R[ARM[a].e], inward = Math.sign(v.L) === -ARM[a].sign;
     let kind = null;
     if (!bothUp && v.U > T && v.U > Math.abs(v.L) && v.U > v.F * .8 && from.U < S.U) kind = "upper";
@@ -778,10 +813,16 @@ function render(now) {
   // đối thủ: nội suy tư thế nhận qua mạng
   if (op.tgt && !game.ai) {
     if (!op.cur) op.cur = clone(op.tgt);
-    KEYS.forEach(k => { const c = op.cur[k], t = op.tgt[k]; c.L += (t.L - c.L) * .5; c.F += (t.F - c.F) * .5; c.U += (t.U - c.U) * .5; });
+    // vẽ trễ ~1,7 khoảng gửi để luôn có 2 mốc nội suy → chuyển động mượt dù mạng chập chờn
+    const rt = now - Math.min(140, Math.max(50, op.gap * 1.7)), B = op.buf;
+    let tgt = B[B.length - 1].P;
+    for (let i = B.length - 1; i > 0; i--) if (B[i - 1].t <= rt) { const a = B[i - 1], b = B[i], u = Math.min(1, (rt - a.t) / Math.max(1, b.t - a.t)); tgt = Object.fromEntries(KEYS.map(k => [k, lerp3(a.P[k], b.P[k], u)])); break; }
+    KEYS.forEach(k => { const c = op.cur[k], t = tgt[k]; c.L += (t.L - c.L) * .6; c.F += (t.F - c.F) * .6; c.U += (t.U - c.U) * .6; });
   }
   me.twist *= .88; op.twist *= .88; me.flinch *= .88; op.flinch *= .88;
-  const mine = me.pose ? { P: me.pose, side: me.side, skin: SKINS[me.side], st: { twist: me.twist, flinch: me.flinch, flash: me.flinch > .75, label: "BẠN" } } : null;
+  // camera chạy ~30 khung/giây, màn hình 60 → nội suy thêm để võ sĩ của bạn chuyển động liền mạch
+  if (me.pose) { if (!me.disp) me.disp = clone(me.pose); KEYS.forEach(k => { const c = me.disp[k], t = me.pose[k]; c.L += (t.L - c.L) * .55; c.F += (t.F - c.F) * .55; c.U += (t.U - c.U) * .55; }); }
+  const mine = me.pose ? { P: me.disp, side: me.side, skin: SKINS[me.side], st: { twist: me.twist, flinch: me.flinch, flash: me.flinch > .75, label: "BẠN" } } : null;
   const theirs = op.cur ? { P: op.cur, side: me.side ? 0 : 1, skin: SKINS[me.side ? 0 : 1], st: { twist: op.twist, flinch: op.flinch, flash: op.flinch > .75 } } : null;
   const list = [theirs, mine].filter(Boolean);
   if (Math.abs(op.twist) > Math.abs(me.twist)) list.reverse();          // ai đang ra đòn vẽ sau (đè lên)

@@ -87,6 +87,7 @@ netlify dev        # cần file .env chứa các biến ở trên
 `public/combatNew/index.html` – đấm bốc 2 máy, 2 võ sĩ đứng 2 góc trái (XANH, chủ phòng) – phải (ĐỎ), nhìn ngang xoay 3/4.
 
 - MediaPipe **PoseLandmarker** lấy `worldLandmarks` (mét, 3D, gốc giữa hông) → hệ cơ thể L (trái thật của người chơi) / F (phía trước) / U (lên). Không lật gương dữ liệu; điểm 11/13/15 luôn là vai/khuỷu/cổ tay TRÁI. Găng hiển thị chữ **T/P**; nút "⇄ đảo trái/phải" cho máy có camera tự lật ảnh.
+- Chống giật: model `pose_landmarker_full` (tự hạ xuống `lite` nếu máy xử lý >42 ms/khung), chỉ xử lý khung hình mới, 2 tầng lọc One-Euro (đứng yên lọc mạnh, đánh nhanh lọc nhẹ), giữ điểm bị khuất, nội suy 60 fps cho võ sĩ của mình, bộ đệm nội suy ~50–140 ms cho tư thế đối thủ nhận qua mạng. Đòn chỉ tính khi nắm đấm đi ≥ 14 cm và ≥ 1,6 m/s.
 - Bù độ sâu khi đấm thẳng về camera: biết chiều dài bắp tay/cẳng tay → độ sâu = √(dài² − hình chiếu²).
 - Đòn nhận theo vận tốc nắm đấm: thẳng (tiến tới), móc (ngang, vào trong, khuỷu cao), móc ngược (lên), song chưởng (2 tay chập đẩy, 100⚡). Nâng 2 tay lên thủ không tính là đòn.
 - Trúng/đỡ/né = **va chạm 3D thật**: đường đi của nắm đấm so với đầu (cầu), thân (khối trụ), cẳng tay + găng của đối thủ (đỡ). Bên bị đánh kiểm tra lại với tư thế hiện tại của mình rồi trả kết quả.
