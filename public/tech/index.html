@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HandMagination · Tech</title>
+<meta name="description" content="Điều khiển một artwork đồ hoạ bằng chuyển động bàn tay trước camera.">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:#f4f1ea;color:#14161b;font-family:"Be Vietnam Pro",system-ui,sans-serif;overflow:hidden;-webkit-tap-highlight-color:transparent}
+  #art{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+  .top{position:fixed;top:0;left:0;right:0;display:flex;align-items:center;gap:10px;padding:calc(env(safe-area-inset-top) + 14px) 18px 10px;pointer-events:none}
+  .brand{font-size:16px;font-weight:600;color:#6b7280;display:flex;align-items:center;gap:8px;pointer-events:auto;text-decoration:none}
+  .brand b{color:#14161b;font-weight:800}
+  .brand .dot{width:10px;height:10px;border-radius:50%;background:#F2B705}
+  .tag{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;background:#14161b;color:#fff;border-radius:99px;padding:4px 9px}
+  .sp{flex:1}
+  .stat{font-size:12px;color:#6b7280;font-weight:600}
+  #preview{position:fixed;left:16px;bottom:calc(env(safe-area-inset-bottom) + 96px);width:96px;border-radius:14px;overflow:hidden;box-shadow:0 10px 30px #0000002a;background:#000;transform:scaleX(-1)}
+  #preview video{width:100%;display:block}
+  #preview.hide{display:none}
+  .dock{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;align-items:center;gap:14px;padding:12px 16px calc(env(safe-area-inset-bottom) + 18px)}
+  .round{width:48px;height:48px;border-radius:50%;border:0;background:#ffffffe8;box-shadow:0 4px 16px #00000018;font-size:18px;cursor:pointer;color:#14161b}
+  .shot{width:68px;height:68px;border-radius:50%;border:5px solid #14161b;background:#fff;cursor:pointer}
+  .hint{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 100px);text-align:center;font-size:13px;color:#6b7280;font-weight:600;pointer-events:none;transition:opacity .4s}
+  /* màn mở đầu */
+  #start{position:fixed;inset:0;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;z-index:5}
+  #start h1{font-size:36px;line-height:1.08;font-weight:800;letter-spacing:-1px;margin-top:22px}
+  #start h1 em{font-style:normal;background:linear-gradient(transparent 62%,#F2B70588 62%)}
+  #start p{color:#6b7280;font-size:15px;line-height:1.55;max-width:340px;margin:14px auto 24px}
+  .cta{width:100%;max-width:340px;border:0;border-radius:16px;padding:17px;font:inherit;font-weight:800;font-size:16px;background:#14161b;color:#fff;cursor:pointer}
+  .ghost{background:none;border:0;color:#6b7280;font:inherit;font-size:14px;padding:12px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+  #start .err{color:#dc2626;font-size:13px;min-height:18px;margin-top:8px}
+  .mini{position:relative;width:180px;height:150px}
+  .mini i{position:absolute;mix-blend-mode:multiply;border-radius:99px}
+</style>
+</head>
+<body>
+<canvas id="art"></canvas>
+
+<div class="top">
+  <a class="brand" href="/"><span class="dot"></span><b>Hand</b>Magination</a><span class="tag">Tech</span>
+  <span class="sp"></span><span class="stat" id="stat"></span>
+</div>
+<div id="preview" class="hide"><video id="vid" playsinline muted></video></div>
+<div class="hint" id="hint">Giơ tay trước camera ✋</div>
+<div class="dock">
+  <button class="round" id="bPrev" title="Ẩn/hiện camera">👁</button>
+  <button class="round" id="bFlip" title="Đổi camera">⟲</button>
+  <button class="shot" id="bShot" title="Lưu khung hình"></button>
+  <button class="round" id="bClear" title="Xoá hạt">✦</button>
+  <a class="round" href="/" title="Về HandMagination" style="display:grid;place-items:center;text-decoration:none">←</a>
+</div>
+
+<div id="start">
+  <div class="mini" aria-hidden="true">
+    <i style="width:110px;height:110px;left:8px;top:22px;background:#2563eb"></i>
+    <i style="width:26px;height:140px;left:96px;top:4px;background:#1e1b4b;transform:rotate(16deg)"></i>
+    <i style="width:72px;height:72px;left:104px;top:68px;background:#ff5733;border-radius:16px;transform:rotate(45deg)"></i>
+    <i style="width:56px;height:56px;left:54px;top:92px;background:#a3e635"></i>
+    <i style="width:36px;height:36px;left:132px;top:16px;background:#F2B705"></i>
+  </div>
+  <h1>Bàn tay của bạn<br>là <em>cây cọ</em>.</h1>
+  <p>Cử động tay trước camera để điều khiển bàn tay đồ hoạ trên màn hình. Chụm hai ngón để rắc màu, xoè tay để đẩy mảng hình, nắm tay để gom chúng lại.</p>
+  <button class="cta" id="go">Bật camera</button>
+  <button class="ghost" id="demo">Xem chế độ demo (không cần camera)</button>
+  <div class="err" id="err"></div>
+</div>
+
+<script type="module">
+import { FilesetResolver, HandLandmarker } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs";
+
+/* ================= CẤU HÌNH & BẢNG MÀU ================= */
+const PAL = { blue: "#2563eb", navy: "#1e1b4b", red: "#ff5733", teal: "#14a39a", lime: "#a3e635", yellow: "#F2B705" };
+const HAND_SETS = [ // mỗi bàn tay một bộ màu: lòng bàn tay + 5 ngón
+  { palm: PAL.blue, fingers: [PAL.red, PAL.yellow, PAL.navy, PAL.teal, PAL.lime], tip: PAL.red },
+  { palm: PAL.red, fingers: [PAL.teal, PAL.blue, PAL.yellow, PAL.navy, PAL.lime], tip: PAL.blue },
+];
+const FINGERS = [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16], [17, 18, 19, 20]];
+const PALM = [0, 1, 5, 9, 13, 17];
+const $ = id => document.getElementById(id);
+const cv = $("art"), x = cv.getContext("2d");
+let W = 0, H = 0, DPR = 1;
+
+/* ================= CANVAS & VÂN IN ================= */
+let grain = null;
+function resize() {
+  DPR = Math.min(2, window.devicePixelRatio || 1);
+  W = innerWidth; H = innerHeight;
+  cv.width = W * DPR; cv.height = H * DPR;
+  x.setTransform(DPR, 0, 0, DPR, 0, 0);
+  const g = document.createElement("canvas"); g.width = g.height = 256;
+  const gx = g.getContext("2d"), id = gx.createImageData(256, 256);
+  for (let i = 0; i < id.data.length; i += 4) { const v = Math.random() * 255; id.data[i] = id.data[i + 1] = id.data[i + 2] = v; id.data[i + 3] = Math.random() * 28; }
+  gx.putImageData(id, 0, 0); grain = x.createPattern(g, "repeat");
+  if (!bg.length) seedBg();
+}
+addEventListener("resize", resize);
+
+/* ================= MẢNG HÌNH NỀN (bị tay đẩy/kéo) ================= */
+const bg = [];
+function seedBg() {
+  const kinds = ["circle", "bar", "diamond", "blob"], cols = Object.values(PAL);
+  for (let i = 0; i < 16; i++) {
+    const s = Math.min(W, H) * (0.06 + Math.random() * 0.12);
+    bg.push({ x: Math.random() * W, y: Math.random() * H, hx: 0, hy: 0, vx: 0, vy: 0, s, kind: kinds[i % 4], col: cols[i % cols.length], rot: Math.random() * 6.28, vr: (Math.random() - .5) * .004, a: .55 + Math.random() * .3 });
+  }
+  bg.forEach(b => { b.hx = b.x; b.hy = b.y; });
+}
+function drawShape(k, s, col, alpha = 1) {
+  x.globalAlpha = alpha; x.fillStyle = col;
+  x.beginPath();
+  if (k === "circle") x.arc(0, 0, s / 2, 0, 6.283);
+  else if (k === "bar") x.roundRect(-s * .12, -s * .7, s * .24, s * 1.4, s * .06);
+  else if (k === "diamond") { x.rotate(.785); x.roundRect(-s * .36, -s * .36, s * .72, s * .72, s * .12); }
+  else x.ellipse(0, 0, s * .6, s * .38, 0, 0, 6.283);
+  x.fill(); x.globalAlpha = 1;
+}
+
+/* ================= HẠT MÀU (rắc khi chụm ngón) ================= */
+const parts = [];
+function burst(px, py, n, cols) {
+  const kinds = ["circle", "bar", "diamond", "blob"];
+  for (let i = 0; i < n; i++) {
+    const a = Math.random() * 6.283, sp = 1 + Math.random() * 5;
+    parts.push({ x: px, y: py, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 1.5, s: 8 + Math.random() * 26, kind: kinds[i % 4], col: cols[i % cols.length], rot: Math.random() * 6.28, vr: (Math.random() - .5) * .2, life: 1 });
+  }
+  if (parts.length > 500) parts.splice(0, parts.length - 500);
+}
+
+/* ================= NHẬN DIỆN TAY ================= */
+let hand = null, stream = null, facing = "user", running = false, demo = false;
+async function loadModel() {
+  const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm");
+  const opts = d => ({ baseOptions: { modelAssetPath: "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task", delegate: d }, runningMode: "VIDEO", numHands: 2, minHandDetectionConfidence: .5, minTrackingConfidence: .5 });
+  try { hand = await HandLandmarker.createFromOptions(vision, opts("GPU")); } catch { hand = await HandLandmarker.createFromOptions(vision, opts("CPU")); }
+}
+async function startCam() {
+  stream?.getTracks().forEach(t => t.stop());
+  stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: facing, width: { ideal: 960 }, height: { ideal: 720 } } });
+  const v = $("vid"); v.srcObject = stream; await v.play();
+  $("preview").style.transform = facing === "user" ? "scaleX(-1)" : "none";
+}
+
+/* Toạ độ tay → màn hình (khớp kiểu "cover" như video tràn màn, có lật gương với camera trước) */
+function mapPoints(lm, vw, vh) {
+  const s = Math.max(W / vw, H / vh), ox = (W - vw * s) / 2, oy = (H - vh * s) / 2;
+  const mirror = facing === "user";
+  return lm.map(p => ({ x: ox + (mirror ? 1 - p.x : p.x) * vw * s, y: oy + p.y * vh * s }));
+}
+
+/* Làm mượt chuyển động */
+const smooth = [null, null];
+function smoothHand(i, pts) {
+  if (!smooth[i] || smooth[i].length !== pts.length) { smooth[i] = pts.map(p => ({ ...p })); return smooth[i]; }
+  const k = .55;
+  smooth[i].forEach((q, j) => { q.x += (pts[j].x - q.x) * k; q.y += (pts[j].y - q.y) * k; });
+  return smooth[i];
+}
+
+/* Cử chỉ: ngón nào đang duỗi */
+const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+function gesture(P) {
+  const palm = dist(P[0], P[9]) || 1;
+  const ext = FINGERS.map(([m, p, , t], i) => i === 0 ? dist(P[4], P[17]) > dist(P[2], P[17]) * 1.15 : dist(P[t], P[0]) > dist(P[p], P[0]) * 1.2);
+  const pinch = dist(P[4], P[8]) < palm * .32;
+  const n = ext.filter(Boolean).length;
+  let name = "";
+  if (pinch && !ext[2]) name = "CHẠM";
+  else if (n >= 5) name = "MỞ RA";
+  else if (n === 0 || (n === 1 && ext[0])) name = "NẮM CHẶT";
+  else if (ext[1] && ext[2] && !ext[3] && !ext[4]) name = "CHIẾN THẮNG";
+  else if (ext[0] && ext[1] && ext[4] && !ext[2]) name = "YÊU";
+  else if (ext[1] && !ext[2] && !ext[3]) name = "CHỈ LỐI";
+  else if (ext[4] && ext[0] && !ext[1]) name = "VUI LÊN";
+  else name = "BAY BỔNG";
+  return { name, pinch, open: n >= 5, fist: n === 0 || (n === 1 && ext[0]), palm, pinchAt: { x: (P[4].x + P[8].x) / 2, y: (P[4].y + P[8].y) / 2 } };
+}
+
+/* ================= VẼ BÀN TAY ĐỒ HOẠ ================= */
+function drawHand(P, set, g) {
+  const pw = g.palm;
+  x.save(); x.globalCompositeOperation = "multiply"; x.lineCap = x.lineJoin = "round";
+  // lớp lệch màu (misregistration) phía sau
+  x.translate(pw * .06, pw * .05); x.globalAlpha = .35; x.fillStyle = x.strokeStyle = PAL.teal;
+  x.beginPath(); PALM.forEach((i, k) => k ? x.lineTo(P[i].x, P[i].y) : x.moveTo(P[i].x, P[i].y)); x.closePath(); x.fill(); x.lineWidth = pw * .3; x.stroke();
+  x.setTransform(DPR, 0, 0, DPR, 0, 0); x.globalAlpha = .92;
+  // lòng bàn tay
+  x.fillStyle = x.strokeStyle = set.palm;
+  x.beginPath(); PALM.forEach((i, k) => k ? x.lineTo(P[i].x, P[i].y) : x.moveTo(P[i].x, P[i].y)); x.closePath(); x.fill(); x.lineWidth = pw * .34; x.stroke();
+  // ngón tay: mỗi ngón một thanh màu, thon dần
+  FINGERS.forEach((f, fi) => {
+    x.strokeStyle = set.fingers[fi];
+    const chain = [fi === 0 ? 1 : f[0], ...f.slice(fi === 0 ? 1 : 1)];
+    for (let k = 0; k < chain.length - 1; k++) {
+      x.lineWidth = pw * (0.3 - k * .045);
+      x.beginPath(); x.moveTo(P[chain[k]].x, P[chain[k]].y); x.lineTo(P[chain[k + 1]].x, P[chain[k + 1]].y); x.stroke();
+    }
+  });
+  // đầu ngón: chấm tròn
+  [4, 8, 12, 16, 20].forEach((t, k) => {
+    x.fillStyle = k === 1 ? set.tip : PAL.yellow;
+    x.beginPath(); x.arc(P[t].x, P[t].y, pw * (k === 1 ? .2 : .14), 0, 6.283); x.fill();
+  });
+  // khớp cổ tay
+  x.fillStyle = PAL.navy; x.beginPath(); x.arc(P[0].x, P[0].y, pw * .22, 0, 6.283); x.fill();
+  x.restore();
+  // vòng chụm
+  if (g.pinch) { x.save(); x.strokeStyle = "#14161b"; x.lineWidth = 3; x.setLineDash([6, 6]); x.beginPath(); x.arc(g.pinchAt.x, g.pinchAt.y, pw * .45, 0, 6.283); x.stroke(); x.restore(); }
+}
+
+/* ================= CHỮ LỚN THEO CỬ CHỈ ================= */
+let word = "GIƠ TAY LÊN", wordShown = word, wordAlpha = 1;
+function drawWord() {
+  if (word !== wordShown) { wordAlpha -= .08; if (wordAlpha <= 0) { wordShown = word; wordAlpha = 0; } }
+  else if (wordAlpha < 1) wordAlpha = Math.min(1, wordAlpha + .08);
+  x.save(); x.globalAlpha = wordAlpha; x.fillStyle = "#14161b";
+  let fs = Math.min(W, H) * .2; x.font = `800 ${fs}px "Be Vietnam Pro", sans-serif`;
+  while (x.measureText(wordShown).width > H * .78 && fs > 30) { fs -= 4; x.font = `800 ${fs}px "Be Vietnam Pro", sans-serif`; }
+  x.translate(W - 22, H * .86); x.rotate(-Math.PI / 2); x.fillText(wordShown, 0, 0);
+  x.restore();
+}
+
+/* ================= DEMO: bàn tay giả lập chuyển động ================= */
+function demoHand(t) {
+  const cx = W * .45 + Math.sin(t * .0007) * W * .15, cy = H * .55 + Math.cos(t * .0009) * H * .08, s = Math.min(W, H) * .16;
+  const open = (Math.sin(t * .0012) + 1) / 2, ang = Math.sin(t * .0005) * .4;
+  const base = [[0, 0], [-.35, -.25], [-.65, -.55], [-.85, -.85], [-1.0, -1.1], [-.35, -1.0], [-.4, -1.55], [-.42, -1.9], [-.44, -2.2], [0, -1.05], [0, -1.65], [0, -2.05], [0, -2.4], [.32, -1.0], [.36, -1.55], [.38, -1.9], [.4, -2.15], [.6, -.9], [.7, -1.3], [.78, -1.55], [.84, -1.8]];
+  return base.map(([bx, by], i) => {
+    const f = i >= 5 && i % 4 !== 1 ? (1 - open) : 0;
+    const yy = by + (by < -1 ? f * (-by - 1) * 1.4 : 0);
+    const X = bx * s, Y = yy * s;
+    return { x: cx + X * Math.cos(ang) - Y * Math.sin(ang), y: cy + X * Math.sin(ang) + Y * Math.cos(ang) };
+  });
+}
+
+/* ================= VÒNG LẶP ================= */
+let lastTs = -1, fps = 0, tPrev = performance.now(), pinchCool = 0, hintTimer = 0;
+function loop(now) {
+  if (!running) return;
+  requestAnimationFrame(loop);
+  // khung giấy
+  x.setTransform(DPR, 0, 0, DPR, 0, 0);
+  x.fillStyle = "#f4f1ea"; x.fillRect(0, 0, W, H);
+
+  // lấy tay
+  let hands = [];
+  const v = $("vid");
+  if (demo) hands = [demoHand(now)];
+  else if (hand && v.readyState >= 2 && v.currentTime !== lastTs) {
+    lastTs = v.currentTime;
+    const r = hand.detectForVideo(v, now);
+    hands = (r.landmarks || []).map(lm => mapPoints(lm, v.videoWidth, v.videoHeight));
+    loop.last = hands;
+  } else hands = loop.last || [];
+  const H2 = hands.map((p, i) => smoothHand(i, p));
+  if (!H2.length) { smooth[0] = smooth[1] = null; }
+  const G = H2.map(gesture);
+
+  // mảng hình nền: trôi nhẹ, bị đầu ngón đẩy (tay mở) hoặc hút về (nắm tay)
+  x.save(); x.globalCompositeOperation = "multiply";
+  for (const b of bg) {
+    b.vx += (b.hx - b.x) * .002; b.vy += (b.hy - b.y) * .002;
+    H2.forEach((P, i) => {
+      const g = G[i];
+      if (g.fist) { const c = P[9]; const d = dist(b, c) || 1; if (d < Math.min(W, H) * .6) { b.vx += (c.x - b.x) / d * .9; b.vy += (c.y - b.y) / d * .9; } }
+      else for (const t of [4, 8, 12, 16, 20]) { const d = dist(b, P[t]); const R = b.s * .6 + g.palm * (g.open ? 1.2 : .6); if (d < R) { const f = (R - d) / R * (g.open ? 3.2 : 1.6); b.vx += (b.x - P[t].x) / (d || 1) * f; b.vy += (b.y - P[t].y) / (d || 1) * f; } }
+    });
+    b.vx *= .9; b.vy *= .9; b.x += b.vx; b.y += b.vy; b.rot += b.vr + b.vx * .002;
+    x.save(); x.translate(b.x, b.y); x.rotate(b.rot); drawShape(b.kind, b.s, b.col, b.a); x.restore();
+  }
+  x.restore();
+
+  // chữ lớn
+  word = G[0]?.name || "GIƠ TAY LÊN";
+  drawWord();
+
+  // hạt màu
+  pinchCool = Math.max(0, pinchCool - 1);
+  G.forEach((g, i) => { if (g.pinch && pinchCool === 0) { burst(g.pinchAt.x, g.pinchAt.y, 10, [PAL.red, PAL.yellow, PAL.blue, PAL.lime, PAL.teal]); pinchCool = 3; navigator.vibrate?.(8); } });
+  x.save(); x.globalCompositeOperation = "multiply";
+  for (let i = parts.length - 1; i >= 0; i--) {
+    const p = parts[i]; p.vy += .08; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.rot += p.vr; p.life -= .006;
+    if (p.life <= 0 || p.y > H + 50) { parts.splice(i, 1); continue; }
+    x.save(); x.translate(p.x, p.y); x.rotate(p.rot); drawShape(p.kind, p.s, p.col, Math.min(1, p.life * 1.5)); x.restore();
+  }
+  x.restore();
+
+  // bàn tay đồ hoạ
+  H2.forEach((P, i) => drawHand(P, HAND_SETS[i % 2], G[i]));
+
+  // chữ nhỏ rải rác + vân in
+  x.save(); x.fillStyle = "#14161b"; x.font = '700 12px "Be Vietnam Pro", sans-serif'; x.globalAlpha = .55;
+  x.fillText("HAND + IMAGINATION", 18, H - 150); x.fillText(`${H2.length} TAY · ${parts.length} MẢNG MÀU`, 18, H - 132); x.restore();
+  if (grain) { x.save(); x.fillStyle = grain; x.globalCompositeOperation = "multiply"; x.fillRect(0, 0, W, H); x.restore(); }
+
+  // trạng thái
+  const dt = now - tPrev; tPrev = now; fps = fps * .9 + (1000 / Math.max(dt, 1)) * .1;
+  if ((hintTimer = (hintTimer + 1) % 20) === 0) {
+    $("stat").textContent = demo ? "demo" : `${Math.round(fps)} fps`;
+    $("hint").style.opacity = H2.length ? 0 : 1;
+  }
+}
+
+/* ================= ĐIỀU KHIỂN ================= */
+async function begin(isDemo) {
+  $("err").textContent = ""; $("go").disabled = true; $("go").textContent = "Đang tải…";
+  demo = isDemo;
+  try {
+    if (!demo) {
+      await Promise.all([loadModel(), startCam()]);
+      $("preview").classList.remove("hide");
+    }
+    $("start").style.display = "none";
+    resize(); running = true; requestAnimationFrame(loop);
+    if (demo) $("hint").textContent = "Chế độ demo · bấm Bật camera để dùng tay thật";
+  } catch (e) {
+    $("go").disabled = false; $("go").textContent = "Bật camera";
+    $("err").textContent = location.protocol !== "https:" && location.hostname !== "localhost" ? "Camera cần HTTPS." : "Không mở được camera: " + (e.message || e);
+  }
+}
+$("go").onclick = () => begin(false);
+$("demo").onclick = () => begin(true);
+$("bPrev").onclick = () => $("preview").classList.toggle("hide");
+$("bFlip").onclick = async () => { if (demo) return; facing = facing === "user" ? "environment" : "user"; smooth[0] = smooth[1] = null; try { await startCam(); } catch {} };
+$("bClear").onclick = () => { parts.length = 0; bg.forEach(b => { b.x = b.hx; b.y = b.hy; }); };
+$("bShot").onclick = () => {
+  cv.toBlob(b => { const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = "handmagination-tech.png"; document.body.append(a); a.click(); a.remove(); }, "image/png");
+};
+resize();
+</script>
+</body>
+</html>

@@ -8,6 +8,14 @@ Luồng chỉ 2 bước: **Scan tay → Ra hình**. Trong lúc chờ có màn h�
 
 > Tính năng "cụng bia 333" (nhận diện lon, train SKU) đã được cất đi: code vẫn còn trong `public/index.html`, đặt `HAND_ONLY = false` để bật lại.
 
+## Ứng dụng con `/tech/`
+
+`public/tech/index.html` – camera theo dõi tối đa 2 bàn tay theo thời gian thực; trên màn hình là bàn tay đồ hoạ (mảng hình phẳng kiểu in lụa) cử động theo tay thật:
+- **Chụm** ngón cái + trỏ: rắc mảng màu · **Xoè tay**: đẩy mảng hình nền ra · **Nắm tay**: hút mảng hình lại
+- Chữ lớn chạy dọc mép đổi theo cử chỉ (MỞ RA, NẮM CHẶT, CHIẾN THẮNG, YÊU, CHỈ LỐI…)
+- Nút lưu khung hình, đổi camera, ẩn/hiện camera nhỏ; có chế độ demo không cần camera
+- Chạy hoàn toàn trên trình duyệt, không gọi API, không tốn tiền
+
 ## Cấu trúc
 
 | Thư mục / file | Vai trò |
