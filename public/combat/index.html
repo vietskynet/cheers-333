@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HandMagination · Combat</title>
+<meta name="description" content="Game đối kháng 2 người qua mã phòng, điều khiển đấu sĩ bằng bàn tay trước camera.">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{--ink:#14161b;--mute:#6b7280;--paper:#f4f1ea;--blue:#2563eb;--navy:#1e1b4b;--red:#ff5733;--teal:#14a39a;--lime:#a3e635;--yellow:#F2B705}
+  html,body{height:100%;background:#fff;color:var(--ink);font-family:"Be Vietnam Pro",system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
+  body{overflow:hidden}
+  .scr{display:none;position:fixed;inset:0;flex-direction:column;align-items:center;padding:calc(env(safe-area-inset-top) + 16px) 20px calc(env(safe-area-inset-bottom) + 20px);overflow:auto}
+  .scr.on{display:flex}
+  .brand{align-self:flex-start;font-size:15px;font-weight:600;color:var(--mute);display:flex;align-items:center;gap:8px;text-decoration:none}
+  .brand b{color:var(--ink);font-weight:800}
+  .brand .dot{width:10px;height:10px;border-radius:50%;background:var(--yellow)}
+  .tag{font-size:10px;font-weight:800;letter-spacing:1.5px;background:var(--ink);color:#fff;border-radius:99px;padding:3px 8px}
+  h1{font-size:40px;line-height:1.02;font-weight:800;letter-spacing:-1.5px;text-align:center;margin-top:14px}
+  h1 em{font-style:normal;background:linear-gradient(transparent 62%,#F2B70588 62%)}
+  .lead{color:var(--mute);font-size:15px;line-height:1.55;text-align:center;max-width:380px;margin:12px auto 22px}
+  .cta{width:100%;max-width:360px;border:0;border-radius:16px;padding:16px;font:inherit;font-weight:800;font-size:16px;background:var(--ink);color:#fff;cursor:pointer}
+  .cta.alt{background:var(--yellow);color:var(--ink)}
+  .cta:disabled{opacity:.45}
+  .ghost{background:none;border:0;color:var(--mute);font:inherit;font-size:14px;padding:10px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+  .row{display:flex;gap:10px;width:100%;max-width:360px;margin-top:10px}
+  .code{flex:1;border:2px solid #e5e7eb;border-radius:16px;padding:14px;font:inherit;font-weight:800;font-size:22px;letter-spacing:6px;text-align:center;text-transform:uppercase}
+  .err{color:#dc2626;font-size:13px;min-height:18px;margin-top:10px;text-align:center;max-width:360px}
+  .hero{position:relative;width:240px;height:150px;margin:20px auto 0}
+  .hero i{position:absolute;mix-blend-mode:multiply;border-radius:99px}
+  .bigcode{font-size:64px;font-weight:800;letter-spacing:12px;margin:10px 0 2px}
+  .players{display:flex;gap:12px;margin:18px 0;width:100%;max-width:360px}
+  .pl{flex:1;border-radius:16px;padding:14px;background:#f6f4ef;text-align:left}
+  .pl b{display:block;font-size:15px}
+  .pl span{font-size:12px;color:var(--mute)}
+  .pl.ok{background:#e7f6f3}
+  .pl .sw{width:14px;height:14px;border-radius:4px;display:inline-block;margin-right:6px;vertical-align:-2px}
+  .howto{width:100%;max-width:380px;margin-top:18px;display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px;text-align:left}
+  .howto div{background:#f6f4ef;border-radius:12px;padding:9px 10px}
+  .howto b{display:block;font-size:13px}
+  .howto span{color:var(--mute)}
+  .note{font-size:12px;color:var(--mute);text-align:center;max-width:360px;margin-top:10px;line-height:1.5}
+  /* ===== GAME ===== */
+  #game{padding:0;background:var(--paper);overflow:hidden}
+  #arenaWrap{position:relative;width:100%;flex:none}
+  #arena{display:block;width:100%;height:100%}
+  .hud{position:absolute;left:0;right:0;top:0;display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:start;padding:calc(env(safe-area-inset-top) + 8px) 10px 0;pointer-events:none}
+  .side{display:flex;flex-direction:column;gap:5px}
+  .side.r{align-items:flex-end}
+  .name{font-size:12px;font-weight:800;letter-spacing:1px;display:flex;gap:6px;align-items:center}
+  .hp{width:100%;height:14px;border-radius:7px;background:#00000014;overflow:hidden;position:relative}
+  .hp i{position:absolute;top:0;bottom:0;left:0;width:100%;border-radius:7px;transition:width .15s}
+  .hp i.lag{background:#ff573355!important;transition:width .8s .2s}
+  .side.r .hp i{left:auto;right:0}
+  /* ống năng lượng */
+  .tube{position:relative;width:78%;height:16px;border-radius:99px;background:#fff;border:2px solid var(--ink);overflow:hidden;box-shadow:inset 0 2px 4px #0002}
+  .tube .liq{position:absolute;top:0;bottom:0;left:0;width:30%;background:linear-gradient(90deg,var(--teal),var(--lime),var(--yellow));transition:width .12s}
+  .side.r .tube .liq{left:auto;right:0;background:linear-gradient(270deg,var(--teal),var(--lime),var(--yellow))}
+  .tube .liq::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(110deg,#ffffff55 0 6px,transparent 6px 14px);animation:flow 1s linear infinite}
+  @keyframes flow{to{background-position:28px 0}}
+  .tube .mk{position:absolute;top:0;bottom:0;width:2px;background:#14161b55}
+  .tube.full{box-shadow:0 0 0 3px #F2B70599,0 0 16px #F2B705;animation:pulse .8s ease-in-out infinite alternate}
+  @keyframes pulse{to{box-shadow:0 0 0 5px #F2B705cc,0 0 26px #F2B705}}
+  .enl{font-size:10px;font-weight:800;letter-spacing:1px;color:var(--mute)}
+  .timer{font-size:28px;font-weight:800;line-height:1;text-align:center;min-width:52px}
+  .ping{font-size:10px;color:var(--mute);text-align:center;font-weight:700;margin-top:2px}
+  #panel{flex:1;display:flex;gap:10px;padding:10px 10px calc(env(safe-area-inset-bottom) + 10px);background:#fff;min-height:0}
+  #camBox{position:relative;width:42%;max-width:240px;border-radius:14px;overflow:hidden;background:#111;flex:none;align-self:flex-start;aspect-ratio:4/3}
+  #camCv{width:100%;height:100%;display:block}
+  #camBox .lbl{position:absolute;left:6px;top:6px;font-size:10px;font-weight:800;background:#000a;color:#fff;border-radius:6px;padding:2px 6px}
+  #guide{flex:1;display:flex;flex-direction:column;gap:5px;font-size:11px;overflow:auto;min-width:0}
+  .g{display:flex;align-items:center;gap:8px;background:#f6f4ef;border-radius:10px;padding:6px 8px;transition:background .2s}
+  .g .ic{font-size:17px;width:22px;text-align:center}
+  .g b{font-size:12px}
+  .g span{color:var(--mute)}
+  .g .cost{margin-left:auto;font-weight:800;font-size:11px;color:var(--teal);white-space:nowrap}
+  .g.on{background:#F2B70566}
+  .g.locked{opacity:.45}
+  .gh{font-size:10px;font-weight:800;letter-spacing:1.2px;color:var(--mute);margin-top:2px}
+  #banner{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}
+  #banner div{font-size:clamp(48px,14vw,120px);font-weight:800;letter-spacing:-3px;color:var(--ink);opacity:0;transform:scale(.6);transition:all .3s cubic-bezier(.2,1.5,.4,1);text-align:center;line-height:.95}
+  #banner div.on{opacity:1;transform:scale(1)}
+  #banner small{display:block;font-size:16px;letter-spacing:0;font-weight:700;color:var(--mute);margin-top:8px}
+  #endBox{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);display:none;gap:8px}
+  #endBox.on{display:flex}
+  #endBox button{border:0;border-radius:14px;padding:12px 18px;font:inherit;font-weight:800;background:var(--ink);color:#fff}
+  #pad{display:none;position:absolute;left:0;right:0;bottom:8px;justify-content:space-between;padding:0 10px;pointer-events:none}
+  #pad.on{display:flex}
+  #pad .grp{display:grid;grid-template-columns:repeat(2,42px);gap:6px;pointer-events:auto}
+  #pad button{width:42px;height:42px;border-radius:50%;border:0;background:#ffffffd9;font-size:15px;font-weight:800;box-shadow:0 2px 8px #0002;touch-action:none}
+  .tools{position:absolute;right:8px;bottom:8px;display:flex;gap:6px}
+  .tools button{border:0;border-radius:99px;background:#ffffffd9;padding:6px 10px;font:inherit;font-size:11px;font-weight:800;box-shadow:0 2px 8px #0002}
+  /* ngang: đấu trường tràn màn, camera + hướng dẫn nổi */
+  @media (orientation:landscape) and (max-height:600px){
+    #game{flex-direction:row}
+    #arenaWrap{height:100%;flex:1}
+    #panel{position:absolute;left:8px;bottom:8px;background:transparent;padding:0;width:auto;flex:none;flex-direction:column;gap:6px;pointer-events:none}
+    #camBox{width:150px}
+    #guide{display:none}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ SẢNH ============ -->
+<section class="scr on" id="lobby">
+  <a class="brand" href="/"><span class="dot"></span><b>Hand</b>Magination <span class="tag">COMBAT</span></a>
+  <div class="hero" aria-hidden="true">
+    <i style="width:100px;height:100px;left:20px;top:30px;background:#2563eb"></i>
+    <i style="width:26px;height:120px;left:104px;top:10px;background:#1e1b4b;transform:rotate(-28deg)"></i>
+    <i style="width:26px;height:120px;left:110px;top:10px;background:#ff5733;transform:rotate(28deg)"></i>
+    <i style="width:100px;height:100px;left:124px;top:30px;background:#ff5733"></i>
+    <i style="width:40px;height:40px;left:100px;top:100px;background:#F2B705"></i>
+  </div>
+  <h1>Đấu bằng <em>đôi tay</em>.</h1>
+  <p class="lead">Hai máy, một mã phòng. Tay trái di chuyển, tay phải ra đòn. Nạp đầy ống năng lượng để tung tuyệt chiêu.</p>
+  <button class="cta" id="bCreate">Tạo phòng mới</button>
+  <div class="row"><input class="code" id="inCode" maxlength="4" placeholder="MÃ" autocomplete="off" autocapitalize="characters"><button class="cta alt" id="bJoin" style="width:auto;padding:16px 22px">Vào</button></div>
+  <div class="err" id="lobbyErr"></div>
+  <button class="ghost" id="bSolo">Tập một mình với đối thủ máy</button>
+  <div class="howto">
+    <div><b>✋ Tay trái</b><span>Đưa sang trái/phải để chạy · giơ nhanh lên để nhảy · nắm lại để đỡ</span></div>
+    <div><b>🤚 Tay phải</b><span>Nắm + đẩy: đấm · chữ V + vung: chém · xoè + đẩy: chưởng · ☝️ giữ: tuyệt chiêu</span></div>
+  </div>
+  <p class="note">Đặt điện thoại đứng yên, cách 1–1,5 m, đủ sáng, để camera thấy rõ cả hai tay.</p>
+</section>
+
+<!-- ============ PHÒNG CHỜ ============ -->
+<section class="scr" id="room">
+  <a class="brand" href="/"><span class="dot"></span><b>Hand</b>Magination <span class="tag">COMBAT</span></a>
+  <p class="lead" style="margin:30px auto 0">Mã phòng – gửi cho đối thủ</p>
+  <div class="bigcode" id="codeBig">----</div>
+  <div class="note" id="roomStatus">Đang tạo phòng…</div>
+  <div class="players">
+    <div class="pl" id="p1Card"><b><span class="sw" style="background:#2563eb"></span>Đấu sĩ Xanh</b><span id="p1St">Chủ phòng</span></div>
+    <div class="pl" id="p2Card"><b><span class="sw" style="background:#ff5733"></span>Đấu sĩ Đỏ</b><span id="p2St">Đang chờ…</span></div>
+  </div>
+  <button class="cta" id="bCam">Bật camera & sẵn sàng</button>
+  <button class="ghost" id="bKeys">Chơi bằng bàn phím / nút bấm (không camera)</button>
+  <div class="err" id="roomErr"></div>
+  <button class="ghost" id="bLeave">← Rời phòng</button>
+</section>
+
+<!-- ============ TRẬN ĐẤU ============ -->
+<section class="scr" id="game">
+  <div id="arenaWrap">
+    <canvas id="arena"></canvas>
+    <div class="hud">
+      <div class="side">
+        <div class="name"><span class="sw" style="width:10px;height:10px;border-radius:3px;background:#2563eb"></span><span id="n1">XANH</span></div>
+        <div class="hp"><i class="lag" id="hp1lag" style="background:#2563eb"></i><i id="hp1" style="background:#2563eb"></i></div>
+        <div class="tube" id="tube1"><div class="liq" id="en1"></div><i class="mk" style="left:15%"></i><i class="mk" style="left:30%"></i><i class="mk" style="left:99%"></i></div>
+        <div class="enl" id="enl1">NĂNG LƯỢNG</div>
+      </div>
+      <div><div class="timer" id="timer">99</div><div class="ping" id="ping"></div></div>
+      <div class="side r">
+        <div class="name"><span id="n2">ĐỎ</span><span class="sw" style="width:10px;height:10px;border-radius:3px;background:#ff5733"></span></div>
+        <div class="hp"><i class="lag" id="hp2lag" style="background:#ff5733"></i><i id="hp2" style="background:#ff5733"></i></div>
+        <div class="tube" id="tube2"><div class="liq" id="en2"></div><i class="mk" style="right:15%"></i><i class="mk" style="right:30%"></i><i class="mk" style="right:99%"></i></div>
+        <div class="enl" id="enl2">NĂNG LƯỢNG</div>
+      </div>
+    </div>
+    <div id="banner"><div id="bannerTx"></div></div>
+    <div id="pad">
+      <div class="grp"><button data-k="jump">▲</button><button data-k="block">🛡</button><button data-k="left">◀</button><button data-k="right">▶</button></div>
+      <div class="grp"><button data-k="punch">👊</button><button data-k="slash">✌️</button><button data-k="blast">✋</button><button data-k="ult">☝️</button></div>
+    </div>
+    <div id="endBox"><button id="bRematch">Đấu lại</button><button id="bExit" style="background:#fff;color:#14161b">Thoát</button></div>
+  </div>
+  <div id="panel">
+    <div id="camBox"><canvas id="camCv" width="320" height="240"></canvas><span class="lbl" id="camLbl">CAMERA</span></div>
+    <div id="guide">
+      <div class="gh">TAY TRÁI · DI CHUYỂN</div>
+      <div class="g" id="g-move"><span class="ic">✋</span><div><b>Chạy</b> <span>đưa tay trái sang trái / phải</span></div></div>
+      <div class="g" id="g-jump"><span class="ic">⬆️</span><div><b>Nhảy</b> <span>giơ tay trái lên thật nhanh</span></div></div>
+      <div class="g" id="g-block"><span class="ic">✊</span><div><b>Đỡ</b> <span>nắm tay trái</span></div></div>
+      <div class="gh">TAY PHẢI · RA ĐÒN</div>
+      <div class="g" id="g-punch"><span class="ic">👊</span><div><b>Đấm</b> <span>nắm tay + đẩy nhanh</span></div><span class="cost">0⚡</span></div>
+      <div class="g" id="g-slash"><span class="ic">✌️</span><div><b>Chém</b> <span>chữ V + vung tay</span></div><span class="cost">15⚡</span></div>
+      <div class="g" id="g-blast"><span class="ic">✋</span><div><b>Chưởng</b> <span>xoè tay + đẩy tới</span></div><span class="cost">30⚡</span></div>
+      <div class="g" id="g-ult"><span class="ic">☝️</span><div><b>Tuyệt chiêu</b> <span>giơ ngón trỏ, giữ 0,5s</span></div><span class="cost">100⚡</span></div>
+    </div>
+  </div>
+  <div class="tools"><button id="bSwap" title="Đổi tay trái/phải nếu máy nhận ngược">⇄ tay</button><button id="bPad">🎮 nút</button></div>
+</section>
+
+<script src="./peerjs.min.js"></script>
+<script type="module">
+import { FilesetResolver, HandLandmarker } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs";
+
+const $ = id => document.getElementById(id);
+const show = id => document.querySelectorAll(".scr").forEach(s => s.classList.toggle("on", s.id === id));
+const PAL = { blue: "#2563eb", navy: "#1e1b4b", red: "#ff5733", teal: "#14a39a", lime: "#a3e635", yellow: "#F2B705", ink: "#14161b" };
+const SKIN = [
+  { body: PAL.blue, limb: PAL.navy, glove: PAL.red, head: PAL.yellow, band: PAL.red, name: "XANH" },
+  { body: PAL.red, limb: PAL.navy, glove: PAL.yellow, head: PAL.yellow, band: PAL.teal, name: "ĐỎ" },
+];
+
+/* ======================= LUẬT CHƠI ======================= */
+const WORLD = { w: 1000, h: 560, ground: 470 };
+const MOVE = { speed: 380, jump: 980, grav: 2700 };
+const ATK = {   // ms: tổng thời gian, khung có hiệu lực; dmg, đẩy lùi, năng lượng tốn
+  punch: { dur: 280, on: 70, off: 170, dmg: 6, kb: 140, cost: 0, cd: 300, reach: [28, 100], yr: [118, 82] },
+  slash: { dur: 430, on: 120, off: 270, dmg: 11, kb: 230, cost: 15, cd: 550, reach: [16, 138], yr: [160, 50] },
+  blast: { dur: 480, on: 170, off: 170, dmg: 14, kb: 260, cost: 30, cd: 850 },
+  ult: { dur: 1000, on: 260, off: 760, dmg: 30, kb: 520, cost: 100, cd: 1800 },
+};
+const EN = { regen: 3.5, onHit: 7, onHurt: 4 };
+const ROUND_SEC = 99;
+
+/* ======================= MẠNG: PeerJS (WebRTC P2P) ======================= */
+// Hai kênh: "state" không gửi lại (nhanh nhất) cho vị trí, "event" chắc chắn tới nơi cho đòn đánh.
+const net = { peer: null, st: null, ev: null, host: false, code: "", rtt: 0, connected: false, local: null };
+const LOCAL = location.hash === "#local";   // chế độ test 2 tab trên cùng trình duyệt
+const ID = c => "hmcombat-v1-" + c.toUpperCase();
+function newCode() { const A = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; return Array.from({ length: 4 }, () => A[Math.floor(Math.random() * A.length)]).join(""); }
+function send(msg, reliable = true) {
+  if (LOCAL) { net.local?.postMessage({ from: net.host ? "h" : "g", msg }); return; }
+  const c = reliable ? net.ev : net.st;
+  if (c && c.open) { try { c.send(msg); } catch {} }
+}
+function wire(c) {
+  if (c.label === "state") net.st = c; else net.ev = c;
+  c.on("data", onMsg);
+  c.on("open", () => { if (net.st?.open && net.ev?.open) onConnected(); });
+  c.on("close", onDisconnect);
+  c.on("error", e => console.warn("conn", e));
+}
+async function createRoom() {
+  net.host = true; $("lobbyErr").textContent = ""; show("room");
+  $("p1St").textContent = "Bạn (chủ phòng)"; $("p2St").textContent = "Đang chờ…";
+  if (LOCAL) return localOpen(newCode());
+  for (let tries = 0; tries < 4; tries++) {
+    const code = newCode();
+    try { await openPeer(ID(code)); net.code = code; break; }
+    catch (e) { if (e?.type !== "unavailable-id") { $("roomErr").textContent = "Không tạo được phòng: " + (e?.type || e); return; } }
+  }
+  $("codeBig").textContent = net.code; $("roomStatus").textContent = "Phòng đã mở. Chờ đối thủ nhập mã…";
+  net.peer.on("connection", wire);
+}
+function openPeer(id) {
+  return new Promise((res, rej) => {
+    const p = id ? new Peer(id, { debug: 0 }) : new Peer({ debug: 0 });
+    p.on("open", () => { net.peer = p; res(p); });
+    p.on("error", e => { if (!net.peer) { p.destroy(); rej(e); } else onPeerError(e); });
+    p.on("disconnected", () => { try { p.reconnect(); } catch {} });
+  });
+}
+async function joinRoom(code) {
+  code = code.toUpperCase().trim();
+  if (!/^[A-Z0-9]{4}$/.test(code)) { $("lobbyErr").textContent = "Mã phòng gồm 4 ký tự."; return; }
+  net.host = false; net.code = code; show("room");
+  $("codeBig").textContent = code; $("roomStatus").textContent = "Đang kết nối…";
+  $("p1St").textContent = "Chủ phòng"; $("p2St").textContent = "Bạn";
+  if (LOCAL) return localOpen(code);
+  try { await openPeer(); } catch (e) { $("roomErr").textContent = "Không kết nối được máy chủ ghép phòng."; return; }
+  const opts = { serialization: "json" };
+  wire(net.peer.connect(ID(code), { ...opts, label: "state", reliable: false }));
+  wire(net.peer.connect(ID(code), { ...opts, label: "event", reliable: true }));
+  setTimeout(() => { if (!net.connected) $("roomErr").textContent = "Chưa vào được phòng. Kiểm tra lại mã, hoặc thử mạng khác (wifi ↔ 4G)."; }, 9000);
+}
+function onPeerError(e) {
+  if (e?.type === "peer-unavailable") { $("roomErr").textContent = "Không tìm thấy phòng " + net.code + "."; }
+  else if (e?.type) console.warn("peer", e.type);
+}
+function localOpen(code) {
+  net.code = code; $("codeBig").textContent = code;
+  net.local = new BroadcastChannel("hmcombat-" + code);
+  net.local.onmessage = e => { const { from, msg } = e.data; if ((from === "h") === net.host) return; onMsg(msg); };
+  if (net.host) $("roomStatus").textContent = "Chế độ test 2 tab · chờ tab kia vào…";
+  else send({ t: "hello" });
+}
+function onConnected() {
+  if (net.connected) return;
+  net.connected = true;
+  $("roomStatus").textContent = "Đã kết nối! Cả hai bấm “Sẵn sàng”.";
+  (net.host ? $("p2Card") : $("p1Card")).classList.add("ok");
+  (net.host ? $("p2St") : $("p1St")).textContent = "Đã vào phòng";
+  setInterval(() => send({ t: "ping", ts: performance.now() }), 1000);
+  if (me.ready) send({ t: "ready" });
+}
+function onDisconnect() {
+  if (!net.connected) return;
+  net.connected = false;
+  banner("MẤT KẾT NỐI", "Đối thủ đã rời phòng", 0);
+  $("endBox").classList.add("on");
+}
+
+/* ======================= TRẠNG THÁI ======================= */
+const me = { side: 0, x: 250, y: WORLD.ground, vx: 0, vy: 0, face: 1, hp: 100, en: 30, act: null, actAt: 0, hurtUntil: 0, block: false, ko: false, ready: false, lastAtk: {}, proj: [], beam: 0, input: "cam" };
+const op = { x: 750, y: WORLD.ground, vx: 0, vy: 0, face: -1, hp: 100, en: 30, act: null, actEl: 0, block: false, ko: false, proj: [], beam: 0, recvAt: 0, rx: 750, ry: WORLD.ground, ready: false, hurtFlash: 0 };
+const game = { phase: "lobby", startAt: 0, timer: ROUND_SEC, ai: false, hitId: 0, shake: 0 };
+const fx = [];       // hạt hiệu ứng
+let seenHits = new Set();
+
+function onMsg(m) {
+  if (!m || !m.t) return;
+  if (m.t === "hello") { if (net.host) { send({ t: "hello" }); } onConnected(); return; }
+  if (m.t === "s") {           // trạng thái đối thủ (≈45 lần/giây)
+    Object.assign(op, { rx: m.x, ry: m.y, vx: m.vx, vy: m.vy, face: m.f, hp: m.hp, en: m.en, act: m.a, actEl: m.ae, block: !!m.b, proj: m.p || [], beam: m.u || 0, ko: !!m.k, recvAt: performance.now() });
+    if (!net.host && typeof m.tm === "number") game.timer = m.tm;
+    return;
+  }
+  if (m.t === "ping") return send({ t: "pong", ts: m.ts });
+  if (m.t === "pong") { net.rtt = net.rtt ? net.rtt * .7 + (performance.now() - m.ts) * .3 : performance.now() - m.ts; $("ping").textContent = Math.round(net.rtt) + " ms"; return; }
+  if (m.t === "ready") { op.ready = true; (net.host ? $("p2St") : $("p1St")).textContent = "Sẵn sàng ✓"; maybeStart(); return; }
+  if (m.t === "go") { startRound(Math.max(0, 2400 - net.rtt / 2)); return; }
+  if (m.t === "hit") { if (seenHits.has(m.id)) return; seenHits.add(m.id); takeHit(m); return; }
+  if (m.t === "ko") { endRound(true); return; }
+  if (m.t === "timeup") { endRound(m.win === -1 ? null : m.win === me.side); return; }
+  if (m.t === "rematch") { op.ready = true; maybeStart(true); return; }
+}
+
+/* ======================= VÀO TRẬN ======================= */
+function setReady() {
+  me.ready = true; $("bCam").disabled = true;
+  (net.host ? $("p1St") : $("p2St")).textContent = "Sẵn sàng ✓";
+  send({ t: "ready" }); maybeStart();
+}
+function maybeStart(rematch) {
+  if (game.ai) return;
+  if (!(me.ready && op.ready)) return;
+  if (net.host) { send({ t: "go" }); startRound(2400 + net.rtt / 2); }
+}
+function resetFighters() {
+  me.side = net.host || game.ai ? 0 : 1;
+  Object.assign(me, { x: me.side ? 750 : 250, y: WORLD.ground, vx: 0, vy: 0, face: me.side ? -1 : 1, hp: 100, en: 30, act: null, hurtUntil: 0, block: false, ko: false, proj: [], beam: 0, lastAtk: {} });
+  Object.assign(op, { rx: me.side ? 250 : 750, x: me.side ? 250 : 750, y: WORLD.ground, ry: WORLD.ground, hp: 100, en: 30, act: null, ko: false, proj: [], beam: 0 });
+  seenHits = new Set(); fx.length = 0; game.timer = ROUND_SEC;
+}
+function startRound(delay) {
+  resetFighters(); show("game"); resize();
+  $("endBox").classList.remove("on");
+  game.phase = "count"; game.startAt = performance.now() + delay;
+  $("n1").textContent = me.side === 0 ? "BẠN · XANH" : "XANH"; $("n2").textContent = me.side === 1 ? "BẠN · ĐỎ" : (game.ai ? "MÁY · ĐỎ" : "ĐỎ");
+  calib.neutral = null;
+}
+function endRound(win) {
+  if (game.phase === "end") return;
+  game.phase = "end";
+  banner(win === null ? "HOÀ" : win ? "THẮNG!" : "K.O.", win === null ? "Hết giờ" : win ? "Bạn hạ gục đối thủ" : "Bạn bị hạ gục", 0);
+  $("endBox").classList.add("on");
+  me.ready = false; op.ready = false;
+}
+$("bRematch").onclick = () => {
+  if (game.ai) return startAI();
+  me.ready = true; send({ t: "rematch" }); banner("CHỜ ĐỐI THỦ…", "Đối thủ bấm Đấu lại là bắt đầu", 0);
+  if (op.ready) maybeStart(true);
+};
+$("bExit").onclick = () => location.reload();
+
+/* ======================= NHẬN DIỆN TAY ======================= */
+let hand = null, stream = null, swapHands = false;
+const vid = document.createElement("video"); vid.playsInline = true; vid.muted = true;
+async function startCamera() {
+  const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm");
+  const o = d => ({ baseOptions: { modelAssetPath: "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task", delegate: d }, runningMode: "VIDEO", numHands: 2, minHandDetectionConfidence: .5, minHandPresenceConfidence: .5, minTrackingConfidence: .5 });
+  const [h, s] = await Promise.all([
+    HandLandmarker.createFromOptions(vision, o("GPU")).catch(() => HandLandmarker.createFromOptions(vision, o("CPU"))),
+    navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 60 } } }),
+  ]);
+  hand = h; stream = s; vid.srcObject = s; await vid.play();
+}
+const F = [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16], [17, 18, 19, 20]];
+const d2 = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+function analyse(lm) {   // lm: toạ độ 0..1 đã lật gương (như soi gương)
+  const palm = d2(lm[0], lm[9]) || .01;
+  const ext = F.map(([m, p, , t], i) => i === 0 ? d2(lm[4], lm[17]) > d2(lm[2], lm[17]) * 1.15 : d2(lm[t], lm[0]) > d2(lm[p], lm[0]) * 1.2);
+  const n = ext.filter(Boolean).length;
+  const c = { x: (lm[0].x + lm[9].x) / 2, y: (lm[0].y + lm[9].y) / 2 };
+  return { palm, ext, n, c, fist: n === 0 || (n === 1 && ext[0]), open: n >= 4, victory: ext[1] && ext[2] && !ext[3] && !ext[4], point: ext[1] && !ext[2] && !ext[3] && !ext[4] };
+}
+const ctl = { move: 0, jump: false, block: false, attack: null };
+const calib = { neutral: null };
+const hist = { L: [], R: [] };           // lịch sử vị trí để đo tốc độ
+let pointSince = 0, lastHands = { L: null, R: null };
+function readHands(now) {
+  if (!hand || vid.readyState < 2) return;
+  const r = hand.detectForVideo(vid, now);
+  let L = null, R = null;
+  (r.landmarks || []).forEach((lm0, i) => {
+    const lm = lm0.map(p => ({ x: 1 - p.x, y: p.y }));
+    // MediaPipe gán nhãn như ảnh đã lật; khung camera chưa lật nên nhãn ngược với tay thật
+    let isLeft = (r.handednesses?.[i]?.[0]?.categoryName || "Left") === "Right";
+    if (swapHands) isLeft = !isLeft;
+    const a = analyse(lm); a.lm = lm;
+    if (isLeft && !L) L = a; else if (!isLeft && !R) R = a; else if (!L) L = a; else if (!R) R = a;
+  });
+  if (L && R && L.c.x > R.c.x && !swapHands) { const t = L; L = R; R = t; }   // tay trái luôn ở bên trái khung gương
+  lastHands = { L, R };
+  // ---- tay trái: joystick ----
+  ctl.move = 0; ctl.block = false;
+  if (L) {
+    if (calib.neutral === null) calib.neutral = L.c.x;
+    const dx = (L.c.x - calib.neutral) / Math.max(.06, L.palm * 1.1);
+    ctl.move = Math.abs(dx) < .35 ? 0 : Math.max(-1, Math.min(1, (dx - Math.sign(dx) * .35) * 1.6));
+    ctl.block = L.fist;
+    hist.L.push({ t: now, y: L.c.y, p: L.palm }); while (hist.L.length && now - hist.L[0].t > 160) hist.L.shift();
+    if (hist.L.length > 2) { const a = hist.L[0], b = hist.L[hist.L.length - 1]; const vy = (b.y - a.y) / (b.p || .05) / ((b.t - a.t) / 1000); if (vy < -7) ctl.jump = true; }
+  } else hist.L = [];
+  // ---- tay phải: ra đòn ----
+  if (R) {
+    hist.R.push({ t: now, x: R.c.x, y: R.c.y, p: R.palm }); while (hist.R.length && now - hist.R[0].t > 140) hist.R.shift();
+    if (hist.R.length > 2) {
+      const a = hist.R[0], b = hist.R[hist.R.length - 1], dt = (b.t - a.t) / 1000 || .016;
+      const speed = Math.hypot(b.x - a.x, b.y - a.y) / b.p / dt;     // số "bàn tay" mỗi giây
+      const grow = b.p / a.p;                                        // đẩy về phía camera → tay to ra
+      if (speed > 7 || grow > 1.16) {
+        if (R.victory) ctl.attack = "slash"; else if (R.fist) ctl.attack = "punch"; else if (R.open) ctl.attack = "blast";
+        if (ctl.attack) hist.R = [];
+      }
+    }
+    if (R.point) { pointSince = pointSince || now; if (now - pointSince > 500) { ctl.attack = "ult"; pointSince = now + 1500; } } else pointSince = 0;
+  } else { hist.R = []; pointSince = 0; }
+}
+function drawCam() {
+  const c = $("camCv"), x = c.getContext("2d");
+  x.save(); x.translate(c.width, 0); x.scale(-1, 1);
+  if (vid.readyState >= 2) x.drawImage(vid, 0, 0, c.width, c.height); else { x.fillStyle = "#111"; x.fillRect(0, 0, c.width, c.height); }
+  x.restore();
+  // vùng trung tâm joystick tay trái
+  if (calib.neutral !== null && lastHands.L) { const nx = calib.neutral * c.width, w = Math.max(.06, lastHands.L.palm * 1.1) * .35 * c.width; x.fillStyle = "#ffffff22"; x.fillRect(nx - w, 0, w * 2, c.height); }
+  const bones = [[0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [5, 6], [6, 7], [7, 8], [5, 9], [9, 10], [10, 11], [11, 12], [9, 13], [13, 14], [14, 15], [15, 16], [13, 17], [17, 18], [18, 19], [19, 20], [0, 17]];
+  [["L", "#14a39a"], ["R", "#F2B705"]].forEach(([k, col]) => {
+    const h = lastHands[k]; if (!h) return;
+    x.strokeStyle = col; x.lineWidth = 3;
+    bones.forEach(([a, b]) => { x.beginPath(); x.moveTo(h.lm[a].x * c.width, h.lm[a].y * c.height); x.lineTo(h.lm[b].x * c.width, h.lm[b].y * c.height); x.stroke(); });
+    x.fillStyle = col; x.font = "800 18px sans-serif"; x.fillText(k === "L" ? "TRÁI" : "PHẢI", h.lm[0].x * c.width - 20, h.lm[0].y * c.height + 22);
+  });
+}
+
+/* ======================= BÀN PHÍM / NÚT (dự phòng & test) ======================= */
+const keys = {};
+addEventListener("keydown", e => { keys[e.key.toLowerCase()] = true; const m = { j: "punch", k: "slash", l: "blast", u: "ult" }[e.key.toLowerCase()]; if (m) keyAtk = m; if (e.key === "w" || e.key === "ArrowUp") keyJump = true; });
+addEventListener("keyup", e => { keys[e.key.toLowerCase()] = false; });
+let keyAtk = null, keyJump = false;
+document.querySelectorAll("#pad button").forEach(b => {
+  const k = b.dataset.k;
+  const down = e => { e.preventDefault(); if (["punch", "slash", "blast", "ult"].includes(k)) keyAtk = k; else if (k === "jump") keyJump = true; else keys["pad-" + k] = true; };
+  const up = e => { e.preventDefault(); keys["pad-" + k] = false; };
+  b.addEventListener("pointerdown", down); b.addEventListener("pointerup", up); b.addEventListener("pointerleave", up);
+});
+$("bPad").onclick = () => $("pad").classList.toggle("on");
+$("bSwap").onclick = () => { swapHands = !swapHands; calib.neutral = null; $("bSwap").style.background = swapHands ? "#F2B705" : ""; };
+
+/* ======================= MÔ PHỎNG NHÂN VẬT CỦA MÌNH ======================= */
+function tryAttack(kind, now) {
+  const A = ATK[kind];
+  if (me.act || me.ko || now < me.hurtUntil || me.block) return;
+  if (now - (me.lastAtk[kind] || 0) < A.cd) return;
+  if (me.en < A.cost) { flashGuide("g-" + kind, true); return; }
+  me.en -= A.cost; me.act = kind; me.actAt = now; me.lastAtk[kind] = now; me.hitDone = false; me.projDone = false;
+  flashGuide("g-" + kind);
+  if (kind === "ult") { game.shake = 10; burst(me.x, me.y - 100, 30, [PAL.yellow, PAL.red, PAL.teal], 6); }
+}
+function boxOf(p) { return { x0: p.x - 30, x1: p.x + 30, y0: p.y - 150, y1: p.y }; }
+const overlap = (a, b) => a.x0 < b.x1 && a.x1 > b.x0 && a.y0 < b.y1 && a.y1 > b.y0;
+function sendHit(kind, dmg, kb) {
+  const id = (net.host ? "h" : "g") + (++game.hitId);
+  if (game.ai) { aiTakeHit({ dmg, kb, kind, dir: me.face }); }
+  else send({ t: "hit", id, dmg, kb, kind, dir: me.face });
+  me.en = Math.min(100, me.en + (kind === "ult" ? 0 : EN.onHit));
+  const hx = op.x - me.face * 20, hy = op.y - 100;
+  burst(hx, hy, kind === "ult" ? 40 : 14, [PAL.yellow, PAL.red, PAL.ink], kind === "ult" ? 9 : 5);
+  game.shake = Math.max(game.shake, kind === "ult" ? 14 : 5);
+  op.hurtFlash = performance.now();
+}
+function takeHit(m) {
+  if (game.phase === "count" && performance.now() >= game.startAt) game.phase = "fight";
+  if (me.ko || game.phase !== "fight") return;
+  const blocked = me.block && m.kind !== "ult";
+  const dmg = blocked ? Math.ceil(m.dmg * .2) : m.dmg;
+  me.hp = Math.max(0, me.hp - dmg);
+  me.en = Math.min(100, me.en + EN.onHurt);
+  me.vx = m.dir * m.kb * (blocked ? .35 : 1); if (!blocked && m.kind !== "punch") me.vy = -260;
+  if (!blocked) { me.hurtUntil = performance.now() + (m.kind === "ult" ? 650 : 260); me.act = null; }
+  burst(me.x, me.y - 100, blocked ? 8 : 16, blocked ? [PAL.teal, "#fff"] : [PAL.red, PAL.yellow], 5);
+  game.shake = Math.max(game.shake, m.kind === "ult" ? 16 : blocked ? 2 : 6);
+  navigator.vibrate?.(blocked ? 10 : 30);
+  if (me.hp <= 0) { me.ko = true; if (!game.ai) send({ t: "ko" }); endRound(false); }
+}
+function stepMe(dt, now) {
+  // gom điều khiển: camera + bàn phím
+  let move = ctl.move, block = ctl.block, jump = ctl.jump, atk = ctl.attack;
+  if (keys["a"] || keys["arrowleft"] || keys["pad-left"]) move = -1;
+  if (keys["d"] || keys["arrowright"] || keys["pad-right"]) move = 1;
+  if (keys["s"] || keys["arrowdown"] || keys["pad-block"]) block = true;
+  if (keyJump) jump = true; if (keyAtk) atk = keyAtk;
+  ctl.jump = false; ctl.attack = null; keyJump = false; keyAtk = null;
+  hilite("g-move", move !== 0); hilite("g-block", block);
+  if (game.phase !== "fight") { move = 0; atk = null; jump = false; }
+  const stunned = now < me.hurtUntil || me.ko;
+  me.block = block && !stunned && !me.act && me.y >= WORLD.ground;
+  const busy = me.act === "blast" || me.act === "ult" || me.block;
+  if (!stunned) {
+    const target = busy ? 0 : move * MOVE.speed * (me.act ? .35 : 1);
+    me.vx += (target - me.vx) * Math.min(1, dt * 14);
+    if (jump && me.y >= WORLD.ground && !busy) { me.vy = -MOVE.jump; flashGuide("g-jump"); }
+    if (atk) tryAttack(atk, now);
+  } else me.vx *= Math.pow(.02, dt);
+  me.vy += MOVE.grav * dt;
+  me.x += me.vx * dt; me.y += me.vy * dt;
+  if (me.y >= WORLD.ground) { me.y = WORLD.ground; me.vy = 0; }
+  me.x = Math.max(40, Math.min(WORLD.w - 40, me.x));
+  // không đi xuyên đối thủ
+  if (Math.abs(me.x - op.x) < 52 && Math.abs(me.y - op.y) < 120) me.x = op.x + Math.sign(me.x - op.x || -me.face) * 52;
+  if (!me.act && !stunned) me.face = op.x >= me.x ? 1 : -1;
+  me.en = Math.min(100, me.en + EN.regen * dt * (game.phase === "fight" ? 1 : 0));
+  // đòn đánh
+  if (me.act) {
+    const A = ATK[me.act], el = now - me.actAt;
+    if ((me.act === "punch" || me.act === "slash") && !me.hitDone && el >= A.on && el <= A.off) {
+      const hb = { x0: me.face > 0 ? me.x + A.reach[0] : me.x - A.reach[1], x1: me.face > 0 ? me.x + A.reach[1] : me.x - A.reach[0], y0: me.y - A.yr[0], y1: me.y - A.yr[1] };
+      if (!op.ko && overlap(hb, boxOf(op))) { me.hitDone = true; sendHit(me.act, A.dmg, A.kb); }
+    }
+    if (me.act === "blast" && !me.projDone && el >= A.on) { me.projDone = true; me.proj.push({ x: me.x + me.face * 50, y: me.y - 105, dir: me.face, born: now }); }
+    if (me.act === "ult") { me.beam = el >= A.on && el <= A.off ? 1 : 0; if (me.beam && !me.hitDone) { const hb = { x0: me.face > 0 ? me.x + 30 : 0, x1: me.face > 0 ? WORLD.w : me.x - 30, y0: me.y - 150, y1: me.y - 40 }; if (!op.ko && overlap(hb, boxOf(op))) { me.hitDone = true; sendHit("ult", A.dmg, A.kb); } } }
+    if (el >= A.dur) { me.act = null; me.beam = 0; }
+  }
+  // chưởng bay
+  for (let i = me.proj.length - 1; i >= 0; i--) {
+    const p = me.proj[i]; p.x += p.dir * 720 * dt;
+    if (!op.ko && overlap({ x0: p.x - 22, x1: p.x + 22, y0: p.y - 22, y1: p.y + 22 }, boxOf(op))) { sendHit("blast", ATK.blast.dmg, ATK.blast.kb); me.proj.splice(i, 1); continue; }
+    if (p.x < -50 || p.x > WORLD.w + 50) me.proj.splice(i, 1);
+  }
+}
+/* Đối thủ: dự đoán vị trí theo vận tốc để bù trễ, rồi làm mượt */
+function stepOp(dt, now) {
+  if (game.ai) return;
+  const age = Math.min(.12, (now - op.recvAt) / 1000);
+  const tx = op.rx + op.vx * age, ty = Math.min(WORLD.ground, op.ry + op.vy * age);
+  op.x += (tx - op.x) * Math.min(1, dt * 22); op.y += (ty - op.y) * Math.min(1, dt * 22);
+  op.actEl += dt * 1000;
+}
+let lastSend = 0;
+function sendState(now) {
+  if (game.ai || now - lastSend < 22) return; lastSend = now;
+  send({ t: "s", x: Math.round(me.x), y: Math.round(me.y), vx: Math.round(me.vx), vy: Math.round(me.vy), f: me.face, hp: me.hp, en: Math.round(me.en), a: me.act, ae: me.act ? Math.round(now - me.actAt) : 0, b: me.block ? 1 : 0, p: me.proj.map(p => [Math.round(p.x), Math.round(p.y), p.dir]), u: me.beam, k: me.ko ? 1 : 0, tm: net.host ? game.timer : undefined }, false);
+}
+
+/* ======================= ĐỐI THỦ MÁY (tập một mình) ======================= */
+const ai = { next: 0, move: 0 };
+function startAI() {
+  game.ai = true; net.host = true; me.ready = true; show("game");
+  startRound(1800);
+  if (!hand) startCamera().catch(() => { $("pad").classList.add("on"); me.input = "keys"; });
+}
+function aiTakeHit(m) {
+  const blocked = op.block && m.kind !== "ult"; const dmg = blocked ? Math.ceil(m.dmg * .2) : m.dmg;
+  op.hp = Math.max(0, op.hp - dmg); op.vx = m.dir * m.kb * (blocked ? .35 : 1); op.stun = performance.now() + (m.kind === "ult" ? 650 : 260); op.act = null;
+  if (op.hp <= 0) { op.ko = true; endRound(true); }
+}
+function stepAI(dt, now) {
+  if (!game.ai) return;
+  const dist = me.x - op.x, stunned = now < (op.stun || 0) || op.ko || game.phase !== "fight";
+  op.face = dist >= 0 ? 1 : -1;
+  if (!stunned && now > ai.next) {
+    ai.next = now + 350 + Math.random() * 500;
+    const ad = Math.abs(dist);
+    op.block = me.act && ad < 160 && Math.random() < .45;
+    if (ad > 130) ai.move = Math.sign(dist) * (Math.random() < .8 ? 1 : -1);
+    else { ai.move = Math.random() < .3 ? -Math.sign(dist) : 0; if (!op.block) { op.act = Math.random() < .7 ? "punch" : "slash"; op.actEl = 0; op.hitDone = false; } }
+    if (ad > 300 && op.en >= 30 && Math.random() < .35) { op.act = "blast"; op.actEl = 0; op.projDone = false; op.en -= 30; }
+  }
+  if (stunned) ai.move = 0;
+  op.vx += ((op.act || op.block ? 0 : ai.move * MOVE.speed * .8) - op.vx) * Math.min(1, dt * 10);
+  op.x = Math.max(40, Math.min(WORLD.w - 40, op.x + op.vx * dt)); op.y = WORLD.ground;
+  op.en = Math.min(100, op.en + EN.regen * dt);
+  if (op.act) {
+    op.actEl += dt * 1000; const A = ATK[op.act];
+    if ((op.act === "punch" || op.act === "slash") && !op.hitDone && op.actEl >= A.on && op.actEl <= A.off) {
+      const hb = { x0: op.face > 0 ? op.x + A.reach[0] : op.x - A.reach[1], x1: op.face > 0 ? op.x + A.reach[1] : op.x - A.reach[0], y0: op.y - A.yr[0], y1: op.y - A.yr[1] };
+      if (overlap(hb, boxOf(me))) { op.hitDone = true; takeHit({ dmg: A.dmg, kb: A.kb, kind: op.act, dir: op.face }); op.en = Math.min(100, op.en + EN.onHit); }
+    }
+    if (op.act === "blast" && !op.projDone && op.actEl >= A.on) { op.projDone = true; (op.aiProj ||= []).push({ x: op.x + op.face * 50, y: op.y - 105, dir: op.face }); }
+    if (op.actEl >= A.dur) op.act = null;
+  }
+  op.aiProj = (op.aiProj || []).filter(p => { p.x += p.dir * 720 * dt; if (overlap({ x0: p.x - 22, x1: p.x + 22, y0: p.y - 22, y1: p.y + 22 }, boxOf(me))) { takeHit({ dmg: ATK.blast.dmg, kb: ATK.blast.kb, kind: "blast", dir: p.dir }); return false; } return p.x > -50 && p.x < WORLD.w + 50; });
+  op.proj = op.aiProj.map(p => [p.x, p.y, p.dir]);
+}
+
+/* ======================= VẼ ======================= */
+const cv = $("arena"), x = cv.getContext("2d");
+let W = 0, H = 0, DPR = 1, S = 1, OX = 0, OY = 0, grain = null, camX = 0;
+const deco = Array.from({ length: 9 }, (_, i) => ({ x: Math.random() * WORLD.w, y: 60 + Math.random() * 300, s: 60 + Math.random() * 120, k: i % 3, c: [PAL.blue, PAL.teal, PAL.lime, PAL.yellow, PAL.red][i % 5] }));
+function resize() {
+  const wrap = $("arenaWrap");
+  const land = matchMedia("(orientation:landscape) and (max-height:600px)").matches;
+  if (!land) wrap.style.height = Math.round(Math.min(innerHeight * .56, innerWidth * 1.25)) + "px"; else wrap.style.height = "";
+  DPR = Math.min(2, devicePixelRatio || 1);
+  W = wrap.clientWidth; H = wrap.clientHeight;
+  cv.width = W * DPR; cv.height = H * DPR;
+  // dọc: phóng to theo chiều cao (cắt bớt trời), khung hình đi theo hai đấu sĩ
+  S = land ? Math.min(W / WORLD.w, H / WORLD.h) : H / (WORLD.h * .78);
+  OX = (W - WORLD.w * S) / 2; OY = H - (WORLD.ground + 70) * S;
+  const g = document.createElement("canvas"); g.width = g.height = 200; const gx = g.getContext("2d"), id = gx.createImageData(200, 200);
+  for (let i = 0; i < id.data.length; i += 4) { const v = Math.random() * 255; id.data[i] = id.data[i + 1] = id.data[i + 2] = v; id.data[i + 3] = Math.random() * 26; }
+  gx.putImageData(id, 0, 0); grain = x.createPattern(g, "repeat");
+}
+addEventListener("resize", resize);
+function burst(px, py, n, cols, sp) {
+  const kinds = ["c", "b", "d"];
+  for (let i = 0; i < n; i++) { const a = Math.random() * 6.283, v = 60 + Math.random() * sp * 70; fx.push({ x: px, y: py, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 120, s: 6 + Math.random() * 14, k: kinds[i % 3], c: cols[i % cols.length], r: Math.random() * 6, life: 1 }); }
+  if (fx.length > 400) fx.splice(0, fx.length - 400);
+}
+function shape(k, s) { x.beginPath(); if (k === "c") x.arc(0, 0, s / 2, 0, 6.283); else if (k === "b") x.roundRect(-s * .15, -s * .6, s * .3, s * 1.2, 3); else { x.rotate(.785); x.rect(-s * .35, -s * .35, s * .7, s * .7); } }
+
+/* Đấu sĩ dựng từ mảng hình phẳng (cùng phong cách HandMagination) */
+function limb(o, a1, l1, a2, l2) { const e = { x: o.x + Math.cos(a1) * l1, y: o.y + Math.sin(a1) * l1 }; return [o, e, { x: e.x + Math.cos(a2) * l2, y: e.y + Math.sin(a2) * l2 }]; }
+function drawFighter(p, skin, act, el, now, flash) {
+  const f = p.face, gx = p.x, gy = p.y;
+  const ko = p.ko, block = p.block;
+  const walk = Math.abs(p.vx) > 30 && gy >= WORLD.ground - 1 ? Math.sin(now * .018) : 0;
+  const air = gy < WORLD.ground - 2;
+  const bob = Math.sin(now * .006) * 3;
+  x.save();
+  if (ko) { x.translate(gx, gy); x.rotate(-f * Math.PI / 2 * Math.min(1, (now - (p.koAt ||= now)) / 300)); x.translate(-gx, -gy); }
+  const hip = { x: gx, y: gy - 72 + (air ? -6 : 0) }, neck = { x: gx + f * 4, y: gy - 128 + bob * .5 }, head = { x: gx + f * 8, y: gy - 150 + bob * .5 };
+  const A = act ? ATK[act] : null, prog = A ? Math.min(1, el / A.dur) : 0;
+  // bóng đổ
+  if (!ko) { x.fillStyle = "#14161b22"; x.beginPath(); x.ellipse(gx, WORLD.ground + 4, 44, 9, 0, 0, 6.283); x.fill(); }
+  x.globalCompositeOperation = "multiply"; x.lineCap = x.lineJoin = "round";
+  // chân
+  const legA = air ? [Math.PI / 2 + f * .6, Math.PI / 2 - f * .2] : [Math.PI / 2 + walk * .5 + f * .15, Math.PI / 2 - walk * .5 - f * .1];
+  x.strokeStyle = skin.limb; x.lineWidth = 15;
+  legA.forEach((a, i) => { const L = limb(hip, a, 40, a + (air ? f * (i ? 1.2 : .4) : f * .25), 38); x.beginPath(); x.moveTo(L[0].x, L[0].y); x.lineTo(L[1].x, L[1].y); x.lineTo(L[2].x, L[2].y); x.stroke(); x.fillStyle = skin.limb; x.beginPath(); x.ellipse(L[2].x + f * 8, L[2].y, 13, 7, 0, 0, 6.283); x.fill(); });
+  // quần + thân
+  x.fillStyle = skin.limb; x.beginPath(); x.roundRect(hip.x - 22, hip.y - 10, 44, 26, 8); x.fill();
+  x.fillStyle = flash ? "#ffffff" : skin.body; x.globalAlpha = .95;
+  x.beginPath(); x.roundRect(hip.x - 23 + f * 2, neck.y - 4, 46, hip.y - neck.y + 6, 16); x.fill(); x.globalAlpha = 1;
+  x.fillStyle = PAL.yellow; x.fillRect(hip.x - 23, hip.y - 12, 46, 7);
+  // tay: góc theo hành động
+  const back = { x: neck.x - f * 14, y: neck.y + 8 }, front = { x: neck.x + f * 12, y: neck.y + 8 };
+  const ang = v => f > 0 ? v : Math.PI - v;
+  let fa1 = ang(.9), fa2 = ang(-1.6), ba1 = ang(1.2), ba2 = ang(-1.3), fl2 = 30;
+  if (block) { fa1 = ang(.3); fa2 = ang(-1.9); ba1 = ang(.6); ba2 = ang(-1.7); }
+  if (act === "punch") { const t = el < A.on ? el / A.on : el < A.off ? 1 : 1 - (el - A.off) / (A.dur - A.off); fa1 = ang(.9 - .9 * t); fa2 = ang(-1.6 + 1.6 * t); fl2 = 30 + 12 * t; }
+  if (act === "slash") { const t = prog; const a = -2.3 + t * 3.1; fa1 = ang(a); fa2 = ang(a + .2); }
+  if (act === "blast") { const t = Math.min(1, el / A.on); fa1 = ba1 = ang(.05); fa2 = ba2 = ang(0); fl2 = 26 + 10 * t; }
+  if (act === "ult") { const up = el < A.on; fa1 = ba1 = ang(up ? -1.4 : 0); fa2 = ba2 = ang(up ? -1.5 : 0); }
+  x.strokeStyle = skin.limb; x.lineWidth = 13;
+  const BA = limb(back, ba1, 30, ba2, 28), FA = limb(front, fa1, 30, fa2, fl2);
+  [BA, FA].forEach(L => { x.beginPath(); x.moveTo(L[0].x, L[0].y); x.lineTo(L[1].x, L[1].y); x.lineTo(L[2].x, L[2].y); x.stroke(); });
+  x.fillStyle = skin.glove; [BA, FA].forEach((L, i) => { x.beginPath(); x.arc(L[2].x, L[2].y, i ? 13 : 11, 0, 6.283); x.fill(); });
+  // vệt chém
+  if (act === "slash" && el > A.on * .7 && el < A.off + 60) {
+    x.globalCompositeOperation = "source-over"; x.fillStyle = "#F2B705aa";
+    x.beginPath(); x.moveTo(front.x, front.y); x.arc(front.x, front.y, 130, f > 0 ? -2.0 : Math.PI + 2.0, f > 0 ? .7 : Math.PI - .7, f < 0); x.closePath(); x.fill();
+    x.globalCompositeOperation = "multiply";
+  }
+  // đầu + băng đô
+  x.fillStyle = skin.head; x.beginPath(); x.arc(head.x, head.y, 20, 0, 6.283); x.fill();
+  x.fillStyle = skin.band; x.fillRect(head.x - 20, head.y - 8, 40, 7);
+  x.strokeStyle = skin.band; x.lineWidth = 5; x.beginPath(); x.moveTo(head.x - f * 20, head.y - 5); x.quadraticCurveTo(head.x - f * 40, head.y - 2 + Math.sin(now * .02) * 6, head.x - f * 52, head.y + 8 + Math.sin(now * .02 + 1) * 8); x.stroke();
+  x.fillStyle = PAL.ink; x.beginPath(); x.arc(head.x + f * 9, head.y - 1, 3, 0, 6.283); x.fill();
+  // tụ khí chưởng / tuyệt chiêu
+  if (act === "blast" && el < A.on + 80) { x.globalCompositeOperation = "source-over"; x.fillStyle = "#14a39a99"; x.beginPath(); x.arc(gx + f * 50, gy - 105, 10 + 18 * Math.min(1, el / A.on), 0, 6.283); x.fill(); }
+  if (act === "ult" && el < A.on) { x.globalCompositeOperation = "source-over"; x.strokeStyle = "#F2B705"; x.lineWidth = 4; x.beginPath(); x.arc(gx, gy - 90, 40 + 50 * (el / A.on), 0, 6.283); x.stroke(); }
+  x.restore();
+}
+function drawProj(list, now) {
+  list.forEach(([px, py, dir]) => {
+    x.save(); x.globalCompositeOperation = "multiply";
+    x.fillStyle = PAL.teal; x.beginPath(); x.arc(px, py, 24, 0, 6.283); x.fill();
+    x.fillStyle = PAL.lime; x.beginPath(); x.arc(px + dir * 6, py - 4, 14, 0, 6.283); x.fill();
+    x.fillStyle = PAL.yellow; for (let k = 1; k < 4; k++) { x.globalAlpha = .5 / k; x.beginPath(); x.arc(px - dir * k * 22, py + Math.sin(now * .03 + k) * 4, 14 - k * 3, 0, 6.283); x.fill(); }
+    x.restore();
+  });
+}
+function drawBeam(p, now) {
+  if (!p.beam) return;
+  const y0 = p.y - 132, h = 84, xs = p.face > 0 ? p.x + 30 : 0, xe = p.face > 0 ? WORLD.w : p.x - 30;
+  x.save(); x.globalCompositeOperation = "multiply";
+  [[PAL.yellow, 0], [PAL.red, 14], [PAL.blue, 30]].forEach(([c, inset], i) => { x.fillStyle = c; x.globalAlpha = .85; x.beginPath(); x.roundRect(xs, y0 + inset + Math.sin(now * .05 + i) * 3, xe - xs, h - inset * 2, 30); x.fill(); });
+  x.restore();
+}
+function render(now) {
+  x.setTransform(DPR, 0, 0, DPR, 0, 0);
+  x.fillStyle = "#f4f1ea"; x.fillRect(0, 0, W, H);
+  const sh = game.shake > .5 ? (Math.random() - .5) * game.shake : 0; game.shake *= .86;
+  // khung hình đi theo hai đấu sĩ khi màn hẹp hơn đấu trường
+  const mid = (me.x + op.x) / 2, minOX = W - WORLD.w * S;
+  const ox = minOX >= 0 ? (W - WORLD.w * S) / 2 : Math.max(minOX, Math.min(0, W / 2 - mid * S));
+  camX += (ox - camX) * .15;
+  x.translate(camX + sh, OY + sh * .6); x.scale(S, S);
+  // phông trang trí
+  x.save(); x.globalCompositeOperation = "multiply"; x.globalAlpha = .18;
+  deco.forEach(d => { x.save(); x.translate(d.x, d.y); x.fillStyle = d.c; shape(["c", "b", "d"][d.k], d.s); x.fill(); x.restore(); });
+  x.restore();
+  x.fillStyle = "#14161b"; x.fillRect(-500, WORLD.ground + 10, WORLD.w + 1000, 3);
+  x.save(); x.globalAlpha = .07; x.fillStyle = "#14161b"; x.font = '800 150px "Be Vietnam Pro", sans-serif'; x.textAlign = "center"; x.fillText("COMBAT", WORLD.w / 2, WORLD.ground - 60); x.restore();
+  // nhân vật: đối thủ trước, mình sau
+  const opSkin = SKIN[me.side ? 0 : 1], meSkin = SKIN[me.side];
+  drawBeam(op, now); drawBeam(me, now);
+  drawFighter(op, opSkin, op.act, op.actEl, now, now - (op.hurtFlash || 0) < 90);
+  drawFighter(me, meSkin, me.act, me.act ? now - me.actAt : 0, now, now < me.hurtUntil && (now % 120) < 60);
+  drawProj(me.proj.map(p => [p.x, p.y, p.dir]), now); drawProj(op.proj || [], now);
+  // hiệu ứng
+  x.save(); x.globalCompositeOperation = "multiply";
+  for (let i = fx.length - 1; i >= 0; i--) { const p = fx[i]; p.vy += 900 / 60; p.x += p.vx / 60; p.y += p.vy / 60; p.r += .15; p.life -= .025; if (p.life <= 0) { fx.splice(i, 1); continue; } x.save(); x.translate(p.x, p.y); x.rotate(p.r); x.globalAlpha = p.life; x.fillStyle = p.c; shape(p.k, p.s); x.fill(); x.restore(); }
+  x.restore();
+  x.setTransform(DPR, 0, 0, DPR, 0, 0);
+  if (grain) { x.fillStyle = grain; x.globalCompositeOperation = "multiply"; x.fillRect(0, 0, W, H); x.globalCompositeOperation = "source-over"; }
+}
+
+/* ======================= HUD ======================= */
+const lagW = [100, 100];
+function hud() {
+  const P = me.side === 0 ? [me, op] : [op, me];
+  P.forEach((p, i) => {
+    const k = i + 1;
+    $("hp" + k).style.width = p.hp + "%";
+    lagW[i] = Math.max(p.hp, lagW[i] - .4); $("hp" + k + "lag").style.width = lagW[i] + "%";
+    $("en" + k).style.width = Math.round(p.en) + "%";
+    $("tube" + k).classList.toggle("full", p.en >= 100);
+    $("enl" + k).textContent = p.en >= 100 ? "TUYỆT CHIÊU SẴN SÀNG ☝️" : "NĂNG LƯỢNG " + Math.round(p.en);
+  });
+  $("timer").textContent = Math.ceil(game.timer);
+  ["slash", "blast", "ult"].forEach(k => $("g-" + k).classList.toggle("locked", me.en < ATK[k].cost));
+}
+const gTimers = {};
+function hilite(id, on) { $(id)?.classList.toggle("on", on); }
+function flashGuide(id, fail) { const el = $(id); if (!el) return; el.classList.add("on"); el.style.background = fail ? "#ff573344" : ""; clearTimeout(gTimers[id]); gTimers[id] = setTimeout(() => { el.classList.remove("on"); el.style.background = ""; }, 300); }
+let bannerT;
+function banner(t, sub, ms = 900) { $("bannerTx").innerHTML = t + (sub ? `<small>${sub}</small>` : ""); $("bannerTx").classList.add("on"); clearTimeout(bannerT); if (ms) bannerT = setTimeout(() => $("bannerTx").classList.remove("on"), ms); }
+
+/* ======================= VÒNG LẶP ======================= */
+let prev = performance.now(), lastCount = -1;
+function loop(now) {
+  requestAnimationFrame(loop);
+  const dt = Math.min(.05, (now - prev) / 1000); prev = now;
+  if (game.phase === "lobby") return;
+  if (hand) { readHands(now); drawCam(); }
+  if (game.phase === "count") {
+    const left = Math.ceil((game.startAt - now) / 800);
+    if (left !== lastCount) { lastCount = left; if (left > 0 && left <= 3) banner(String(left), left === 3 ? "Đứng vào vị trí, giơ hai tay lên" : "", 700); }
+    if (now >= game.startAt) { game.phase = "fight"; banner("ĐẤU!", "", 700); }
+  }
+  if (game.phase === "fight" && (net.host || game.ai)) {
+    game.timer = Math.max(0, game.timer - dt);
+    if (game.timer <= 0) { const win = me.hp > op.hp ? (me.side) : me.hp < op.hp ? (me.side ? 0 : 1) : -1; if (!game.ai) send({ t: "timeup", win }); endRound(win === -1 ? null : win === me.side); }
+  }
+  stepMe(dt, now); stepOp(dt, now); stepAI(dt, now);
+  sendState(now);
+  render(now); hud();
+}
+requestAnimationFrame(loop);
+
+/* ======================= NÚT GIAO DIỆN ======================= */
+$("bCreate").onclick = createRoom;
+$("bJoin").onclick = () => joinRoom($("inCode").value);
+$("inCode").onkeydown = e => { if (e.key === "Enter") joinRoom($("inCode").value); };
+$("bSolo").onclick = startAI;
+$("bCam").onclick = async () => {
+  $("bCam").disabled = true; $("bCam").textContent = "Đang mở camera…"; $("roomErr").textContent = "";
+  try { await startCamera(); $("bCam").textContent = "Sẵn sàng ✓"; setReady(); }
+  catch (e) { $("bCam").disabled = false; $("bCam").textContent = "Bật camera & sẵn sàng"; $("roomErr").textContent = "Không mở được camera: " + (e.message || e) + ". Có thể chơi bằng bàn phím / nút bấm."; }
+};
+$("bKeys").onclick = () => { me.input = "keys"; $("pad").classList.add("on"); $("camLbl").textContent = "NÚT BẤM · phím A D W S J K L U"; $("bCam").textContent = "Sẵn sàng ✓"; setReady(); };
+$("bLeave").onclick = () => location.reload();
+const q = new URLSearchParams(location.search).get("room");
+if (q) { $("inCode").value = q; }
+</script>
+</body>
+</html>

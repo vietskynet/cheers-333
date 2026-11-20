@@ -22,6 +22,16 @@ Luồng chỉ 2 bước: **Scan tay → Ra hình**. Trong lúc chờ có màn h�
 - Chụm ngón: hoa rắc cánh, vũ công rắc sao. Xoè đẩy / nắm hút mảng hình nền.
 - Nút ⇄ đổi tay trái/phải nếu camera nhận ngược; chế độ demo tự diễn các combo.
 
+## Game `/combat/`
+
+`public/combat/index.html` – đối kháng thời gian thực 2 máy qua mã phòng 4 ký tự.
+- **Kết nối**: WebRTC peer-to-peer (PeerJS, file `peerjs.min.js` tự host; ghép phòng qua máy chủ PeerJS miễn phí, có TURN dự phòng). Kênh `state` không gửi lại (vị trí ~45 lần/giây), kênh `event` chắc chắn (đòn đánh, KO). Nhân vật của mình phản hồi tức thì; đối thủ được dự đoán theo vận tốc để bù trễ. Hiển thị ping.
+- **Điều khiển**: tay trái = joystick (sang trái/phải để chạy, giơ nhanh lên để nhảy, nắm để đỡ). Tay phải = ra đòn: ✊ + đẩy nhanh: Đấm (0⚡) · ✌️ + vung: Chém (15⚡) · ✋ + đẩy: Chưởng bay (30⚡) · ☝️ giữ 0,5s: Tuyệt chiêu (100⚡).
+- **Ống năng lượng**: tự nạp theo thời gian, +7 khi đánh trúng, +4 khi bị đánh; đầy thì phát sáng "TUYỆT CHIÊU SẴN SÀNG".
+- Máu 100, đồng hồ 99 giây, K.O. / hết giờ, đấu lại. Có bảng hướng dẫn thao tác, camera nhỏ hiển thị khung xương tay.
+- Dự phòng: bàn phím (A D W S J K L U) / nút bấm trên màn hình; chế độ **tập với máy**.
+- Test 2 tab trên 1 máy: mở `/combat/#local` ở hai cửa sổ.
+
 ## Cấu trúc
 
 | Thư mục / file | Vai trò |
