@@ -654,16 +654,8 @@ function showVerdict(v, objs) {
 }
 
 /* ============ GỌI SERVER (Netlify) ============ */
-const PASS_KEY = "cheers333-pass";
-async function api(path, init = {}, retry = true) {
-  let pass = ""; try { pass = localStorage.getItem(PASS_KEY) || ""; } catch {}
-  const r = await fetch(path, { ...init, headers: { ...(init.headers || {}), "x-passcode": pass } });
-  if (r.status === 401 && retry) {
-    const p = window.prompt("Nhập mã truy cập của app:");
-    if (p) { try { localStorage.setItem(PASS_KEY, p); } catch {} return api(path, init, false); }
-  }
-  return r;
-}
+async function api(path, init = {}) { return fetch(path, init); }
+try { localStorage.removeItem("cheers333-pass"); } catch {}
 const blobToB64 = b => new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result).split(",")[1]); fr.onerror = rej; fr.readAsDataURL(b); });
 function parseJSON(text) {
   const t = String(text).replace(/```(?:json)?/g, "");

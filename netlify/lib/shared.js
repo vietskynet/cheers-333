@@ -4,12 +4,8 @@ export const env = k => (globalThis.Netlify?.env?.get(k) ?? globalThis.Deno?.env
 export const json = (data, status = 200) =>
   new Response(JSON.stringify(data), { status, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" } });
 
-// Nếu đặt APP_PASSCODE trong Netlify, mọi lời gọi API phải gửi kèm header x-passcode đúng mã đó
-export function checkPass(req) {
-  const need = env("APP_PASSCODE");
-  if (!need) return null;
-  return req.headers.get("x-passcode") === need ? null : json({ error: "passcode", message: "Sai hoặc thiếu mã truy cập" }, 401);
-}
+// App mở công khai, không dùng mã truy cập (giữ hàm để các endpoint không phải sửa)
+export function checkPass() { return null; }
 
 export const HF_BASE = "https://api.higgsfield.ai";
 export function hfAuth() {
