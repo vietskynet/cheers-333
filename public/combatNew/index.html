@@ -65,9 +65,9 @@
   .enl{font-size:9px;font-weight:800;letter-spacing:1px;color:var(--mute)}
   .timer{font-size:28px;font-weight:800;line-height:1;text-align:center;min-width:52px}
   .ping{font-size:10px;color:var(--mute);text-align:center;font-weight:700;margin-top:2px}
-  #camBox{position:absolute;left:10px;bottom:calc(env(safe-area-inset-bottom) + 66px);width:30vw;max-width:170px;aspect-ratio:3/4;border-radius:14px;overflow:hidden;background:#111;box-shadow:0 8px 24px #0003}
+  #camBox{position:absolute;left:10px;top:calc(env(safe-area-inset-top) + 78px);width:24vw;max-width:140px;aspect-ratio:3/4;border-radius:14px;overflow:hidden;background:#111;box-shadow:0 8px 24px #0003}
   #camCv{width:100%;height:100%;display:block}
-  #camBox .lbl{position:absolute;left:6px;top:6px;font-size:9px;font-weight:800;background:#000a;color:#fff;border-radius:6px;padding:2px 6px}
+  #camBox .lbl{position:absolute;left:4px;right:4px;bottom:4px;text-align:center;font-size:8px;font-weight:800;background:#000a;color:#fff;border-radius:6px;padding:2px 6px}
   #state{position:absolute;right:10px;bottom:calc(env(safe-area-inset-bottom) + 70px);display:flex;flex-direction:column;align-items:flex-end;gap:5px;pointer-events:none}
   #state span{font-size:11px;font-weight:800;letter-spacing:1px;background:#ffffffd9;border-radius:99px;padding:4px 10px;opacity:.35;transition:all .15s}
   #state span.on{opacity:1;background:var(--ink);color:#fff}
@@ -87,7 +87,7 @@
   #endBox{position:absolute;left:50%;top:62%;transform:translateX(-50%);display:none;gap:8px}
   #endBox.on{display:flex}
   #endBox button{border:0;border-radius:14px;padding:12px 18px;font:inherit;font-weight:800;background:var(--ink);color:#fff}
-  .tools{position:absolute;right:10px;top:calc(env(safe-area-inset-top) + 78px);display:flex;flex-direction:column;gap:6px}
+  .tools{position:absolute;right:10px;top:calc(env(safe-area-inset-top) + 78px);display:flex;flex-direction:column;gap:6px;align-items:flex-end}
   .tools button{border:0;border-radius:99px;background:#ffffffd9;padding:6px 10px;font:inherit;font-size:11px;font-weight:800;box-shadow:0 2px 8px #0002}
 </style>
 </head>
@@ -103,7 +103,7 @@
     <i style="width:62px;height:62px;left:168px;top:30px;background:#ff5733"></i>
   </div>
   <h1>Đấm bốc bằng<br><em>cả cơ thể</em>.</h1>
-  <p class="lead">Đứng đối mặt qua màn hình. Camera đọc vai, tay, đầu của bạn: đấm, móc, đỡ, né – như người thật.</p>
+  <p class="lead">Hai võ sĩ đứng hai góc trái – phải, cử động y như bạn: đấm, móc, đỡ, né đều tính bằng va chạm thật giữa găng và người.</p>
   <button class="cta" id="bCreate">Tạo phòng mới</button>
   <div class="row"><input class="code" id="inCode" maxlength="4" placeholder="MÃ" autocomplete="off" autocapitalize="characters"><button class="cta alt" id="bJoin" style="width:auto;padding:16px 22px">Vào</button></div>
   <div class="err" id="lobbyErr"></div>
@@ -154,10 +154,10 @@
       <div class="enl" id="enl2">NĂNG LƯỢNG</div>
     </div>
   </div>
-  <div id="camBox"><canvas id="camCv" width="240" height="320"></canvas><span class="lbl" id="camLbl">BẠN</span></div>
+  <div id="camBox"><canvas id="camCv" width="240" height="320"></canvas><span class="lbl" id="camLbl">T = tay trái · P = tay phải</span></div>
   <div id="state"><span id="sGuard">🛡 ĐỠ MẶT</span><span id="sBody">🛡 ĐỠ BỤNG</span><span id="sDodge">↔️ NÉ</span><span id="sCombo">COMBO</span></div>
   <div class="chips" id="chips"></div>
-  <div class="tools"><button id="bCal">↺ chỉnh tư thế</button></div>
+  <div class="tools"><button id="bCal">↺ chỉnh tư thế</button><button id="bSwap">⇄ đảo trái/phải</button></div>
   <div id="toast"></div>
   <div id="banner"><div id="bannerTx"></div></div>
   <div id="endBox"><button id="bRematch">Đấu lại</button><button id="bExit" style="background:#fff;color:#14161b">Thoát</button></div>
@@ -345,27 +345,71 @@ function onDisconnect() {
 }
 
 
-/* ======================= TRẠNG THÁI ======================= */
-const me = { side: 0, hp: 100, en: 20, ready: false, ko: false, guard: false, bodyGuard: false, dodge: false, combo: 0, comboAt: 0, rel: null };
-const op = { hp: 100, en: 20, ko: false, ready: false, rel: null, tgt: null, guard: false, recvAt: 0, flinch: 0, flinchDir: 0 };
+/* ======================= TRẠNG THÁI =======================
+   Hệ toạ độ cơ thể (mét), lấy từ worldLandmarks của MediaPipe, gốc = giữa hông:
+     L = sang TRÁI của chính người đó (+), F = phía trước mặt / về phía camera (+), U = lên trên (+)
+   Điểm 11/13/15 = vai/khuỷu/cổ tay TRÁI giải phẫu. Không lật gương dữ liệu → trái luôn là trái thật. */
+const KP = { nose: 0, earL: 7, earR: 8, ls: 11, rs: 12, le: 13, re: 14, lw: 15, rw: 16, lh: 23, rh: 24 };
+const KEYS = Object.keys(KP);
+const ARM = { lw: { s: "ls", e: "le", name: "TRÁI", sign: 1 }, rw: { s: "rs", e: "re", name: "PHẢI", sign: -1 } };
+const TUNE = { v: 1.35, swingMs: 280, fistR: .06, specialR: .15, headR: .12, torsoR: .15, guardR: .06, gloveR: .075, assist: { straight: 0, hook: .2, upper: .22, special: .03 } };
+const me = { side: 0, hp: 100, en: 20, ready: false, ko: false, guard: false, bodyGuard: false, dodge: false, combo: 0, comboAt: 0, pose: null, reach: .63, twist: 0, flinch: 0, swing: null };
+const op = { hp: 100, en: 20, ko: false, ready: false, pose: null, tgt: null, reach: .63, twist: 0, flinch: 0, recvAt: 0 };
 const game = { phase: "lobby", startAt: 0, timer: ROUND_SEC, ai: false, hitId: 0, shake: 0 };
 const fx = [], texts = [];
 let seenHits = new Set();
+let SWAP = (() => { try { return localStorage.getItem("hmbox-swap") === "1"; } catch { return false; } })();
 
+/* ---------- toán nhỏ ---------- */
+const V3 = (L, F, U) => ({ L, F, U });
+const sub = (a, b) => V3(a.L - b.L, a.F - b.F, a.U - b.U);
+const add = (a, b) => V3(a.L + b.L, a.F + b.F, a.U + b.U);
+const mul = (a, k) => V3(a.L * k, a.F * k, a.U * k);
+const len = a => Math.hypot(a.L, a.F, a.U);
+const mid = (a, b) => V3((a.L + b.L) / 2, (a.F + b.F) / 2, (a.U + b.U) / 2);
+const lerp3 = (a, b, t) => V3(a.L + (b.L - a.L) * t, a.F + (b.F - a.F) * t, a.U + (b.U - a.U) * t);
+function segDist(p, a, b) { const ab = sub(b, a), t = Math.max(0, Math.min(1, ((p.L - a.L) * ab.L + (p.F - a.F) * ab.F + (p.U - a.U) * ab.U) / (len(ab) ** 2 || 1))); return len(sub(p, add(a, mul(ab, t)))); }
+const clone = P => Object.fromEntries(KEYS.map(k => [k, { ...P[k] }]));
+const arenaD = () => (me.reach + op.reach) / 2 + .02;              // khoảng cách 2 hông
+const toOther = (p, d = arenaD()) => V3(-p.L, d - p.F, p.U);        // đổi điểm sang hệ của người đối diện
+const headC = P => P.earL && P.earR ? mid(P.earL, P.earR) : add(P.nose, V3(0, -.08, 0));
+function fistOf(P, arm) { const w = P[arm], e = P[ARM[arm].e], dir = sub(w, e), l = len(dir) || 1; return add(w, mul(dir, .06 / l)); }
+
+/* ---------- va chạm: điểm đấm đi qua (đã ở hệ người bị đánh) ---------- */
+function contact(path, P, fr) {
+  const hc = headC(P), tA = add(mid(P.ls, P.rs), V3(0, 0, -.13)), tB = add(mid(P.lh, P.rh), V3(0, 0, .15));
+  for (let i = 1; i < path.length; i++) for (let s = 1; s <= 5; s++) {
+    const q = lerp3(path[i - 1], path[i], s / 5);
+    const nearHead = len(sub(q, hc)) < segDist(q, tA, tB) + .05;
+    for (const a of ["lw", "rw"]) {
+      if (segDist(q, P[ARM[a].e], P[a]) < TUNE.guardR + fr || len(sub(q, fistOf(P, a))) < TUNE.gloveR + fr)
+        return { r: "block", zone: nearHead ? "head" : "body", at: q, arm: a };
+    }
+    if (len(sub(q, hc)) < TUNE.headR + fr) return { r: "hit", zone: "head", at: q };
+    if (segDist(q, tA, tB) < TUNE.torsoR + fr) return { r: "hit", zone: "body", at: q };
+  }
+  return null;
+}
+
+/* ======================= MẠNG: XỬ LÝ TIN ======================= */
+const packPose = P => KEYS.map(k => [Math.round(P[k].L * 100), Math.round(P[k].F * 100), Math.round(P[k].U * 100)]);
+const unpackPose = a => Object.fromEntries(KEYS.map((k, i) => [k, V3(a[i][0] / 100, a[i][1] / 100, a[i][2] / 100)]));
 function onMsg(m) {
   if (!m || !m.t) return;
   if (m.t === "hello") { if (net.host) send({ t: "hello" }); onConnected(); return; }
   if (m.t === "s") {
-    if (m.r) op.tgt = m.r;
-    Object.assign(op, { hp: m.hp, en: m.en, guard: !!m.g, ko: !!m.k, recvAt: performance.now() });
+    if (m.r) op.tgt = unpackPose(m.r);
+    if (m.rc) op.reach = m.rc;
+    Object.assign(op, { hp: m.hp, en: m.en, ko: !!m.k, recvAt: performance.now() });
     if (!net.host && typeof m.tm === "number") game.timer = m.tm;
     return;
   }
+  if (m.t === "sw") { op.twist = m.arm === "rw" ? 1 : -1; if (m.kind === "special") op.twist = 0; return; }
   if (m.t === "ping") return send({ t: "pong", ts: m.ts });
   if (m.t === "pong") { net.rtt = net.rtt ? net.rtt * .7 + (performance.now() - m.ts) * .3 : performance.now() - m.ts; $("ping").textContent = (net.mode === "relay" ? "RELAY " : net.mode === "p2p" ? "P2P " : "") + Math.round(net.rtt) + " ms"; return; }
   if (m.t === "ready") { op.ready = true; (net.host ? $("p2St") : $("p1St")).textContent = "Sẵn sàng ✓"; maybeStart(); return; }
   if (m.t === "go") { startRound(Math.max(0, 2600 - net.rtt / 2)); return; }
-  if (m.t === "hit") { if (seenHits.has(m.id)) return; seenHits.add(m.id); const r = takeHit(m); send({ t: "res", id: m.id, r, dmg: r.dmg, kind: m.kind, zone: m.zone }); return; }
+  if (m.t === "hit") { if (seenHits.has(m.id)) return; seenHits.add(m.id); const r = takeHit(m); send({ t: "res", id: m.id, kind: m.kind, ...r }); return; }
   if (m.t === "res") { onResult(m); return; }
   if (m.t === "ko") { endRound(true); return; }
   if (m.t === "timeup") { endRound(m.win === -1 ? null : m.win === me.side); return; }
@@ -377,8 +421,8 @@ function setReady() { me.ready = true; $("bCam").disabled = true; (net.host ? $(
 function maybeStart() { if (game.ai || !(me.ready && op.ready)) return; if (net.host) { send({ t: "go" }); startRound(2600 + net.rtt / 2); } }
 function startRound(delay) {
   me.side = net.host || game.ai ? 0 : 1;
-  Object.assign(me, { hp: 100, en: 20, ko: false, combo: 0 });
-  Object.assign(op, { hp: 100, en: 20, ko: false, flinch: 0 });
+  Object.assign(me, { hp: 100, en: 20, ko: false, combo: 0, swing: null, flinch: 0, twist: 0 });
+  Object.assign(op, { hp: 100, en: 20, ko: false, flinch: 0, twist: 0 });
   seenHits = new Set(); fx.length = 0; texts.length = 0; game.timer = ROUND_SEC;
   show("game"); resize(); $("endBox").classList.remove("on");
   game.phase = "count"; game.startAt = performance.now() + delay; lastCount = -1;
@@ -393,7 +437,7 @@ function endRound(win) {
 $("bRematch").onclick = () => { if (game.ai) return startAI(); me.ready = true; send({ t: "rematch" }); banner("CHỜ ĐỐI THỦ…", "Đối thủ bấm Đấu lại là bắt đầu", 0); if (op.ready) maybeStart(); };
 $("bExit").onclick = () => location.reload();
 
-/* ======================= NHẬN DIỆN TƯ THẾ ======================= */
+/* ======================= NHẬN DIỆN TƯ THẾ 3D ======================= */
 let pose = null, stream = null;
 const vid = document.createElement("video"); vid.playsInline = true; vid.muted = true;
 async function startCamera() {
@@ -405,237 +449,281 @@ async function startCamera() {
   ]);
   pose = p; stream = s; vid.srcObject = s; await vid.play();
 }
-/* Toạ độ "tương đối": gốc ở giữa hai vai, đơn vị = độ rộng vai, đã lật gương (tay trái của bạn ở bên trái) */
-const KP = { nose: 0, ls: 11, rs: 12, le: 13, re: 14, lw: 15, rw: 16, lh: 23, rh: 24 };
-const KEYS = Object.keys(KP);
-let raw = null, lastRawT = 0;
-const hist = { lw: [], rw: [] };
-const armCD = { lw: 0, rw: 0 };
-const calib = { nose: null };
+let raw = null;
+const calib = { u: 0, f: 0, neutral: null };
 function readPose(now) {
   if (!pose || vid.readyState < 2) return;
   const r = pose.detectForVideo(vid, now);
-  const lm = r.landmarks?.[0];
-  if (!lm) { me.rel = null; return; }
-  const P = k => ({ x: 1 - lm[KP[k]].x, y: lm[KP[k]].y, z: lm[KP[k]].z, v: lm[KP[k]].visibility ?? 1 });
-  const ls = P("ls"), rs = P("rs");
-  // sau khi lật gương, vai trái (11) nằm bên trái màn hình
-  const mid = { x: (ls.x + rs.x) / 2, y: (ls.y + rs.y) / 2 };
-  const sw = Math.max(.05, Math.hypot(ls.x - rs.x, ls.y - rs.y));
-  const rel = {};
-  KEYS.forEach(k => { const p = P(k); rel[k] = { x: (p.x - mid.x) / sw, y: (p.y - mid.y) / sw, z: p.z / sw, v: p.v }; });
-  me.rel = rel; raw = lm; lastRawT = now;
-  analyse(rel, now);
+  const wl = r.worldLandmarks?.[0]; raw = r.landmarks?.[0] || null;
+  if (!wl) return;
+  // Ảnh camera trước KHÔNG lật gương: tay trái người chơi nằm bên phải ảnh = x dương → L = +x.
+  const s = SWAP ? -1 : 1;
+  const P = {};
+  KEYS.forEach(k => { let i = KP[k]; if (SWAP) i = { 7: 8, 8: 7, 11: 12, 12: 11, 13: 14, 14: 13, 15: 16, 16: 15, 23: 24, 24: 23 }[i] ?? i; P[k] = V3(wl[i].x * s, -wl[i].z, -wl[i].y); });
+  ingest(reconstruct(P), now);
+}
+/* Tay đưa thẳng về camera thì ảnh 2D bị "co ngắn", độ sâu z của model lại hay thiếu.
+   Bù lại: biết chiều dài cánh tay → độ sâu = √(dài² − hình chiếu²). */
+function reconstruct(P) {
+  const sw = len(sub(P.ls, P.rs)) || .35;
+  ["lw", "rw"].forEach(a => {
+    const S = P[ARM[a].s], E = P[ARM[a].e], W = P[a];
+    calib.u = Math.min(sw * 1.1, Math.max(sw * .75, calib.u * .9995, len(sub(E, S))));
+    calib.f = Math.min(sw * 1.05, Math.max(sw * .7, calib.f * .9995, len(sub(W, E))));
+    const fix = (A, B, L) => { const pr = Math.hypot(B.L - A.L, B.U - A.U), dz = B.F - A.F; if (dz < -.04) return B.F; return Math.max(B.F, A.F + Math.sqrt(Math.max(0, L * L - pr * pr))); };
+    E.F = fix(S, E, calib.u); W.F = fix(E, W, calib.f);
+  });
+  me.reach = calib.u + calib.f + .06;
+  return P;
+}
+const hist = { lw: [], rw: [] }, armCD = { lw: 0, rw: 0 };
+function ingest(P, now) {
+  if (!me.pose) me.pose = clone(P);
+  KEYS.forEach(k => { const c = me.pose[k], p = P[k], d = len(sub(p, c)), a = Math.min(.95, .45 + d * 10); c.L += (p.L - c.L) * a; c.F += (p.F - c.F) * a; c.U += (p.U - c.U) * a; });
+  analyse(me.pose, now);
 }
 function analyse(R, now) {
-  // ---- phòng thủ ----
-  const nose = R.nose;
-  const nearFace = w => Math.hypot(w.x - nose.x, w.y - nose.y) < .7 && w.y < -.15;
-  const lN = nearFace(R.lw), rN = nearFace(R.rw);
-  me.guard = lN && rN; me.guardOne = lN || rN;
-  me.guardTight = me.guard && Math.abs(R.lw.x - R.rw.x) < .45;
-  const lowGuard = w => w.y > .35 && w.y < 1.6 && Math.abs(w.x) < .75;
-  me.bodyGuard = !me.guard && lowGuard(R.lw) && lowGuard(R.rw);
-  if (calib.nose === null && game.phase !== "lobby") calib.nose = { x: nose.x, y: nose.y };
-  const base = calib.nose || { x: 0, y: -.75 };
-  me.dodge = Math.abs(nose.x - base.x) > .38 || nose.y - base.y > .32;
-  // ---- tấn công: theo dõi quỹ đạo cổ tay (vận tốc đỉnh trong ~90 ms gần nhất) ----
+  const hc = headC(R);
+  // ---- phòng thủ (để hiện trạng thái; đỡ/né thật được tính bằng va chạm) ----
+  const nearHead = a => len(sub(R[a], hc)) < .24 && R[a].F > hc.F;
+  me.guard = nearHead("lw") && nearHead("rw");
+  const lowG = a => R[a].U < R.ls.U - .1 && R[a].U > .05 && R[a].F > .1 && Math.abs(R[a].L) < .2;
+  me.bodyGuard = !me.guard && lowG("lw") && lowG("rw");
+  if (!calib.neutral && game.phase === "fight") calib.neutral = { ...hc };
+  const nb = calib.neutral || hc;
+  me.dodge = Math.abs(hc.L - nb.L) > .1 || nb.U - hc.U > .1 || nb.F - hc.F > .09;
+  // ---- tấn công ----
   const V = {};
-  ["lw", "rw"].forEach(k => {
-    const w = R[k], sh = k === "lw" ? R.ls : R.rs;
-    const Hh = hist[k]; Hh.push({ t: now, x: w.x, y: w.y, z: w.z || 0, ext: Math.hypot(w.x - sh.x, w.y - sh.y) });
-    while (Hh.length && now - Hh[0].t > 160) Hh.shift();
-    if (Hh.length < 3) return;
-    const b = Hh[Hh.length - 1]; let a = Hh[0]; for (const h of Hh) if (b.t - h.t <= 90) { a = h; break; }
-    if (a === b) a = Hh[Hh.length - 2];
-    const dt = Math.max(.016, (b.t - a.t) / 1000);
-    V[k] = { a: Hh[0], b, vx: (b.x - a.x) / dt, vy: (b.y - a.y) / dt, fwd: -(b.z - a.z) / dt, vext: (b.ext - a.ext) / dt };
+  ["lw", "rw"].forEach(a => {
+    const f = fistOf(R, a), H = hist[a]; H.push({ t: now, p: f });
+    while (H.length && now - H[0].t > 160) H.shift();
+    if (H.length < 3) return;
+    const b = H[H.length - 1]; let o = H[0]; for (const h of H) if (b.t - h.t <= 100) { o = h; break; }
+    if (o === b) o = H[H.length - 2];
+    const dt = Math.max(.016, (b.t - o.t) / 1000), v = mul(sub(b.p, o.p), 1 / dt);
+    V[a] = { v, from: o.p, to: b.p, sp: len(v) };
   });
-  if (game.phase !== "fight" || !V.lw || !V.rw) return;
-  // 2 tay cùng vọt lên → đang nâng thủ, không phải đấm
-  const bothUp = V.lw.vy < -3.5 && V.rw.vy < -3.5;
-  const together = Math.hypot(R.lw.x - R.rw.x, R.lw.y - R.rw.y) < .55;
-  const bothFwd = (V.lw.fwd > 4 || V.lw.vext > 4) && (V.rw.fwd > 4 || V.rw.vext > 4);
-  if (together && bothFwd && me.en >= MOVES.special.cost && now > armCD.lw && now > armCD.rw) {
-    armCD.lw = armCD.rw = now + 900; hist.lw.length = hist.rw.length = 0; return attack("special", "rw", V.rw.a, V.rw.b, now);
-  }
-  ["lw", "rw"].forEach(k => {
-    const v = V[k]; if (now < armCD[k]) return;
-    const sh = k === "lw" ? R.ls : R.rs, el = k === "lw" ? R.le : R.re, o = V[k === "lw" ? "rw" : "lw"];
+  if (me.swing) stepSwing(now);
+  if (game.phase !== "fight" || !V.lw || !V.rw || me.swing) return;
+  const T = TUNE.v;
+  const bothUp = V.lw.v.U > T * .7 && V.rw.v.U > T * .7;
+  const close = len(sub(R.lw, R.rw)) < .2;
+  if (close && V.lw.v.F > T * .9 && V.rw.v.F > T * .9 && me.en >= MOVES.special.cost && now > armCD.lw && now > armCD.rw) return startSwing("special", "rw", now);
+  for (const a of ["lw", "rw"]) {
+    const { v, from } = V[a]; if (now < armCD[a] || len(v) < T) continue;
+    const S = R[ARM[a].s], E = R[ARM[a].e], inward = Math.sign(v.L) === -ARM[a].sign;
     let kind = null;
-    if (!bothUp && v.vy < -6 && v.a.y > -.1 && v.b.y < -.2 && o.vy > -2.5) kind = "upper";
-    else if (Math.abs(v.vx) > 6 && el.y < .45 && Math.sign(v.vx) === (k === "lw" ? 1 : -1) && Math.abs(v.vx) > Math.abs(v.vy)) kind = "hook";
-    else if ((v.fwd > 5 || v.vext > 5.5) && Math.abs(v.b.y - sh.y) < .9 && !bothUp) kind = "straight";
-    if (kind) {
-      const other = k === "lw" ? "rw" : "lw";
-      armCD[k] = now + ARM_CD; armCD[other] = Math.max(armCD[other], now + 120);
-      hist[k].length = 0; attack(kind, k, v.a, v.b, now);
-    }
-  });
+    if (!bothUp && v.U > T && v.U > Math.abs(v.L) && v.U > v.F * .8 && from.U < S.U) kind = "upper";
+    else if (Math.abs(v.L) > T && inward && Math.abs(v.L) > v.F * .8 && E.U > S.U - .16) kind = "hook";
+    else if (v.F > T && !bothUp && v.F > 1.5 * Math.abs(v.L) && v.F > 1.2 * Math.abs(v.U)) kind = "straight";
+    if (kind) { startSwing(kind, a, now); break; }
+  }
 }
-$("bCal").onclick = () => { calib.nose = null; toast("Đã chỉnh lại tư thế chuẩn", "Đứng thẳng, nhìn vào màn hình"); };
+function swap(on) { SWAP = on; try { localStorage.setItem("hmbox-swap", on ? "1" : "0"); } catch {} me.pose = null; toast(on ? "Đã đảo trái ↔ phải" : "Trái/phải theo mặc định", "Giơ tay TRÁI lên: găng chữ T phải nhấc lên", 2200); }
+$("bSwap").onclick = () => swap(!SWAP);
+$("bCal").onclick = () => { calib.neutral = null; toast("Đã chỉnh lại tư thế chuẩn", "Đứng thẳng, thủ thế"); };
 
 /* ======================= ĐÁNH & ĐỠ ======================= */
-// Đối thủ đứng đối diện: toạ độ của họ lật ngang (tay phải họ ở bên trái màn hình bạn).
-const oppPt = p => ({ x: -p.x, y: p.y });
-function attack(kind, arm, a, b, now) {
+function startSwing(kind, arm, now) {
   const M = MOVES[kind];
-  if (kind === "special") { me.en -= M.cost; game.shake = 10; burst(W / 2, H * .45, 30, [PAL.yellow, PAL.red, PAL.teal], 7); }
+  if (kind === "special") { me.en -= M.cost; armCD.lw = armCD.rw = now + 900; game.shake = 8; }
+  else { armCD[arm] = now + ARM_CD; const o = arm === "lw" ? "rw" : "lw"; armCD[o] = Math.max(armCD[o], now + 120); }
+  hist.lw.length = hist.rw.length = 0;
+  me.swing = { kind, arm, t0: now, path: [swingFist(me.pose, kind, arm)], done: false };
+  me.twist = kind === "special" ? 0 : arm === "rw" ? 1 : -1;
   chipFlash(kind);
-  const R = op.rel || op.tgt; if (!R) return;
-  // vùng trúng: đầu (tròn quanh mũi) hoặc thân (giữa vai → hông)
-  const head = oppPt({ x: R.nose.x, y: R.nose.y - .12 }), headR = .48 + .32;
-  const segDist = (p, q, c) => { const dx = q.x - p.x, dy = q.y - p.y, L = dx * dx + dy * dy || 1; let t = ((c.x - p.x) * dx + (c.y - p.y) * dy) / L; t = Math.max(0, Math.min(1, t)); return Math.hypot(p.x + dx * t - c.x, p.y + dy * t - c.y); };
-  // điểm cuối cú đấm hơi kéo dài theo hướng ra đòn (cú đấm "vươn" tới đối thủ)
-  const end = kind === "straight" || kind === "special" ? { x: b.x * .6, y: b.y } : b;
-  let zone = null;
-  if (kind === "special" || segDist(a, end, head) < headR) zone = "head";
-  else { const bx = Math.abs(end.x), by = end.y; if (bx < .8 && by > .1 && by < 1.7) zone = "body"; }
-  if (!zone) { addText("TRƯỢT", W / 2 + end.x * U * .6, CY + end.y * U, PAL.ink, 26); return; }
-  const combo = now - me.comboAt < 1300 ? me.combo + 1 : 1;
-  const dmg = Math.round(M.dmg * (zone === "body" ? .65 : 1) * (1 + Math.min(.5, (combo - 1) * .1)));
-  const id = (net.host ? "h" : "g") + (++game.hitId);
-  const msg = { t: "hit", id, kind, zone, dmg, dir: Math.sign(end.x) || 1 };
-  if (game.ai) onResult({ id, kind, zone, ...aiDefend(msg) }); else send(msg);
+  if (!game.ai) send({ t: "sw", arm, kind }, false);
 }
-/* Bên bị đánh tự quyết định: đang che đúng chỗ thì đỡ, đang né thì trượt */
+function swingFist(P, kind, arm) {
+  const f = kind === "special" ? mid(fistOf(P, "lw"), fistOf(P, "rw")) : fistOf(P, arm);
+  return add(f, V3(0, TUNE.assist[kind], 0));
+}
+function stepSwing(now) {
+  const s = me.swing; if (!s || s.done) { if (s && now - s.t0 > TUNE.swingMs) me.swing = null; return; }
+  s.path.push(swingFist(me.pose, s.kind, s.arm));
+  const tgt = game.ai ? op.pose : op.cur;
+  if (tgt && game.phase === "fight") {
+    const fr = s.kind === "special" ? TUNE.specialR : TUNE.fistR;
+    const seg = s.path.slice(-2).map(p => toOther(p));
+    const c = contact(seg, tgt, fr);
+    if (c) { s.done = true; return sendHit(s, now); }
+  }
+  if (now - s.t0 > TUNE.swingMs) { s.done = true; me.swing = null; const f = toOther(s.path[s.path.length - 1]); const sp = project(f, me.side ? 0 : 1); addText("TRƯỢT", sp.x, sp.y - 20, PAL.ink, 22); }
+}
+function sendHit(s, now) {
+  const combo = now - me.comboAt < 1300 ? me.combo + 1 : 1;
+  const dmg = MOVES[s.kind].dmg * (1 + Math.min(.5, (combo - 1) * .1));
+  const id = (net.host ? "h" : "g") + (++game.hitId);
+  const msg = { t: "hit", id, kind: s.kind, arm: s.arm, dmg, path: s.path.map(p => [Math.round(p.L * 100), Math.round(p.F * 100), Math.round(p.U * 100)]) };
+  if (game.ai) onResult({ id, kind: s.kind, ...defend(msg, op.pose, true) }); else send(msg);
+}
+/* Bên bị đánh tự kiểm tra đường đấm với tư thế HIỆN TẠI của mình: găng/cẳng tay chắn → đỡ, đầu đã rời đi → né */
+function defend(m, P, isAI) {
+  const path = m.path.map(a => toOther(V3(a[0] / 100, a[1] / 100, a[2] / 100)));
+  const c = P ? contact(path, P, m.kind === "special" ? TUNE.specialR : TUNE.fistR) : { r: "hit", zone: "head", at: path[path.length - 1] };
+  let r = "dodge", zone = "head", dmg = 0, at = path[path.length - 1];
+  if (c) { zone = c.zone; at = c.at; const base = m.dmg * (zone === "body" ? .65 : 1); r = c.r; dmg = Math.ceil(r === "block" ? base * (m.kind === "special" ? .5 : .15) : base); }
+  if (isAI) { op.hp = Math.max(0, op.hp - dmg); if (r === "hit") op.flinch = 1; if (op.hp <= 0 && !op.ko) { op.ko = true; setTimeout(() => endRound(true), 300); } }
+  return { r, zone, dmg, at: [Math.round(at.L * 100), Math.round(at.F * 100), Math.round(at.U * 100)] };
+}
 function takeHit(m) {
   if (game.phase === "count" && performance.now() >= game.startAt) game.phase = "fight";
   if (me.ko || game.phase !== "fight") return { r: "none", dmg: 0 };
-  let res = "hit", dmg = m.dmg;
-  if (m.kind !== "special" && m.zone === "head" && me.dodge) { res = "dodge"; dmg = 0; }
-  else if (m.zone === "head") {
-    // thủ cao 2 găng: đỡ thẳng & móc; móc ngược lách qua khe nếu 2 găng không khép sát; 1 găng chỉ đỡ được đấm thẳng
-    const blocked = m.kind === "upper" ? me.guardTight : m.kind === "hook" ? me.guard : (me.guard || me.guardOne);
-    if (blocked) { res = "block"; dmg = Math.ceil(m.dmg * (m.kind === "special" ? .5 : m.kind === "hook" ? .35 : .2)); }
-  }
-  else if (m.zone === "body" && me.bodyGuard) { res = "block"; dmg = Math.ceil(m.dmg * .2); }
-  me.hp = Math.max(0, me.hp - dmg);
-  if (res !== "hit") { me.en = Math.min(100, me.en + EN.onDefend); toast(res === "dodge" ? "↔️ NÉ ĐƯỢC!" : "🛡 ĐỠ ĐƯỢC!", ""); }
-  else { $("hurt").classList.add("on"); setTimeout(() => $("hurt").classList.remove("on"), 120); game.shake = m.kind === "special" ? 16 : 7; navigator.vibrate?.(35); me.combo = 0; }
-  addText(res === "hit" ? "-" + dmg : res === "block" ? "ĐỠ" : "NÉ", W / 2, H * .82, res === "hit" ? PAL.red : PAL.teal, 34);
+  const res = defend(m, me.pose, false);
+  me.hp = Math.max(0, me.hp - res.dmg);
+  const at = V3(res.at[0] / 100, res.at[1] / 100, res.at[2] / 100), sp = project(at, me.side);
+  if (res.r !== "hit") { me.en = Math.min(100, me.en + EN.onDefend); toast(res.r === "dodge" ? "↔️ NÉ ĐƯỢC!" : "🛡 ĐỠ ĐƯỢC!", ""); if (res.r === "block") burst(sp.x, sp.y, 8, [PAL.teal, "#fff"], 3); }
+  else { me.flinch = 1; $("hurt").classList.add("on"); setTimeout(() => $("hurt").classList.remove("on"), 120); game.shake = m.kind === "special" ? 16 : 7; navigator.vibrate?.(35); me.combo = 0; burst(sp.x, sp.y, 14, [PAL.yellow, PAL.red, PAL.ink], 5); }
+  addText(res.r === "hit" ? "-" + res.dmg : res.r === "block" ? "ĐỠ" : "NÉ", sp.x, sp.y - 30, res.r === "hit" ? PAL.red : PAL.teal, 30);
   if (me.hp <= 0) { me.ko = true; if (!game.ai) send({ t: "ko" }); endRound(false); }
-  return { r: res, dmg };
+  return res;
 }
 function onResult(m) {
-  const r = typeof m.r === "object" ? m.r.r : m.r, dmg = typeof m.r === "object" ? m.r.dmg : m.dmg;
-  const R = op.rel || op.tgt; if (!R) return;
-  const pt = m.zone === "head" ? oppPt({ x: R.nose.x, y: R.nose.y - .1 }) : oppPt({ x: 0, y: .7 });
-  const sx = W / 2 + pt.x * U, sy = CY + pt.y * U;
-  if (r === "hit") {
+  const at = m.at ? V3(m.at[0] / 100, m.at[1] / 100, m.at[2] / 100) : null;
+  const os = me.side ? 0 : 1, sp = at ? project(at, os) : { x: W / 2, y: H / 2 };
+  if (m.r === "hit") {
     const now = performance.now(); me.combo = now - me.comboAt < 1300 ? me.combo + 1 : 1; me.comboAt = now;
-    me.en = Math.min(100, me.en + EN.onHit);
-    op.flinch = 1; op.flinchDir = m.kind === "upper" ? 0 : (Math.random() < .5 ? -1 : 1);
-    burst(sx, sy, m.kind === "special" ? 40 : 16, [PAL.yellow, PAL.red, PAL.ink], m.kind === "special" ? 9 : 5);
+    me.en = Math.min(100, me.en + EN.onHit); op.flinch = 1;
+    burst(sp.x, sp.y, m.kind === "special" ? 40 : 16, [PAL.yellow, PAL.red, PAL.ink], m.kind === "special" ? 9 : 5);
     game.shake = Math.max(game.shake, m.kind === "special" ? 14 : 5);
-    addText(`${MOVES[m.kind].name}  -${dmg}`, sx, sy - 40, PAL.red, 26);
-    if (me.combo >= 2) addText(`COMBO x${me.combo}`, W / 2, CY - U * 1.9, PAL.ink, 40);
-  } else if (r === "block") { burst(sx, sy, 8, [PAL.teal, "#fff"], 3); addText("BỊ ĐỠ", sx, sy - 40, PAL.teal, 26); }
-  else if (r === "dodge") addText("BỊ NÉ", sx, sy - 40, PAL.teal, 26);
+    addText(`${MOVES[m.kind].name}  -${m.dmg}`, sp.x, sp.y - 34, PAL.red, 22);
+    if (me.combo >= 2) addText(`COMBO x${me.combo}`, W / 2, H * .2, PAL.ink, 36);
+  } else if (m.r === "block") { burst(sp.x, sp.y, 8, [PAL.teal, "#fff"], 3); addText("BỊ ĐỠ", sp.x, sp.y - 34, PAL.teal, 22); }
+  else if (m.r === "dodge") addText("BỊ NÉ", sp.x, sp.y - 34, PAL.teal, 22);
 }
 
-/* ======================= VÕ SĨ MÁY ======================= */
-const ai = { next: 0, act: null, actAt: 0, dodgeX: 0, guard: false, lean: 0 };
+/* ======================= VÕ SĨ MÁY (tư thế 3D giả, đỡ/né bằng chính cơ thể) ======================= */
+const ai = { next: 0, swing: null, guardUntil: 0, slip: 0, slipUntil: 0, duck: 0 };
 function startAI() {
   game.ai = true; net.host = true; me.ready = true;
   if (!pose) startCamera().catch(e => toast("Không mở được camera", String(e.message || e)));
   startRound(2200);
 }
-function aiPose(now) {
-  const t = now * .001, sway = Math.sin(t * 2.1) * .06;
-  const g = ai.guard;
+function aiBase(now) {
+  const t = now * .001, b = Math.sin(t * 2.2) * .015, sl = ai.slip, dk = ai.duck, g = now < ai.guardUntil;
   const P = {
-    nose: { x: sway + ai.lean, y: -.78 + Math.sin(t * 3) * .02 }, ls: { x: -.5, y: 0 }, rs: { x: .5, y: 0 },
-    le: { x: -.62, y: .55 }, re: { x: .62, y: .55 }, lw: { x: g ? -.22 : -.32, y: g ? -.62 : -.35 }, rw: { x: g ? .22 : .3, y: g ? -.62 : -.3 },
-    lh: { x: -.38, y: 1.5 }, rh: { x: .38, y: 1.5 },
+    lh: V3(.12, 0, 0), rh: V3(-.12, 0, 0),
+    ls: V3(.18 + sl, .03, .5 - dk), rs: V3(-.18 + sl, .03, .5 - dk),
+    le: V3(.2 + sl, .16, .3 - dk), re: V3(-.2 + sl, .16, .3 - dk),
+    lw: V3((g ? .07 : .12) + sl, g ? .24 : .26, (g ? .66 : .55) - dk), rw: V3((g ? -.07 : -.1) + sl, g ? .22 : .22, (g ? .66 : .52) - dk),
+    nose: V3(sl + b, .12, .68 - dk), earL: V3(.075 + sl + b, .02, .67 - dk), earR: V3(-.075 + sl + b, .02, .67 - dk),
   };
-  if (ai.act) {
-    const el = (now - ai.actAt) / 260, k = Math.sin(Math.min(1, el) * Math.PI);
-    const w = ai.act.arm === "l" ? P.lw : P.rw, e = ai.act.arm === "l" ? P.le : P.re;
-    if (ai.act.kind === "straight") { w.x *= 1 - k * .6; w.y -= k * .3; e.y -= k * .3; }
-    if (ai.act.kind === "hook") { w.x = (ai.act.arm === "l" ? -1 : 1) * (.9 - k * 1.1); w.y = -.6; e.y = 0; e.x *= 1.3; }
-    if (ai.act.kind === "upper") { w.y = .3 - k * 1.1; w.x *= .5; }
-    if (el > 1) ai.act = null;
-  }
+  if (g) { P.le = V3(.13 + sl, .2, .42 - dk); P.re = V3(-.13 + sl, .2, .42 - dk); }
   return P;
 }
-function aiDefend(m) {   // máy tự đỡ/né với xác suất
-  const roll = Math.random();
-  let r = "hit", dmg = m.dmg;
-  if (m.kind !== "special" && m.zone === "head" && roll < .18) { r = "dodge"; dmg = 0; ai.lean = (Math.random() < .5 ? -1 : 1) * .5; setTimeout(() => ai.lean = 0, 450); }
-  else if (roll < .42) { r = "block"; dmg = Math.ceil(m.dmg * .2); ai.guard = true; setTimeout(() => ai.guard = false, 500); }
-  op.hp = Math.max(0, op.hp - dmg);
-  if (op.hp <= 0 && !op.ko) { op.ko = true; setTimeout(() => endRound(true), 300); }
-  return { r, dmg };
+function aiReact(now) {   // khi bạn vừa ra đòn: máy có thể nâng thủ hoặc lắc né
+  const r = Math.random();
+  if (r < .3) ai.guardUntil = now + 600;
+  else if (r < .48) { ai.slip = (Math.random() < .5 ? -1 : 1) * .2; ai.slipUntil = now + 450; }
+  else if (r < .56) { ai.duck = .16; ai.slipUntil = now + 450; }
 }
 function stepAI(now) {
   if (!game.ai) return;
-  op.rel = aiPose(now);
+  if (now > ai.slipUntil) { ai.slip *= .8; ai.duck *= .8; }
+  const P = aiBase(now);
+  const s = ai.swing;
+  if (s) {
+    const k = Math.min(1, (now - s.t0) / 230), e = Math.sin(k * Math.PI / 2);
+    const tgt = me.pose ? add(toOther(headC(me.pose)), V3(s.err, -.05, s.errU)) : V3(0, .6, .62);
+    const start = P[s.arm], sg = ARM[s.arm].sign;
+    let w;
+    if (s.kind === "straight") w = lerp3(start, tgt, e);
+    else if (s.kind === "hook") { const side = V3(sg * .42, .3, tgt.U); w = k < .5 ? lerp3(start, side, k * 2) : lerp3(side, add(tgt, V3(-sg * .05, 0, 0)), (k - .5) * 2); }
+    else { const low = V3(sg * .08, .28, .22); w = k < .4 ? lerp3(start, low, k / .4) : lerp3(low, add(tgt, V3(0, -.04, -.05)), (k - .4) / .6); }
+    P[s.arm] = w; const sh = P[ARM[s.arm].s]; P[ARM[s.arm].e] = add(lerp3(sh, w, .5), V3(sg * (s.kind === "hook" ? .12 : .04), 0, s.kind === "hook" ? .05 : -.08));
+    // kiểm tra va chạm với tư thế thật của bạn
+    if (game.phase === "fight" && !s.done && me.pose) {
+      const f = add(fistOf(P, s.arm), V3(0, TUNE.assist[s.kind], 0)); s.path.push(f);
+      if (s.path.length > 1) {
+        const c = contact(s.path.slice(-2).map(p => toOther(p)), me.pose, TUNE.fistR);
+        if (c) { s.done = true; takeHit({ kind: s.kind, dmg: MOVES[s.kind].dmg, path: s.path.map(p => [Math.round(p.L * 100), Math.round(p.F * 100), Math.round(p.U * 100)]) }); }
+      }
+    }
+    if (k >= 1 && now - s.t0 > 330) ai.swing = null;
+  }
+  op.pose = P; op.cur = P; op.reach = .63;
   if (game.phase !== "fight") return;
   op.en = Math.min(100, op.en + EN.regen / 60);
-  if (now > ai.next && !ai.act) {
-    ai.next = now + 700 + Math.random() * 900;
-    if (Math.random() < .25) { ai.guard = true; setTimeout(() => ai.guard = false, 700); return; }
-    const kind = ["straight", "straight", "hook", "upper"][Math.floor(Math.random() * 4)];
-    ai.act = { kind, arm: Math.random() < .5 ? "l" : "r" }; ai.actAt = now;
-    setTimeout(() => { if (game.phase === "fight") takeHit({ kind, zone: Math.random() < .75 ? "head" : "body", dmg: MOVES[kind].dmg }); }, 230);
+  if (now > ai.next && !ai.swing) {
+    ai.next = now + 650 + Math.random() * 900;
+    const kind = ["straight", "straight", "hook", "upper"][Math.floor(Math.random() * 4)], arm = Math.random() < .5 ? "lw" : "rw";
+    ai.swing = { kind, arm, t0: now, path: [], err: (Math.random() - .5) * .1, errU: (Math.random() - .5) * .08, done: false };
+    op.twist = arm === "rw" ? 1 : -1;
   }
 }
 
-/* ======================= VẼ ======================= */
+/* ======================= VẼ: 2 VÕ SĨ NHÌN NGANG, XOAY 3/4 ======================= */
 const cv = $("arena"), x = cv.getContext("2d");
-let W = 0, H = 0, DPR = 1, U = 100, CY = 300, grain = null;
+let W = 0, H = 0, DPR = 1, S = 300, GY = 500, grain = null;
+const PHI = .42, CP = Math.cos(PHI), SP = Math.sin(PHI);
 function resize() {
   DPR = Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight;
   cv.width = W * DPR; cv.height = H * DPR;
-  U = Math.min(W * .36, H * .2); CY = H * .44;
+  S = Math.min(W * .92 / 1.25, H * .6 / .9); GY = H * (W < H ? .66 : .74);
   const g = document.createElement("canvas"); g.width = g.height = 200; const gx = g.getContext("2d"), id = gx.createImageData(200, 200);
   for (let i = 0; i < id.data.length; i += 4) { const v = Math.random() * 255; id.data[i] = id.data[i + 1] = id.data[i + 2] = v; id.data[i + 3] = Math.random() * 26; }
   gx.putImageData(id, 0, 0); grain = x.createPattern(g, "repeat");
 }
 addEventListener("resize", resize);
+/* side 0 = góc XANH bên trái, quay mặt sang phải; side 1 = góc ĐỎ bên phải, quay sang trái */
+function originX(side) { return W / 2 + (side ? 1 : -1) * arenaD() * CP * S / 2; }
+function project(p, side) {
+  const dir = side ? -1 : 1;
+  return { x: originX(side) + (p.F * dir * CP + p.L * SP) * S, y: GY - p.U * S, z: p.F * SP - p.L * dir * CP };
+}
+function twistPose(P, tw, flinch) {     // xoay thân khi ra đòn (đấm tay phải → vai phải lao lên trước) + giật đầu khi trúng
+  if (!tw && !flinch) return P;
+  const th = tw * .38, c = Math.cos(th), s = Math.sin(th), Q = {};
+  KEYS.forEach(k => {
+    const p = P[k]; if (k === "lh" || k === "rh") { Q[k] = p; return; }
+    const lift = Math.max(0, p.U) / .6;
+    const t2 = th * lift, c2 = Math.cos(t2), s2 = Math.sin(t2);
+    Q[k] = V3(p.L * c2 + p.F * s2, p.F * c2 - p.L * s2 - (k === "nose" || k.startsWith("ear") ? flinch * .07 : 0), p.U);
+  });
+  return Q;
+}
 function burst(px, py, n, cols, sp) { const k = ["c", "b", "d"]; for (let i = 0; i < n; i++) { const a = Math.random() * 6.283, v = 80 + Math.random() * sp * 80; fx.push({ x: px, y: py, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 100, s: 8 + Math.random() * 16, k: k[i % 3], c: cols[i % cols.length], r: Math.random() * 6, life: 1 }); } }
 function addText(t, px, py, c, s) { texts.push({ t, x: px, y: py, c, s, life: 1 }); }
 function shape(k, s) { x.beginPath(); if (k === "c") x.arc(0, 0, s / 2, 0, 6.283); else if (k === "b") x.roundRect(-s * .15, -s * .6, s * .3, s * 1.2, 3); else { x.rotate(.785); x.rect(-s * .35, -s * .35, s * .7, s * .7); } }
-const lerpP = (a, b, t) => ({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
 
-/* Võ sĩ nhìn chính diện, dựng từ mảng hình phẳng. flip=-1: đối thủ (đứng đối diện) */
-function drawBoxer(R, skin, cx, cy, u, flip, opt = {}) {
-  const T = p => ({ x: cx + p.x * flip * u, y: cy + p.y * u });
-  const ls = T(R.ls), rs = T(R.rs), le = T(R.le), re = T(R.re), lw = T(R.lw), rw = T(R.rw), nose = T(R.nose);
-  const hipsOk = R.lh && R.rh && R.lh.v !== 0 && R.lh.y > .6;
-  const lh = hipsOk ? T(R.lh) : T({ x: -.4, y: 1.45 }), rh = hipsOk ? T(R.rh) : T({ x: .4, y: 1.45 });
-  x.save(); x.globalCompositeOperation = "multiply"; x.lineCap = x.lineJoin = "round";
+function drawBoxer(P0, side, skin, st) {
+  const P = twistPose(P0, st.twist, st.flinch), J = {};
+  KEYS.forEach(k => J[k] = project(P[k], side));
+  const dir = side ? -1 : 1, hc = project(headC(P), side), hr = .12 * S;
+  const armZ = a => (J[a].z + J[ARM[a].e].z) / 2;
+  const order = armZ("lw") < armZ("rw") ? ["lw", "rw"] : ["rw", "lw"];   // tay xa vẽ trước
+  const drawArm = (a, far) => {
+    const s = J[ARM[a].s], e = J[ARM[a].e], w = J[a];
+    x.save(); x.lineCap = x.lineJoin = "round"; x.strokeStyle = far ? skin.limb : skin.limb2;
+    x.lineWidth = S * .075; x.beginPath(); x.moveTo(s.x, s.y); x.lineTo(e.x, e.y); x.stroke();
+    x.lineWidth = S * .065; x.beginPath(); x.moveTo(e.x, e.y); x.lineTo(w.x, w.y); x.stroke();
+    const f = project(fistOf(P, a), side);
+    x.fillStyle = skin.glove; x.globalAlpha = far ? .9 : 1; x.beginPath(); x.arc(f.x, f.y, S * TUNE.gloveR, 0, 6.283); x.fill();
+    x.fillStyle = "#ffffff66"; x.beginPath(); x.arc(f.x - S * .022, f.y - S * .022, S * .022, 0, 6.283); x.fill();
+    x.globalAlpha = 1; x.fillStyle = "#fff"; x.font = `800 ${Math.round(S * .055)}px "Be Vietnam Pro", sans-serif`; x.textAlign = "center"; x.textBaseline = "middle";
+    x.fillText(a === "lw" ? "T" : "P", f.x, f.y + 1); x.restore();
+  };
+  drawArm(order[0], true);
   // thân
-  x.fillStyle = opt.flash ? "#fff" : skin.body; x.globalAlpha = .95;
-  x.beginPath(); x.moveTo(ls.x, ls.y); x.lineTo(rs.x, rs.y); x.lineTo(rh.x, rh.y); x.lineTo(lh.x, lh.y); x.closePath(); x.fill();
-  x.lineWidth = u * .28; x.strokeStyle = x.fillStyle; x.stroke(); x.globalAlpha = 1;
+  x.save(); x.lineJoin = "round";
+  x.fillStyle = st.flash ? "#fff" : skin.body;
+  x.beginPath(); [J.ls, J.rs, J.rh, J.lh].forEach((p, i) => i ? x.lineTo(p.x, p.y) : x.moveTo(p.x, p.y)); x.closePath(); x.fill();
+  x.strokeStyle = x.fillStyle; x.lineWidth = S * .1; x.stroke();
   // quần
-  x.fillStyle = skin.limb; const wy = Math.max(lh.y, rh.y);
-  x.beginPath(); x.roundRect(Math.min(lh.x, rh.x) - u * .12, wy - u * .12, Math.abs(rh.x - lh.x) + u * .24, u * .5, u * .1); x.fill();
-  x.fillStyle = PAL.yellow; x.fillRect(Math.min(lh.x, rh.x) - u * .12, wy - u * .16, Math.abs(rh.x - lh.x) + u * .24, u * .1);
-  // cổ + đầu
-  const neck = lerpP(ls, rs, .5), head = { x: nose.x, y: nose.y - u * .12 };
-  x.strokeStyle = skin.head; x.lineWidth = u * .2; x.beginPath(); x.moveTo(neck.x, neck.y); x.lineTo(head.x, head.y + u * .3); x.stroke();
-  x.fillStyle = skin.head; x.beginPath(); x.arc(head.x, head.y, u * .4, 0, 6.283); x.fill();
-  x.fillStyle = skin.band; x.fillRect(head.x - u * .4, head.y - u * .2, u * .8, u * .12);
-  x.fillStyle = PAL.ink; [-1, 1].forEach(s => { x.beginPath(); x.arc(head.x + s * u * .13, head.y + u * .02, u * .045, 0, 6.283); x.fill(); });
-  if (opt.hurt) { x.strokeStyle = PAL.ink; x.lineWidth = u * .03; x.beginPath(); x.moveTo(head.x - u * .12, head.y + u * .18); x.lineTo(head.x + u * .12, head.y + u * .14); x.stroke(); }
-  // tay + găng (găng vẽ sau cùng để che mặt khi đỡ)
-  x.strokeStyle = skin.limb;
-  [[ls, le, lw], [rs, re, rw]].forEach(([s, e, w]) => {
-    x.lineWidth = u * .2; x.beginPath(); x.moveTo(s.x, s.y); x.lineTo(e.x, e.y); x.stroke();
-    x.lineWidth = u * .17; x.beginPath(); x.moveTo(e.x, e.y); x.lineTo(w.x, w.y); x.stroke();
-  });
+  const hy = Math.max(J.lh.y, J.rh.y), hx0 = Math.min(J.lh.x, J.rh.x), hx1 = Math.max(J.lh.x, J.rh.x);
+  x.fillStyle = skin.limb; x.beginPath(); x.roundRect(hx0 - S * .07, hy - S * .04, hx1 - hx0 + S * .14, S * .2, S * .04); x.fill();
+  x.fillStyle = PAL.yellow; x.fillRect(hx0 - S * .07, hy - S * .06, hx1 - hx0 + S * .14, S * .04);
+  // cổ + đầu (mắt quay về phía đối thủ)
+  const nk = { x: (J.ls.x + J.rs.x) / 2, y: (J.ls.y + J.rs.y) / 2 };
+  x.strokeStyle = skin.head; x.lineWidth = S * .07; x.lineCap = "round"; x.beginPath(); x.moveTo(nk.x, nk.y); x.lineTo(hc.x, hc.y + hr * .6); x.stroke();
+  x.fillStyle = skin.head; x.beginPath(); x.arc(hc.x, hc.y, hr, 0, 6.283); x.fill();
+  x.fillStyle = skin.band; x.beginPath(); x.roundRect(hc.x - hr, hc.y - hr * .55, hr * 2, hr * .32, 3); x.fill();
+  const face = J.nose.x - hc.x;
+  x.fillStyle = PAL.ink; x.beginPath(); x.arc(hc.x + face * .55 + dir * hr * .25, hc.y, S * .013, 0, 6.283); x.fill();
+  if (st.flinch > .3) { x.strokeStyle = PAL.ink; x.lineWidth = 2; x.beginPath(); x.moveTo(hc.x + dir * hr * .2, hc.y + hr * .45); x.lineTo(hc.x + dir * hr * .65, hc.y + hr * .35); x.stroke(); }
   x.restore();
-  x.save(); x.globalAlpha = opt.gloveAlpha ?? 1;
-  [[le, lw], [re, rw]].forEach(([e, w]) => {
-    const dx = w.x - e.x, dy = w.y - e.y, L = Math.hypot(dx, dy) || 1, g = { x: w.x + dx / L * u * .12, y: w.y + dy / L * u * .12 };
-    x.fillStyle = skin.glove; x.beginPath(); x.arc(g.x, g.y, u * (opt.gloveR || .3), 0, 6.283); x.fill();
-    x.fillStyle = "#ffffff55"; x.beginPath(); x.arc(g.x - u * .08, g.y - u * .08, u * .09, 0, 6.283); x.fill();
-  });
-  if (opt.guard) { x.strokeStyle = PAL.teal; x.lineWidth = 4; x.setLineDash([8, 6]); x.beginPath(); x.arc(head.x, head.y, u * .62, 0, 6.283); x.stroke(); }
-  x.restore();
+  drawArm(order[1], false);
+  if (st.label) { x.save(); x.fillStyle = PAL.ink; x.font = `800 ${Math.round(S * .05)}px "Be Vietnam Pro", sans-serif`; x.textAlign = "center"; x.fillText(st.label, hc.x, hc.y - hr - S * .05); x.restore(); }
 }
 function drawCam() {
   const c = $("camCv"), cx2 = c.getContext("2d");
@@ -646,37 +734,39 @@ function drawCam() {
   if (!raw || !vid.videoWidth) return;
   const s = Math.max(c.width / vid.videoWidth, c.height / vid.videoHeight), ox = (c.width - vid.videoWidth * s) / 2, oy = (c.height - vid.videoHeight * s) / 2;
   const pt = i => ({ x: c.width - (ox + raw[i].x * vid.videoWidth * s), y: oy + raw[i].y * vid.videoHeight * s });
-  cx2.lineWidth = 4; cx2.lineCap = "round";
-  [[11, 13, "#14a39a"], [13, 15, "#14a39a"], [12, 14, "#F2B705"], [14, 16, "#F2B705"], [11, 12, "#fff"], [11, 23, "#fff"], [12, 24, "#fff"]].forEach(([a, b, col]) => { cx2.strokeStyle = col; const p = pt(a), q = pt(b); cx2.beginPath(); cx2.moveTo(p.x, p.y); cx2.lineTo(q.x, q.y); cx2.stroke(); });
+  const [Lc, Rc] = SWAP ? ["#F2B705", "#14a39a"] : ["#14a39a", "#F2B705"];   // xanh ngọc = tay TRÁI, vàng = tay PHẢI
+  cx2.lineWidth = 5; cx2.lineCap = "round";
+  [[11, 13, Lc], [13, 15, Lc], [12, 14, Rc], [14, 16, Rc], [11, 12, "#fff"], [11, 23, "#fff"], [12, 24, "#fff"]].forEach(([a, b, col]) => { cx2.strokeStyle = col; const p = pt(a), q = pt(b); cx2.beginPath(); cx2.moveTo(p.x, p.y); cx2.lineTo(q.x, q.y); cx2.stroke(); });
+  cx2.font = "800 15px Be Vietnam Pro, sans-serif"; cx2.textAlign = "center";
+  [[15, Lc, "T"], [16, Rc, "P"]].forEach(([i, col, t]) => { const p = pt(i); cx2.fillStyle = col; cx2.beginPath(); cx2.arc(p.x, p.y, 11, 0, 6.283); cx2.fill(); cx2.fillStyle = "#14161b"; cx2.fillText(t, p.x, p.y + 5); });
   cx2.fillStyle = me.dodge ? "#a3e635" : "#fff"; const n = pt(0); cx2.beginPath(); cx2.arc(n.x, n.y, 7, 0, 6.283); cx2.fill();
 }
+const SKINS = [
+  { body: PAL.blue, limb: PAL.navy, limb2: "#3b3780", glove: PAL.red, head: PAL.yellow, band: PAL.red },
+  { body: PAL.red, limb: PAL.navy, limb2: "#3b3780", glove: PAL.blue, head: PAL.yellow, band: PAL.teal },
+];
 function render(now) {
   x.setTransform(DPR, 0, 0, DPR, 0, 0);
   x.fillStyle = "#f4f1ea"; x.fillRect(0, 0, W, H);
   const sh = game.shake > .5 ? (Math.random() - .5) * game.shake : 0; game.shake *= .86;
   x.translate(sh, sh * .6);
-  // võ đài: dây đài + chữ nền
-  x.save(); x.globalAlpha = .07; x.fillStyle = PAL.ink; x.font = `800 ${Math.round(W * .3)}px "Be Vietnam Pro", sans-serif`; x.textAlign = "center"; x.fillText("BOX", W / 2, CY + U * .5); x.restore();
-  [[PAL.red, CY - U * .2], [PAL.blue, CY + U * .55], [PAL.yellow, CY + U * 1.3]].forEach(([c, y]) => { x.fillStyle = c; x.globalAlpha = .55; x.fillRect(0, y, W, 6); x.globalAlpha = 1; });
-  // đối thủ (đối diện)
+  // võ đài
+  x.save(); x.globalAlpha = .07; x.fillStyle = PAL.ink; x.font = `800 ${Math.round(Math.min(W, H) * .32)}px "Be Vietnam Pro", sans-serif`; x.textAlign = "center"; x.fillText("BOX", W / 2, GY - S * .2); x.restore();
+  x.fillStyle = "#e9e3d6"; x.fillRect(0, GY + S * .12, W, H);
+  [[PAL.red, GY - S * .75], [PAL.blue, GY - S * .45], [PAL.yellow, GY - S * .15]].forEach(([c, y]) => { x.fillStyle = c; x.globalAlpha = .5; x.fillRect(0, y, W, 5); x.globalAlpha = 1; });
+  // đối thủ: nội suy tư thế nhận qua mạng
   if (op.tgt && !game.ai) {
-    if (!op.rel) op.rel = JSON.parse(JSON.stringify(op.tgt));
-    KEYS.forEach(k => { if (op.tgt[k]) { op.rel[k].x += (op.tgt[k].x - op.rel[k].x) * .55; op.rel[k].y += (op.tgt[k].y - op.rel[k].y) * .55; op.rel[k].v = op.tgt[k].v; } });
+    if (!op.cur) op.cur = clone(op.tgt);
+    KEYS.forEach(k => { const c = op.cur[k], t = op.tgt[k]; c.L += (t.L - c.L) * .5; c.F += (t.F - c.F) * .5; c.U += (t.U - c.U) * .5; });
   }
-  if (op.rel) {
-    op.flinch *= .88;
-    const fdx = op.flinchDir * op.flinch * U * .25, fdy = -op.flinch * U * (op.flinchDir === 0 ? .25 : .05);
-    drawBoxer(op.rel, SKIN[me.side ? 0 : 1], W / 2 + fdx, CY + fdy, U, -1, { flash: op.flinch > .7, hurt: op.flinch > .2, guard: op.guard || (game.ai && ai.guard) });
-  } else { x.fillStyle = "#6b7280"; x.font = '700 16px "Be Vietnam Pro"'; x.textAlign = "center"; x.fillText("Đang chờ tư thế của đối thủ…", W / 2, CY); }
-  // găng của bạn (tiền cảnh, trong suốt) – trùng toạ độ dùng để tính trúng
-  if (me.rel) {
-    const R = me.rel, skin = SKIN[me.side];
-    [["lw", "le"], ["rw", "re"]].forEach(([w, e]) => {
-      const p = { x: W / 2 + R[w].x * U, y: CY + R[w].y * U };
-      x.save(); x.globalAlpha = .38; x.fillStyle = skin.glove; x.beginPath(); x.arc(p.x, p.y, U * .42, 0, 6.283); x.fill();
-      x.globalAlpha = .9; x.strokeStyle = skin.glove; x.lineWidth = 4; x.stroke(); x.restore();
-    });
-  }
+  me.twist *= .88; op.twist *= .88; me.flinch *= .88; op.flinch *= .88;
+  const mine = me.pose ? { P: me.pose, side: me.side, skin: SKINS[me.side], st: { twist: me.twist, flinch: me.flinch, flash: me.flinch > .75, label: "BẠN" } } : null;
+  const theirs = op.cur ? { P: op.cur, side: me.side ? 0 : 1, skin: SKINS[me.side ? 0 : 1], st: { twist: op.twist, flinch: op.flinch, flash: op.flinch > .75 } } : null;
+  const list = [theirs, mine].filter(Boolean);
+  if (Math.abs(op.twist) > Math.abs(me.twist)) list.reverse();          // ai đang ra đòn vẽ sau (đè lên)
+  list.forEach(b => drawBoxer(b.P, b.side, b.skin, b.st));
+  if (!mine) { x.fillStyle = "#6b7280"; x.font = '700 14px "Be Vietnam Pro"'; x.textAlign = "center"; x.fillText("Đứng lùi lại cho camera thấy từ đầu tới hông", originX(me.side), GY - S * .3); }
+  if (!theirs) { x.fillStyle = "#6b7280"; x.font = '700 14px "Be Vietnam Pro"'; x.textAlign = "center"; x.fillText("Chờ tư thế đối thủ…", originX(me.side ? 0 : 1), GY - S * .3); }
   // hiệu ứng
   x.save(); x.globalCompositeOperation = "multiply";
   for (let i = fx.length - 1; i >= 0; i--) { const p = fx[i]; p.vy += 15; p.x += p.vx / 60; p.y += p.vy / 60; p.r += .15; p.life -= .025; if (p.life <= 0) { fx.splice(i, 1); continue; } x.save(); x.translate(p.x, p.y); x.rotate(p.r); x.globalAlpha = p.life; x.fillStyle = p.c; shape(p.k, p.s); x.fill(); x.restore(); }
@@ -710,8 +800,7 @@ let bannerT; function banner(t, sub, ms = 900) { $("bannerTx").innerHTML = t + (
 let prev = performance.now(), lastCount = -1, lastSend = 0;
 function sendState(now) {
   if (game.ai || now - lastSend < (net.mode === "relay" ? 45 : 30)) return; lastSend = now;
-  const r = me.rel ? Object.fromEntries(KEYS.map(k => [k, { x: +me.rel[k].x.toFixed(2), y: +me.rel[k].y.toFixed(2), v: me.rel[k].v > .5 ? 1 : 0 }])) : null;
-  send({ t: "s", r, hp: me.hp, en: Math.round(me.en), g: me.guard ? 1 : 0, k: me.ko ? 1 : 0, tm: net.host ? game.timer : undefined }, false);
+  send({ t: "s", r: me.pose ? packPose(me.pose) : null, rc: +me.reach.toFixed(2), hp: me.hp, en: Math.round(me.en), k: me.ko ? 1 : 0, tm: net.host ? game.timer : undefined }, false);
 }
 function loop(now) {
   requestAnimationFrame(loop);
@@ -720,8 +809,8 @@ function loop(now) {
   if (pose) { readPose(now); drawCam(); }
   if (game.phase === "count") {
     const left = Math.ceil((game.startAt - now) / 850);
-    if (left !== lastCount) { lastCount = left; if (left > 0 && left <= 3) banner(String(left), left === 3 ? "Thủ thế: hai găng trước mặt" : "", 750); }
-    if (now >= game.startAt) { game.phase = "fight"; banner("ĐẤU!", "", 700); calib.nose = null; }
+    if (left !== lastCount) { lastCount = left; if (left > 0 && left <= 3) banner(String(left), left === 3 ? "Thủ thế: hai găng trước cằm" : "", 750); }
+    if (now >= game.startAt) { game.phase = "fight"; banner("ĐẤU!", "", 700); calib.neutral = null; }
   }
   if (game.phase === "fight") {
     me.en = Math.min(100, me.en + EN.regen * dt);
@@ -730,6 +819,7 @@ function loop(now) {
       if (game.timer <= 0) { const win = me.hp > op.hp ? me.side : me.hp < op.hp ? (me.side ? 0 : 1) : -1; if (!game.ai) send({ t: "timeup", win }); endRound(win === -1 ? null : win === me.side); }
     }
   }
+  if (game.ai && me.swing && !me.swing.reacted) { me.swing.reacted = true; if (Math.random() < .7) aiReact(now); }
   stepAI(now); sendState(now); render(now); hud(now);
 }
 requestAnimationFrame(loop);
@@ -746,8 +836,8 @@ $("bCam").onclick = async () => {
 };
 $("bLeave").onclick = () => location.reload();
 resize();
-/* Kiểm thử: cho phép script test bơm tư thế giả */
-window.__box = { me, op, game, analyse, attack, takeHit, setReady, net, setRel: (r, now) => { me.rel = r; analyse(r, now ?? performance.now()); } };
+/* Kiểm thử: bơm tư thế 3D giả (hệ L/F/U, mét) */
+window.__box = { me, op, game, setReady, net, ai, contact, toOther, setPose: (P, now) => { const t = now ?? performance.now(); me.pose = me.pose || clone(P); KEYS.forEach(k => Object.assign(me.pose[k], P[k])); analyse(me.pose, t); } };
 </script>
 </body>
 </html>

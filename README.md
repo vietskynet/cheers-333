@@ -84,11 +84,12 @@ netlify dev        # cần file .env chứa các biến ở trên
 
 ## Game `/combatNew/` – Boxing bằng cả người
 
-`public/combatNew/index.html` – đấm bốc đối mặt 2 máy, MediaPipe **PoseLandmarker** (nửa người trên: mũi, vai, khuỷu, cổ tay, hông).
+`public/combatNew/index.html` – đấm bốc 2 máy, 2 võ sĩ đứng 2 góc trái (XANH, chủ phòng) – phải (ĐỎ), nhìn ngang xoay 3/4.
 
-- Toạ độ chuẩn hoá theo giữa 2 vai, đơn vị = độ rộng vai → không phụ thuộc khoảng cách tới camera.
-- Đòn: đấm thẳng (cổ tay lao tới / duỗi tay nhanh), móc ngang (vung ngang, khuỷu cao), móc ngược (vọt lên từ dưới), song chưởng (2 tay chập đẩy tới, 100⚡).
-- Phòng thủ: 2 găng che mặt (đỡ thẳng + móc; móc ngược chỉ đỡ được khi 2 găng khép sát), 2 găng che bụng, né = nghiêng/cúi đầu so với tư thế chuẩn (nút "chỉnh tư thế").
-- Bên đánh tính trúng vùng đầu/thân theo tư thế đối thủ; **bên bị đánh** quyết định đỡ/né theo tư thế thật của mình rồi gửi kết quả lại.
-- Gửi tư thế ~33 Hz (P2P) / ~22 Hz (relay). Mạng dùng chung khối PeerJS + MQTT relay của `/combat/` (tiền tố `hmbox`).
-- Test: `/combatNew/#local` ở 2 cửa sổ, hoặc "Tập với võ sĩ máy".
+- MediaPipe **PoseLandmarker** lấy `worldLandmarks` (mét, 3D, gốc giữa hông) → hệ cơ thể L (trái thật của người chơi) / F (phía trước) / U (lên). Không lật gương dữ liệu; điểm 11/13/15 luôn là vai/khuỷu/cổ tay TRÁI. Găng hiển thị chữ **T/P**; nút "⇄ đảo trái/phải" cho máy có camera tự lật ảnh.
+- Bù độ sâu khi đấm thẳng về camera: biết chiều dài bắp tay/cẳng tay → độ sâu = √(dài² − hình chiếu²).
+- Đòn nhận theo vận tốc nắm đấm: thẳng (tiến tới), móc (ngang, vào trong, khuỷu cao), móc ngược (lên), song chưởng (2 tay chập đẩy, 100⚡). Nâng 2 tay lên thủ không tính là đòn.
+- Trúng/đỡ/né = **va chạm 3D thật**: đường đi của nắm đấm so với đầu (cầu), thân (khối trụ), cẳng tay + găng của đối thủ (đỡ). Bên bị đánh kiểm tra lại với tư thế hiện tại của mình rồi trả kết quả.
+- Khi ra đòn thân xoay theo tay đánh; trúng đòn đầu giật ra sau.
+- Gửi tư thế 11 điểm (cm) ~33 Hz. Mạng dùng chung với `/combat/` (PeerJS + Cloudflare TURN + MQTT relay).
+- Test: `/combatNew/#local` 2 cửa sổ, hoặc "Tập với võ sĩ máy" (máy tự nâng thủ / lắc né bằng chính cơ thể).
