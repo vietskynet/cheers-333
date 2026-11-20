@@ -95,3 +95,11 @@ netlify dev        # cần file .env chứa các biến ở trên
 - Gửi tư thế 11 điểm (cm) ~33 Hz. Mạng dùng chung với `/combat/` (PeerJS + Cloudflare TURN + MQTT relay).
 - **Tập tư thế** (nút 🎯 ở sảnh): không cần đối thủ, hình nộm đứng yên + khung huấn luyện 13 bài (thủ thế, thẳng/móc/móc ngược từng tay, né trái/phải, cúi, đỡ & né đòn thật của hình nộm, combo), báo máy nhận đòn gì, tay nào, tốc độ m/s; sau đó tập tự do.
 - Test: `/combatNew/#local` 2 cửa sổ, hoặc "Đấu thử với võ sĩ máy" (máy tự nâng thủ / lắc né bằng chính cơ thể).
+
+## App `/move/` – cơ thể thành tranh
+
+`public/move/index.html` – camera đọc cả người (MediaPipe PoseLandmarker full → lite nếu máy chậm), vẽ một hình người bằng mảng màu in lụa cử động theo, tay chân để lại vệt màu, bàn tay là bông hoa, vườn hoa quanh viền nở khi lại gần, bước chân mọc hoa, nền đổi theo năng lượng chuyển động.
+
+- Chống giật: lọc One-Euro từng điểm, chỉ xử lý khung hình mới, giữ điểm bị khuất, nội suy 60 fps, tự căn khung (người luôn cao ~2/3 màn hình, vẫn thấy di chuyển ngang & nhảy).
+- 7 combo: 🙌 Nở rộ (2 tay qua đầu), 🦋 Cánh bướm (dang tay vỗ 2 lần), 🌀 Vòng xoáy (quay tay tròn), 🌈 Cầu vồng (vung tay qua đầu sang bên kia – chờ 0,45 s để phân biệt với vòng xoáy), 🦘 Bật nhảy, 💃 Lắc lư (lắc hông trái–phải), 🙏 Hoa sen (chắp tay trước ngực 1 s).
+- Nút: 📸 lưu/chia sẻ ảnh, 🔄 camera trước/sau (vẽ người khác), 👁 camera nhỏ, 🧹 xoá hoa. Chế độ demo có vũ công ảo diễn đủ 7 combo.

@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HandMagination · Move</title>
+<meta name="description" content="Nhảy trước camera, cơ thể bạn thành một bức tranh hoa và màu.">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{--ink:#14161b;--mute:#6b7280;--paper:#f4f1ea}
+  html,body{height:100%;background:#fff;color:var(--ink);font-family:"Be Vietnam Pro",system-ui,sans-serif;-webkit-tap-highlight-color:transparent;overflow:hidden}
+  .scr{display:none;position:fixed;inset:0}
+  .scr.on{display:block}
+  /* ---- màn mở đầu ---- */
+  #start{overflow:auto;padding:calc(env(safe-area-inset-top) + 16px) 22px calc(env(safe-area-inset-bottom) + 24px)}
+  #start.on{display:flex;flex-direction:column;align-items:center}
+  .brand{align-self:flex-start;font-size:15px;font-weight:600;color:var(--mute);display:flex;align-items:center;gap:8px;text-decoration:none}
+  .brand b{color:var(--ink);font-weight:800}
+  .brand .dot{width:10px;height:10px;border-radius:50%;background:#F2B705}
+  .tag{font-size:10px;font-weight:800;letter-spacing:1.5px;background:var(--ink);color:#fff;border-radius:99px;padding:3px 8px}
+  .hero{position:relative;width:220px;height:200px;margin:22px auto 4px}
+  .hero i{position:absolute;mix-blend-mode:multiply;border-radius:99px}
+  h1{font-size:40px;line-height:1.02;font-weight:800;letter-spacing:-1.5px;text-align:center;margin-top:10px}
+  h1 em{font-style:normal;background:linear-gradient(transparent 62%,#ff7eb688 62%)}
+  .lead{color:var(--mute);font-size:15px;line-height:1.55;text-align:center;max-width:380px;margin:12px auto 20px}
+  .cta{width:100%;max-width:360px;border:0;border-radius:16px;padding:16px;font:inherit;font-weight:800;font-size:16px;background:var(--ink);color:#fff;cursor:pointer}
+  .ghost{background:none;border:0;color:var(--mute);font:inherit;font-size:14px;padding:12px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+  .err{color:#dc2626;font-size:13px;min-height:18px;margin-top:8px;text-align:center;max-width:360px}
+  .list{width:100%;max-width:400px;display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px;font-size:12px}
+  .list div{background:#f6f4ef;border-radius:12px;padding:9px 10px}
+  .list b{display:block;font-size:13px}
+  .list span{color:var(--mute)}
+  .note{font-size:12px;color:var(--mute);text-align:center;max-width:360px;margin-top:12px;line-height:1.5}
+  /* ---- sân khấu ---- */
+  #stage{background:var(--paper)}
+  #art{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .top{position:absolute;left:0;right:0;top:0;padding:calc(env(safe-area-inset-top) + 10px) 12px 0;display:flex;align-items:center;gap:8px;pointer-events:none}
+  .top .brand{pointer-events:auto;background:#ffffffcc;border-radius:99px;padding:6px 10px;backdrop-filter:blur(6px)}
+  .meter{flex:1;max-width:160px;height:10px;border-radius:99px;background:#ffffffaa;overflow:hidden;margin-left:auto}
+  .meter i{display:block;height:100%;width:10%;border-radius:99px;background:linear-gradient(90deg,#14a39a,#a3e635,#F2B705,#ff5733,#ff7eb6);transition:width .15s}
+  .btns{position:absolute;right:12px;top:calc(env(safe-area-inset-top) + 52px);display:flex;flex-direction:column;gap:8px}
+  .btns button{width:42px;height:42px;border:0;border-radius:50%;background:#ffffffdd;font-size:18px;box-shadow:0 3px 12px #0002;cursor:pointer}
+  #camBox{position:absolute;left:12px;top:calc(env(safe-area-inset-top) + 52px);width:22vw;max-width:120px;aspect-ratio:3/4;border-radius:12px;overflow:hidden;background:#111;box-shadow:0 6px 18px #0003}
+  #camBox.off{display:none}
+  #camCv{width:100%;height:100%;display:block}
+  .chips{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 10px);display:flex;gap:6px;overflow-x:auto;padding:4px 12px;scrollbar-width:none}
+  .chips::-webkit-scrollbar{display:none}
+  .chips button{flex:none;border:0;border-radius:99px;background:#ffffffe6;backdrop-filter:blur(8px);padding:8px 12px;font:inherit;font-size:12px;font-weight:800;box-shadow:0 3px 12px #00000018;cursor:pointer;transition:transform .2s,background .2s}
+  .chips button.fire{background:#F2B705;transform:scale(1.12)}
+  .chips button .n{display:inline-block;min-width:16px;margin-left:4px;font-size:10px;color:var(--mute)}
+  #hint{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom) + 62px);transform:translateX(-50%);font-size:12px;font-weight:700;color:var(--mute);background:#ffffffcc;border-radius:99px;padding:6px 12px;white-space:nowrap;transition:opacity .4s}
+  #toast{position:absolute;left:50%;top:22%;transform:translate(-50%,-50%) scale(.7);font-weight:800;font-size:30px;letter-spacing:-.5px;opacity:0;pointer-events:none;transition:all .35s cubic-bezier(.2,1.5,.4,1);text-align:center;white-space:nowrap}
+  #toast.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  #toast small{display:block;font-size:13px;font-weight:700;color:var(--mute);letter-spacing:0}
+  #sheet{position:absolute;left:10px;right:10px;bottom:calc(env(safe-area-inset-bottom) + 60px);background:#fff;border-radius:18px;padding:14px 16px;box-shadow:0 10px 30px #0003;transform:translateY(20px);opacity:0;pointer-events:none;transition:all .25s}
+  #sheet.on{transform:none;opacity:1;pointer-events:auto}
+  #sheet b{font-size:17px}
+  #sheet p{font-size:14px;color:#374151;margin-top:4px;line-height:1.5}
+  #sheet .fx{font-size:12px;color:var(--mute);margin-top:6px}
+</style>
+</head>
+<body>
+
+<section class="scr on" id="start">
+  <a class="brand" href="/"><span class="dot"></span><b>Hand</b>Magination <span class="tag">MOVE</span></a>
+  <div class="hero" aria-hidden="true">
+    <i style="width:56px;height:56px;left:82px;top:0;background:#F2B705"></i>
+    <i style="width:70px;height:96px;left:75px;top:52px;background:#2563eb;border-radius:30px 30px 14px 14px"></i>
+    <i style="width:22px;height:110px;left:30px;top:20px;background:#ff5733;transform:rotate(-40deg)"></i>
+    <i style="width:22px;height:110px;left:168px;top:20px;background:#14a39a;transform:rotate(40deg)"></i>
+    <i style="width:24px;height:84px;left:80px;top:136px;background:#1e1b4b;transform:rotate(12deg)"></i>
+    <i style="width:24px;height:84px;left:116px;top:136px;background:#1e1b4b;transform:rotate(-12deg)"></i>
+    <i style="width:40px;height:40px;left:0;top:150px;background:#ff7eb6"></i>
+    <i style="width:30px;height:30px;left:190px;top:140px;background:#a3e635"></i>
+  </div>
+  <h1>Cơ thể bạn là<br><em>bức tranh</em>.</h1>
+  <p class="lead">Đứng trước camera và chuyển động. Một hình người bằng mảng màu nhảy theo bạn, tay chân vẽ thành vệt màu, hoa nở quanh bạn. Làm đúng combo để bung hiệu ứng.</p>
+  <button class="cta" id="bStart">Bật camera & bắt đầu</button>
+  <div class="err" id="err"></div>
+  <button class="ghost" id="bDemo">Xem demo (không cần camera)</button>
+  <div class="list" id="list"></div>
+  <p class="note">Dựng điện thoại, lùi ra 2–3 m để camera thấy cả người (thấy nửa người trên vẫn chơi được). Có thể quay camera sau để vẽ người khác.</p>
+</section>
+
+<section class="scr" id="stage">
+  <canvas id="art"></canvas>
+  <div class="top"><a class="brand" href="/"><span class="dot"></span><b>Hand</b>Magination <span class="tag">MOVE</span></a><div class="meter" title="Năng lượng chuyển động"><i id="meter"></i></div></div>
+  <div id="camBox"><canvas id="camCv" width="180" height="240"></canvas></div>
+  <div class="btns"><button id="bSave" title="Lưu ảnh">📸</button><button id="bFlip" title="Đổi camera trước/sau">🔄</button><button id="bCam" title="Ẩn/hiện camera nhỏ">👁</button><button id="bClear" title="Xoá hoa">🧹</button></div>
+  <div id="toast"></div>
+  <div id="hint">Lùi ra để camera thấy cả người</div>
+  <div id="sheet"></div>
+  <div class="chips" id="chips"></div>
+</section>
+
+<script type="module">
+import { FilesetResolver, PoseLandmarker } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs";
+const $ = id => document.getElementById(id);
+const show = id => document.querySelectorAll(".scr").forEach(s => s.classList.toggle("on", s.id === id));
+const C = { blue: "#2563eb", navy: "#1e1b4b", red: "#ff5733", teal: "#14a39a", lime: "#a3e635", yellow: "#F2B705", pink: "#ff7eb6", paper: "#f4f1ea", ink: "#14161b" };
+const FLOWER_COLS = [C.red, C.yellow, C.pink, C.blue, C.teal, C.lime];
+const PALETTES = [
+  { body: C.blue, arm: [C.red, C.teal], leg: C.navy, head: C.yellow, blobs: [C.pink, C.yellow, C.teal] },
+  { body: C.red, arm: [C.blue, C.yellow], leg: C.navy, head: C.pink, blobs: [C.lime, C.blue, C.yellow] },
+  { body: C.teal, arm: [C.pink, C.yellow], leg: C.navy, head: C.yellow, blobs: [C.red, C.pink, C.blue] },
+  { body: C.navy, arm: [C.lime, C.pink], leg: C.blue, head: C.yellow, blobs: [C.yellow, C.teal, C.red] },
+];
+
+/* ======================= COMBO ======================= */
+const COMBOS = [
+  { id: "bloom", ic: "🙌", name: "Nở rộ", how: "Giơ cả hai tay lên cao qua đầu, giữ nửa giây.", fx: "Hoa bung ra từ hai bàn tay, cả vườn nở rộ." },
+  { id: "fly", ic: "🦋", name: "Cánh bướm", how: "Dang thẳng hai tay sang hai bên rồi vỗ lên – xuống 2 lần như đôi cánh.", fx: "Đàn bướm bay ra từ hai cánh tay." },
+  { id: "spin", ic: "🌀", name: "Vòng xoáy", how: "Quay một tay thành vòng tròn lớn quanh vai.", fx: "Vòng xoáy cánh hoa quanh bàn tay." },
+  { id: "rainbow", ic: "🌈", name: "Cầu vồng", how: "Vung một tay từ bên này, vòng qua đỉnh đầu, sang hẳn bên kia.", fx: "Một dải cầu vồng theo đường tay vẽ." },
+  { id: "jump", ic: "🦘", name: "Bật nhảy", how: "Nhảy bật lên tại chỗ.", fx: "Sóng màu dưới chân, hoa mọc khắp mặt đất." },
+  { id: "sway", ic: "💃", name: "Lắc lư", how: "Lắc hông / bước qua lại trái – phải 2 lần thật nhịp.", fx: "Đổi bảng màu, mưa cánh hoa." },
+  { id: "lotus", ic: "🙏", name: "Hoa sen", how: "Chắp hai tay trước ngực, giữ 1 giây.", fx: "Một đoá sen lớn nở trước ngực." },
+];
+const hit = {}; COMBOS.forEach(c => hit[c.id] = 0);
+$("list").innerHTML = COMBOS.map(c => `<div><b>${c.ic} ${c.name}</b><span>${c.how}</span></div>`).join("");
+$("chips").innerHTML = COMBOS.map(c => `<button id="c-${c.id}">${c.ic} ${c.name}<span class="n" id="n-${c.id}"></span></button>`).join("");
+let sheetT;
+COMBOS.forEach(c => $("c-" + c.id).onclick = () => { $("sheet").innerHTML = `<b>${c.ic} ${c.name}</b><p>${c.how}</p><div class="fx">Hiệu ứng: ${c.fx}</div>`; $("sheet").classList.add("on"); clearTimeout(sheetT); sheetT = setTimeout(() => $("sheet").classList.remove("on"), 3500); });
+$("sheet").onclick = () => $("sheet").classList.remove("on");
+
+/* ======================= CAMERA & NHẬN DIỆN ======================= */
+const vid = document.createElement("video"); vid.playsInline = true; vid.muted = true;
+let pose = null, vision = null, stream = null, facing = "user", poseKind = "", perf = { n: 0, ms: 0 }, switching = false, demo = false;
+function makePose(kind) {
+  const o = d => ({ baseOptions: { modelAssetPath: `https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_${kind}/float16/1/pose_landmarker_${kind}.task`, delegate: d }, runningMode: "VIDEO", numPoses: 1, minPoseDetectionConfidence: .5, minPosePresenceConfidence: .6, minTrackingConfidence: .6 });
+  return PoseLandmarker.createFromOptions(vision, o("GPU")).catch(() => PoseLandmarker.createFromOptions(vision, o("CPU")));
+}
+async function openCam() {
+  stream?.getTracks().forEach(t => t.stop());
+  stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: facing, width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30 } } });
+  vid.srcObject = stream; await vid.play(); lastVT = -1;
+}
+async function start() {
+  $("bStart").disabled = true; $("bStart").textContent = "Đang mở camera…"; $("err").textContent = "";
+  try {
+    vision = vision || await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm");
+    const [p] = await Promise.all([makePose("full"), openCam()]);
+    pose = p; poseKind = "full"; demo = false; go();
+  } catch (e) { $("bStart").disabled = false; $("bStart").textContent = "Bật camera & bắt đầu"; $("err").textContent = "Không mở được camera: " + (e.message || e); }
+}
+function go() { show("stage"); resize(); seedGarden(); }
+$("bStart").onclick = start;
+$("bDemo").onclick = () => { demo = true; $("camBox").classList.add("off"); go(); };
+$("bFlip").onclick = async () => { if (demo) return; facing = facing === "user" ? "environment" : "user"; try { await openCam(); F = null; toast(facing === "user" ? "Camera trước" : "Camera sau", "Quay người khác cũng được"); } catch { facing = "user"; } };
+$("bCam").onclick = () => $("camBox").classList.toggle("off");
+$("bClear").onclick = () => { parts.length = 0; ribbons.forEach(r => r.length = 0); seedGarden(); };
+
+/* --- lọc One-Euro: đứng yên lọc mạnh (hết rung), chuyển động nhanh lọc nhẹ (không trễ) --- */
+class OneEuro {
+  constructor(mc, b, dc = 1) { this.mc = mc; this.b = b; this.dc = dc; this.x = null; this.dx = 0; this.t = 0; }
+  static a(c, dt) { const tau = 1 / (2 * Math.PI * c); return 1 / (1 + tau / dt); }
+  f(v, t) { if (this.x === null) { this.x = v; this.t = t; return v; } const dt = Math.max(1 / 120, (t - this.t) / 1000); this.t = t; const dx = (v - this.x) / dt; this.dx += (dx - this.dx) * OneEuro.a(this.dc, dt); this.x += (v - this.x) * OneEuro.a(this.mc + this.b * Math.abs(this.dx), dt); return this.x; }
+}
+const KP = { nose: 0, earL: 7, earR: 8, ls: 11, rs: 12, le: 13, re: 14, lw: 15, rw: 16, lh: 23, rh: 24, lk: 25, rk: 26, la: 27, ra: 28, lf: 31, rf: 32 };
+const KEYS = Object.keys(KP);
+let F = null;            // bộ lọc theo điểm
+let body = null;         // tư thế đã lọc, toạ độ pixel video {x,y,v}
+let disp = null;         // tư thế hiển thị (nội suy 60 fps)
+let VW = 480, VH = 640, lastVT = -1, gotAt = 0;
+function ingest(lm, w, h, t, mirror) {
+  VW = w; VH = h;
+  if (!F) F = Object.fromEntries(KEYS.map(k => [k, [new OneEuro(1, .02), new OneEuro(1, .02), new OneEuro(2, 0)]]));
+  const B = {};
+  KEYS.forEach(k => {
+    const p = lm[KP[k]], f = F[k], vis = p.visibility ?? 1, prev = body?.[k];
+    const x = (mirror ? 1 - p.x : p.x) * w, y = p.y * h;
+    if (vis < .35 && prev) B[k] = { x: prev.x, y: prev.y, v: f[2].f(vis, t) };      // điểm khuất: giữ chỗ cũ, mờ dần
+    else B[k] = { x: f[0].f(x, t), y: f[1].f(y, t), v: f[2].f(vis, t) };
+  });
+  body = B; gotAt = t; analyse(t);
+}
+function readPose(now) {
+  if (demo) { const d = demoPose(now); ingest(d, 480, 640, now, false); return; }
+  if (!pose || vid.readyState < 2 || switching || vid.currentTime === lastVT) return;
+  lastVT = vid.currentTime;
+  const t0 = performance.now(), r = pose.detectForVideo(vid, now);
+  perf.ms += performance.now() - t0; perf.n++;
+  if (perf.n === 45 && poseKind === "full" && perf.ms / perf.n > 42) { switching = true; makePose("lite").then(p => { pose = p; poseKind = "lite"; switching = false; }).catch(() => switching = false); }
+  const lm = r.landmarks?.[0];
+  if (lm) ingest(lm, vid.videoWidth, vid.videoHeight, now, facing === "user");
+}
+
+/* ======================= PHÂN TÍCH CHUYỂN ĐỘNG & COMBO ======================= */
+const M = { T: 120, hip: null, hipBase: null, energy: 0, prev: null, prevT: 0, sp: {} };
+const st = { up: 0, lotus: 0, flap: { dir: 0, ext: 0, n: 0, t: 0 }, ang: { lw: [], rw: [] }, path: { lw: [], rw: [] }, sway: { dir: 0, ext: 0, n: 0, t: 0 }, cd: {}, pend: {}, step: { la: 0, ra: 0 } };
+const midP = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+function analyse(t) {
+  const B = body, sh = midP(B.ls, B.rs), hp = midP(B.lh, B.rh);
+  const torso = Math.max(30, dist(sh, hp));
+  M.T += (torso - M.T) * .05;                        // đơn vị cơ thể (độ dài thân), đổi chậm
+  const T = M.T;
+  M.hip = hp; if (!M.hipBase) M.hipBase = { ...hp };
+  M.hipBase.x += (hp.x - M.hipBase.x) * .02; M.hipBase.y += (hp.y - M.hipBase.y) * .02;
+  // vận tốc từng điểm (đơn vị thân/giây)
+  let e = 0;
+  if (M.prev) {
+    const dt = Math.max(.008, (t - M.prevT) / 1000);
+    ["lw", "rw", "la", "ra", "nose", "lh"].forEach(k => { const v = { x: (B[k].x - M.prev[k].x) / dt / T, y: (B[k].y - M.prev[k].y) / dt / T }; M.sp[k] = v; e += Math.hypot(v.x, v.y) * (k[1] === "w" ? 1 : .7); });
+  }
+  M.prev = Object.fromEntries(KEYS.map(k => [k, { x: B[k].x, y: B[k].y }])); M.prevT = t;
+  M.energy += (Math.min(1, e / 9) - M.energy) * .08;
+  const rel = p => ({ x: (p.x - sh.x) / T, y: (p.y - sh.y) / T });   // toạ độ theo vai, đơn vị thân
+  const L = rel(B.lw), R = rel(B.rw), N = rel(B.nose);
+  const ready = id => t > (st.cd[id] || 0);
+  const fire = (id, data) => { st.cd[id] = t + 1800; onCombo(id, data); };
+
+  // 🙌 Nở rộ: 2 tay cao qua đầu
+  if (L.y < N.y - .15 && R.y < N.y - .15) { if (!st.up) st.up = t; if (st.up > 0 && t - st.up > 500 && ready("bloom")) { fire("bloom"); st.up = -1; } } else st.up = 0;
+  // 🙏 Hoa sen: chắp tay trước ngực
+  const lotus = dist(B.lw, B.rw) / T < .32 && L.y > .05 && L.y < .95 && Math.abs((B.lw.x + B.rw.x) / 2 - sh.x) / T < .45;
+  if (lotus) { if (!st.lotus) st.lotus = t; if (st.lotus > 0 && t - st.lotus > 900 && ready("lotus")) { fire("lotus"); st.lotus = -1; } } else st.lotus = 0;
+  // 🦋 Cánh bướm: dang tay rộng + vỗ lên xuống
+  const wide = Math.abs(B.lw.x - B.rw.x) / T > 2.2 && Math.abs(L.y) < .9 && Math.abs(R.y) < .9;
+  const fl = st.flap, ay = (L.y + R.y) / 2;
+  if (wide) {
+    const v = ((M.sp.lw?.y || 0) + (M.sp.rw?.y || 0)) / 2, dir = v > .6 ? 1 : v < -.6 ? -1 : 0;
+    if (dir && dir !== fl.dir) { if (fl.dir && Math.abs(ay - fl.ext) > .22) { fl.n++; fl.t = t; } fl.dir = dir; fl.ext = ay; }
+    if (fl.n >= 3 && ready("fly")) { fire("fly"); fl.n = 0; }
+  }
+  if (t - fl.t > 1800) fl.n = 0;
+  // 🌀 Vòng xoáy & 🌈 Cầu vồng: theo quỹ đạo cổ tay
+  ["lw", "rw"].forEach(k => {
+    const w = B[k], s = B[k === "lw" ? "ls" : "rs"], r = dist(w, s) / T;
+    const A = st.ang[k], a = Math.atan2(w.y - s.y, w.x - s.x);
+    A.push({ t, a, r }); while (A.length && t - A[0].t > 2200) A.shift();
+    let acc = 0, okR = true; for (let i = 1; i < A.length; i++) { let d = A[i].a - A[i - 1].a; if (d > Math.PI) d -= 2 * Math.PI; if (d < -Math.PI) d += 2 * Math.PI; acc += d; if (A[i].r < .45) okR = false; }
+    if (Math.abs(acc) > Math.PI * 1.8 && okR && ready("spin")) { fire("spin", { k }); st.pend[k] = null; st.cd.rainbow = t + 1500; A.length = 0; st.path[k].length = 0; }
+    const P = st.path[k]; P.push({ t, x: w.x, y: w.y, rx: (w.x - sh.x) / T, ry: (w.y - B.nose.y) / T }); while (P.length && t - P[0].t > 1600) P.shift();
+    // cầu vồng chờ 0,45 s: nếu tay vẫn quay tiếp thì đó là "vòng xoáy", không phải cầu vồng
+    const pd = st.pend[k];
+    const rot = (a0, a1) => { let r = 0; for (let i = 1; i < A.length; i++) if (A[i].t > a0 && A[i].t <= a1) { let d = A[i].a - A[i - 1].a; if (d > Math.PI) d -= 2 * Math.PI; if (d < -Math.PI) d += 2 * Math.PI; r += d; } return r; };
+    if (pd && t - pd.t > 450) {
+      st.pend[k] = null;
+      const before = rot(pd.t0 - 800, pd.t0), after = rot(pd.t, t), dir = Math.sign(rot(pd.t0, pd.t));
+      // trước & sau cú vung mà tay vẫn quay cùng chiều → đó là "vòng xoáy"
+      if (before * dir < Math.PI * .5 && after * dir < Math.PI * .45 && ready("rainbow")) { fire("rainbow", { pts: pd.pts }); st.cd.spin = t + 1000; }
+    }
+    if (P.length > 8 && ready("rainbow") && !st.pend[k]) {
+      const last = P[P.length - 1]; let iOver = -1, iStart = -1;
+      for (let i = P.length - 1; i >= 0; i--) if (P[i].ry < -.05) { iOver = i; break; }
+      if (iOver > 0) for (let i = 0; i < iOver; i++) if (Math.sign(P[i].rx) === -Math.sign(last.rx) && Math.abs(P[i].rx) > .8) { iStart = i; break; }   // điểm bắt đầu cú vung
+      if (Math.abs(last.rx) > .35 && iOver > 0 && iStart >= 0) { st.pend[k] = { t, t0: P[iStart].t, pts: P.slice(iStart).map(p => ({ x: p.x, y: p.y })) }; P.length = 0; }
+    }
+  });
+  // 🦘 Bật nhảy: hông vọt lên nhanh so với mức bình thường
+  const vy = M.sp.lh?.y || 0;
+  if (vy < -1.4 && (M.hipBase.y - hp.y) / T > .2 && ready("jump")) fire("jump");
+  // 💃 Lắc lư: hông đổi hướng trái–phải nhiều lần
+  const sw = st.sway, hx = (hp.x - M.hipBase.x) / T, vx = M.sp.lh?.x || 0, d = vx > .35 ? 1 : vx < -.35 ? -1 : 0;
+  if (d && d !== sw.dir) { if (sw.dir && Math.abs(hx - sw.ext) > .14) { sw.n++; sw.t = t; } sw.dir = d; sw.ext = hx; }
+  if (t - sw.t > 1500) sw.n = 0;
+  if (sw.n >= 4 && ready("sway")) { fire("sway"); sw.n = 0; }
+  // bước chân → mọc hoa nhỏ
+  ["la", "ra"].forEach(k => { const v = M.sp[k]; if (B[k].v > .5 && v && Math.hypot(v.x, v.y) > 1.2 && t > st.step[k]) { st.step[k] = t + 260; const p = toScreen(B[k]); spawnFlower(p.x, p.y + 8, 10 + Math.random() * 10, 3500, true); } });
+}
+
+/* ======================= CHUYỂN TOẠ ĐỘ: tự căn khung hình ======================= */
+let W = 0, H = 0, DPR = 1, K = 1, grain = null, pal = 0, shake = 0;
+const cv = $("art"), x = cv.getContext("2d");
+function resize() {
+  DPR = Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight; cv.width = W * DPR; cv.height = H * DPR;
+  const g = document.createElement("canvas"); g.width = g.height = 200; const gx = g.getContext("2d"), id = gx.createImageData(200, 200);
+  for (let i = 0; i < id.data.length; i += 4) { const v = Math.random() * 255; id.data[i] = id.data[i + 1] = id.data[i + 2] = v; id.data[i + 3] = Math.random() * 28; }
+  gx.putImageData(id, 0, 0); grain = x.createPattern(g, "repeat");
+}
+addEventListener("resize", () => { resize(); seedGarden(); });
+/* Người luôn cao ~ 2/3 màn hình dù đứng gần hay xa; vẫn thấy được di chuyển ngang và nhảy */
+function toScreen(p) {
+  const k = Math.min(H * .21, W * .3) / M.T, hb = M.hipBase || { x: VW / 2, y: VH / 2 };
+  return { x: W / 2 + (p.x - hb.x) * k + (hb.x - VW / 2) * k * .25, y: H * .58 + (p.y - hb.y) * k };
+}
+
+/* ======================= HIỆU ỨNG ======================= */
+const parts = [], garden = [], ribbons = { lw: [], rw: [], la: [], ra: [] };
+const rnd = (a, b) => a + Math.random() * (b - a), pick = a => a[Math.floor(Math.random() * a.length)];
+function spawnFlower(px, py, size, life = 5000, ground = false, col) { parts.push({ k: "flower", x: px, y: py, s: 0, ts: size, rot: rnd(0, 6), vr: rnd(-.01, .01), n: pick([5, 6, 8]), c: col || pick(FLOWER_COLS), c2: pick([C.yellow, C.ink, "#fff"]), born: performance.now(), life, ground, vx: 0, vy: 0 }); }
+function spawnPetal(px, py, vx, vy, col) { parts.push({ k: "petal", x: px, y: py, vx, vy, rot: rnd(0, 6), vr: rnd(-.2, .2), s: rnd(6, 13), c: col || pick(FLOWER_COLS), born: performance.now(), life: rnd(1400, 2600) }); }
+function seedGarden() {
+  garden.length = 0;
+  const n = Math.round(W / 34);
+  for (let i = 0; i < n; i++) garden.push({ x: (i + rnd(.1, .9)) * W / n, y: H - rnd(0, 26), h: rnd(H * .06, H * .16), ph: rnd(0, 6), b: .35, c: pick(FLOWER_COLS), n: pick([5, 6, 8]) });
+  for (let i = 0; i < 7; i++) [0, 1].forEach(side => garden.push({ x: side ? W - rnd(0, 18) : rnd(0, 18), y: H * (.25 + i * .1) + rnd(-10, 10), h: rnd(W * .05, W * .12), ph: rnd(0, 6), b: .3, c: pick(FLOWER_COLS), n: pick([5, 6]), side: side ? -1 : 1 }));
+}
+function onCombo(id, data) {
+  hit[id]++; $("n-" + id).textContent = hit[id];
+  const c = COMBOS.find(c => c.id === id); toast(`${c.ic} ${c.name}`, c.fx);
+  const el = $("c-" + id); el.classList.add("fire"); setTimeout(() => el.classList.remove("fire"), 700);
+  navigator.vibrate?.(30);
+  const B = body, sc = p => toScreen(p);
+  if (id === "bloom") { ["lw", "rw"].forEach(k => { const p = sc(B[k]); for (let i = 0; i < 12; i++) { const a = -Math.PI / 2 + rnd(-1.2, 1.2), v = rnd(2, 7); parts.push({ k: "flower", x: p.x, y: p.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, s: 0, ts: rnd(14, 30), rot: rnd(0, 6), vr: rnd(-.05, .05), n: pick([5, 6, 8]), c: pick(FLOWER_COLS), c2: C.yellow, born: performance.now(), life: 3200 }); } ring(p.x, p.y, C.yellow); }); garden.forEach(g => g.b = 1.3); }
+  if (id === "fly") { ["le", "re", "lw", "rw"].forEach(k => { const p = sc(B[k]); for (let i = 0; i < 3; i++) parts.push({ k: "fly", x: p.x, y: p.y, vx: rnd(-2, 2), vy: rnd(-3, -1.2), ph: rnd(0, 6), s: rnd(14, 24), c: pick([C.pink, C.blue, C.yellow, C.teal]), born: performance.now(), life: 4500 }); }); }
+  if (id === "spin") { const p = sc(B[data.k]); for (let i = 0; i < 36; i++) { const a = i / 36 * Math.PI * 4, r = 12 + i * 3; parts.push({ k: "petal", x: p.x + Math.cos(a) * r, y: p.y + Math.sin(a) * r, vx: -Math.sin(a) * 3 + Math.cos(a), vy: Math.cos(a) * 3 + Math.sin(a), rot: a, vr: .15, s: rnd(8, 14), c: FLOWER_COLS[i % 6], born: performance.now(), life: 2200 }); } spawnFlower(p.x, p.y, 34, 2500); }
+  if (id === "rainbow") parts.push({ k: "rainbow", pts: data.pts.map(sc), born: performance.now(), life: 3800 });
+  if (id === "jump") { const f = sc(midP(B.la, B.ra)); ring(f.x, f.y, C.teal, 3); ring(f.x, f.y, C.pink, 2.2); shake = 14; for (let i = 0; i < 16; i++) spawnFlower(rnd(0, W), H - rnd(10, H * .12), rnd(14, 28), 6000, true); }
+  if (id === "sway") { pal = (pal + 1) % PALETTES.length; for (let i = 0; i < 70; i++) spawnPetal(rnd(0, W), rnd(-H * .3, 0), rnd(-.6, .6), rnd(1.5, 3.5)); }
+  if (id === "lotus") { const p = sc(midP(B.lw, B.rw)); parts.push({ k: "lotus", x: p.x, y: p.y, s: 0, born: performance.now(), life: 4200 }); ring(p.x, p.y, C.pink, 2.5); }
+}
+function ring(px, py, c, sp = 1.6) { parts.push({ k: "ring", x: px, y: py, r: 10, sp, c, born: performance.now(), life: 900 }); }
+
+/* ======================= VẼ ======================= */
+function flowerShape(px, py, r, n, rot, c, c2, alpha = 1) {
+  x.save(); x.translate(px, py); x.rotate(rot); x.globalAlpha = alpha; x.fillStyle = c;
+  for (let i = 0; i < n; i++) { x.rotate(Math.PI * 2 / n); x.beginPath(); x.ellipse(r * .55, 0, r * .55, r * (n > 6 ? .2 : .32), 0, 0, 6.283); x.fill(); }
+  x.fillStyle = c2; x.beginPath(); x.arc(0, 0, r * .28, 0, 6.283); x.fill(); x.restore();
+}
+function lotus(px, py, r, a) {
+  x.save(); x.translate(px, py); x.globalAlpha = a;
+  [[C.pink, 1, 7, 0], ["#ff9cc8", .78, 7, .22], ["#fff0f6", .52, 5, 0]].forEach(([c, k, n, off]) => { x.fillStyle = c; for (let i = 0; i < n; i++) { const an = -Math.PI / 2 + (i - (n - 1) / 2) * (Math.PI / (n + 1)) + off; x.save(); x.rotate(an + Math.PI / 2); x.beginPath(); x.ellipse(0, -r * k * .5, r * k * .2, r * k * .5, 0, 0, 6.283); x.fill(); x.restore(); } });
+  x.fillStyle = C.yellow; x.beginPath(); x.arc(0, 0, r * .12, 0, 6.283); x.fill(); x.restore();
+}
+function limb(a, b, w, c, alpha) { if (alpha <= .05) return; x.globalAlpha = alpha; x.strokeStyle = c; x.lineWidth = w; x.beginPath(); x.moveTo(a.x, a.y); x.lineTo(b.x, b.y); x.stroke(); }
+function drawFigure(P, now) {
+  const p = PALETTES[pal], S = {}; KEYS.forEach(k => S[k] = toScreen(P[k]));
+  const vis = k => Math.min(1, Math.max(0, (P[k].v - .3) / .4));
+  const u = Math.min(H * .21, W * .3);       // 1 đơn vị thân trên màn hình
+  x.save(); x.lineCap = x.lineJoin = "round"; x.globalCompositeOperation = "multiply";
+  // bóng dưới chân
+  const fl = midP(S.la, S.ra); x.globalAlpha = .12 * vis("la"); x.fillStyle = C.ink; x.beginPath(); x.ellipse(fl.x, Math.max(fl.y, S.lh.y) + u * .12, u * .6, u * .09, 0, 0, 6.283); x.fill();
+  const legW = u * .2, armW = u * .16;
+  // chân (vẽ lệch in như riso: 2 lớp)
+  [["lh", "lk", "la", "lf"], ["rh", "rk", "ra", "rf"]].forEach(([h, kn, an, ft], i) => {
+    const al = Math.min(vis(kn), vis(an));
+    x.globalCompositeOperation = "multiply"; limb({ x: S[h].x + 3, y: S[h].y + 2 }, { x: S[kn].x + 3, y: S[kn].y + 2 }, legW, i ? C.lime : C.pink, al * .5);
+    x.globalCompositeOperation = "source-over"; limb(S[h], S[kn], legW, p.leg, al); limb(S[kn], S[an], legW * .88, p.leg, al);
+    x.globalAlpha = al; x.fillStyle = p.arm[i]; x.beginPath(); x.ellipse(S[an].x + (S[ft].x - S[an].x) * .5, S[an].y + (S[ft].y - S[an].y) * .5 + legW * .2, legW * .8, legW * .45, Math.atan2(S[ft].y - S[an].y, S[ft].x - S[an].x), 0, 6.283); x.fill();
+  });
+  // thân
+  x.globalCompositeOperation = "source-over"; x.globalAlpha = 1; x.fillStyle = p.body; x.beginPath(); [S.ls, S.rs, S.rh, S.lh].forEach((q, i) => i ? x.lineTo(q.x, q.y) : x.moveTo(q.x, q.y)); x.closePath(); x.fill();
+  x.strokeStyle = p.body; x.lineWidth = u * .16; x.stroke();
+  // sọc trang trí trên thân
+  x.globalAlpha = .35; x.strokeStyle = C.yellow; x.lineWidth = u * .05; const sm = midP(S.ls, S.rs), hm = midP(S.lh, S.rh);
+  for (let i = 1; i <= 3; i++) { const t = i / 4, a = { x: S.ls.x + (S.lh.x - S.ls.x) * t, y: S.ls.y + (S.lh.y - S.ls.y) * t }, b = { x: S.rs.x + (S.rh.x - S.rs.x) * t, y: S.rs.y + (S.rh.y - S.rs.y) * t }; x.beginPath(); x.moveTo(a.x, a.y); x.lineTo(b.x, b.y); x.stroke(); }
+  // cổ + đầu + vòng hoa
+  const hc = vis("earL") > .3 && vis("earR") > .3 ? midP(S.earL, S.earR) : S.nose, hr = u * .27;
+  x.globalCompositeOperation = "source-over"; limb(sm, hc, u * .14, p.head, 1);
+  x.globalAlpha = 1; x.fillStyle = p.head; x.beginPath(); x.arc(hc.x, hc.y, hr, 0, 6.283); x.fill();
+  x.globalCompositeOperation = "source-over";
+  for (let i = 0; i < 7; i++) { const a = Math.PI + i / 6 * Math.PI, sp = Math.sin(now * .004 + i) * .08; flowerShape(hc.x + Math.cos(a) * hr * 1.02, hc.y + Math.sin(a) * hr * 1.02 - hr * .1, hr * (.32 + sp), 5, now * .001 + i, FLOWER_COLS[(i + pal) % 6], C.yellow, .95); }
+  x.globalCompositeOperation = "multiply";
+  // tay
+  [["ls", "le", "lw"], ["rs", "re", "rw"]].forEach(([s, e, w], i) => {
+    const al = Math.min(vis(e), vis(w));
+    x.globalCompositeOperation = "multiply"; limb({ x: S[s].x - 3, y: S[s].y + 3 }, { x: S[e].x - 3, y: S[e].y + 3 }, armW, C.yellow, al * .45);
+    x.globalCompositeOperation = "source-over"; limb(S[s], S[e], armW, p.arm[i], al); limb(S[e], S[w], armW * .85, p.arm[i], al); x.globalCompositeOperation = "multiply";
+  });
+  x.restore();
+  // bàn tay = bông hoa xoay theo tốc độ
+  ["lw", "rw"].forEach((k, i) => { const v = M.sp[k] ? Math.hypot(M.sp[k].x, M.sp[k].y) : 0; flowerShape(S[k].x, S[k].y, u * (.16 + Math.min(.12, v * .02)), 6, now * .002 * (1 + v) * (i ? -1 : 1), i ? C.pink : C.red, C.yellow, Math.max(.2, vis(k))); });
+  return S;
+}
+function drawRibbons(S) {
+  const cols = [C.red, C.teal, C.pink, C.blue, C.yellow];
+  Object.entries(ribbons).forEach(([k, R], ri) => {
+    if (S) { R.push({ x: S[k].x, y: S[k].y }); if (R.length > 26) R.shift(); }
+    if (R.length < 3 || (body && body[k].v < .4)) return;
+    x.save(); x.lineCap = "round"; x.globalCompositeOperation = "multiply";
+    for (let i = 1; i < R.length; i++) { const t = i / R.length; if (Math.hypot(R[i].x - R[i - 1].x, R[i].y - R[i - 1].y) < 2) continue; x.globalAlpha = t * .55; x.strokeStyle = cols[(ri + Math.floor(i / 5)) % cols.length]; x.lineWidth = t * (k === "nose" ? 10 : 22); x.beginPath(); x.moveTo(R[i - 1].x, R[i - 1].y); x.lineTo(R[i].x, R[i].y); x.stroke(); }
+    x.restore();
+  });
+}
+function drawGarden(now, S) {
+  const pts = S ? [S.lw, S.rw, S.la, S.ra] : [];
+  garden.forEach(g => {
+    const near = pts.some(p => Math.hypot(p.x - g.x, p.y - (g.y - g.h)) < Math.max(70, W * .16));
+    const tgt = (near ? 1.25 : .4) + M.energy * .6; g.b += (tgt - g.b) * (near ? .12 : .02);
+    const sway = Math.sin(now * .0015 + g.ph) * (6 + M.energy * 16);
+    x.save(); x.globalCompositeOperation = "multiply"; x.strokeStyle = C.teal; x.lineWidth = 3; x.lineCap = "round";
+    let tip;
+    if (g.side) { tip = { x: g.x + g.side * g.h, y: g.y + sway }; x.beginPath(); x.moveTo(g.x, g.y); x.quadraticCurveTo(g.x + g.side * g.h * .5, g.y + 8, tip.x, tip.y); x.stroke(); }
+    else { tip = { x: g.x + sway, y: g.y - g.h }; x.beginPath(); x.moveTo(g.x, g.y); x.quadraticCurveTo(g.x, g.y - g.h * .5, tip.x, tip.y); x.stroke(); x.fillStyle = C.lime; x.beginPath(); x.ellipse(g.x + 8, g.y - g.h * .4, 9, 4, -.6, 0, 6.283); x.fill(); }
+    x.restore();
+    flowerShape(tip.x, tip.y, 9 + 11 * g.b, g.n, now * .0004 + g.ph, g.c, C.yellow, .92);
+  });
+}
+function drawParts(now) {
+  for (let i = parts.length - 1; i >= 0; i--) {
+    const p = parts[i], age = now - p.born, life = p.life, a = Math.max(0, 1 - age / life);
+    if (age > life) { parts.splice(i, 1); continue; }
+    if (p.k === "flower") { p.s += (p.ts - p.s) * .12; p.x += p.vx || 0; p.y += p.vy || 0; if (p.vx !== undefined) { p.vx *= .96; p.vy = (p.vy || 0) * .96 + .02; } p.rot += p.vr; flowerShape(p.x, p.y, p.s, p.n, p.rot, p.c, p.c2, Math.min(1, a * 2.5)); }
+    else if (p.k === "petal") { p.x += p.vx + Math.sin(age * .004 + i) * .6; p.y += p.vy; p.vy += .03; p.rot += p.vr; x.save(); x.globalCompositeOperation = "multiply"; x.globalAlpha = Math.min(1, a * 2); x.translate(p.x, p.y); x.rotate(p.rot); x.fillStyle = p.c; x.beginPath(); x.ellipse(0, 0, p.s, p.s * .45, 0, 0, 6.283); x.fill(); x.restore(); }
+    else if (p.k === "fly") { p.x += p.vx + Math.sin(age * .003 + p.ph) * 1.4; p.y += p.vy; const f = Math.abs(Math.sin(age * .025 + p.ph)); x.save(); x.globalAlpha = Math.min(1, a * 2); x.translate(p.x, p.y); x.fillStyle = p.c; [-1, 1].forEach(s => { x.beginPath(); x.ellipse(s * p.s * .45 * f, -p.s * .15, p.s * .5 * f + 1, p.s * .42, s * .5, 0, 6.283); x.fill(); x.beginPath(); x.ellipse(s * p.s * .32 * f, p.s * .3, p.s * .32 * f + 1, p.s * .26, -s * .4, 0, 6.283); x.fill(); }); x.fillStyle = C.ink; x.fillRect(-1.5, -p.s * .4, 3, p.s * .9); x.restore(); }
+    else if (p.k === "ring") { p.r += 9 * p.sp; x.save(); x.globalAlpha = a; x.strokeStyle = p.c; x.lineWidth = 8 * a + 1; x.beginPath(); x.arc(p.x, p.y, p.r, 0, 6.283); x.stroke(); x.restore(); }
+    else if (p.k === "rainbow") { const cols = [C.red, C.yellow, C.lime, C.teal, C.blue, C.pink], grow = Math.min(1, age / 500), n = Math.max(2, Math.floor(p.pts.length * grow)); x.save(); x.lineCap = x.lineJoin = "round"; cols.forEach((c, j) => { x.globalAlpha = Math.min(.85, a * 1.5); x.strokeStyle = c; x.lineWidth = 14; x.beginPath(); for (let q = 0; q < n; q++) { const P = p.pts[q], cx = W / 2, cy = H * .6, dx = P.x - cx, dy = P.y - cy, dd = Math.hypot(dx, dy) || 1, off = (j - 2.5) * 13; const X = P.x + dx / dd * off, Y = P.y + dy / dd * off; q ? x.lineTo(X, Y) : x.moveTo(X, Y); } x.stroke(); }); x.restore(); }
+    else if (p.k === "lotus") { p.s += (Math.min(W, H) * .22 - p.s) * .08; lotus(p.x, p.y, p.s, Math.min(1, a * 2)); }
+  }
+  if (parts.length > 600) parts.splice(0, parts.length - 600);
+}
+function drawBg(now) {
+  x.fillStyle = C.paper; x.fillRect(0, 0, W, H);
+  const p = PALETTES[pal], hb = body && M.hipBase ? toScreen(M.hip) : { x: W / 2, y: H / 2 };
+  x.save(); x.globalCompositeOperation = "multiply";
+  p.blobs.forEach((c, i) => { const a = now * .0002 + i * 2.1, r = Math.min(W, H) * (.32 + M.energy * .12 + i * .05); x.globalAlpha = .16 + M.energy * .14; x.fillStyle = c; x.beginPath(); x.arc(hb.x + Math.cos(a) * W * .28 * (i % 2 ? 1 : -1), hb.y * .8 + Math.sin(a * 1.3) * H * .18, r, 0, 6.283); x.fill(); });
+  x.restore();
+}
+function drawCam() {
+  if ($("camBox").classList.contains("off") || demo) return;
+  const c = $("camCv"), cx2 = c.getContext("2d"); if (vid.readyState < 2) return;
+  const s = Math.max(c.width / vid.videoWidth, c.height / vid.videoHeight), ox = (c.width - vid.videoWidth * s) / 2, oy = (c.height - vid.videoHeight * s) / 2;
+  cx2.save(); if (facing === "user") { cx2.translate(c.width, 0); cx2.scale(-1, 1); } cx2.drawImage(vid, ox, oy, vid.videoWidth * s, vid.videoHeight * s); cx2.restore();
+  if (!body) return;
+  const pt = k => ({ x: ox + body[k].x * s, y: oy + body[k].y * s });
+  cx2.lineWidth = 3; cx2.lineCap = "round"; cx2.strokeStyle = "#F2B705";
+  [["ls", "le"], ["le", "lw"], ["rs", "re"], ["re", "rw"], ["ls", "rs"], ["ls", "lh"], ["rs", "rh"], ["lh", "rh"], ["lh", "lk"], ["lk", "la"], ["rh", "rk"], ["rk", "ra"]].forEach(([a, b]) => { if (body[a].v < .4 || body[b].v < .4) return; const p = pt(a), q = pt(b); cx2.beginPath(); cx2.moveTo(p.x, p.y); cx2.lineTo(q.x, q.y); cx2.stroke(); });
+}
+
+/* ======================= VÒNG LẶP ======================= */
+function loop(now) {
+  requestAnimationFrame(loop);
+  if (!$("stage").classList.contains("on")) return;
+  readPose(now);
+  // nội suy hiển thị 60 fps giữa các khung camera 30 fps
+  if (body) { if (!disp) disp = JSON.parse(JSON.stringify(body)); KEYS.forEach(k => { const d = disp[k], b = body[k]; d.x += (b.x - d.x) * .5; d.y += (b.y - d.y) * .5; d.v = b.v; }); }
+  x.setTransform(DPR, 0, 0, DPR, 0, 0);
+  const sh = shake > .5 ? (Math.random() - .5) * shake : 0; shake *= .85;
+  drawBg(now); x.translate(sh, sh * .6);
+  const fresh = body && now - gotAt < 800;
+  drawGarden(now, fresh ? Object.fromEntries(["lw", "rw", "la", "ra"].map(k => [k, toScreen(disp[k])])) : null);
+  let S = null;
+  if (fresh) { S = Object.fromEntries(Object.keys(ribbons).map(k => [k, toScreen(disp[k])])); drawRibbons(S); drawFigure(disp, now); }
+  else drawRibbons(null);
+  // cánh hoa theo tay khi chuyển động nhanh
+  if (fresh) ["lw", "rw"].forEach(k => { const v = M.sp[k]; if (v && Math.hypot(v.x, v.y) > 2.2 && Math.random() < .5) { const p = toScreen(disp[k]); spawnPetal(p.x, p.y, -v.x * .4 + rnd(-1, 1), -v.y * .4 + rnd(-1, 1)); } });
+  drawParts(now);
+  x.setTransform(DPR, 0, 0, DPR, 0, 0);
+  if (grain) { x.fillStyle = grain; x.globalCompositeOperation = "multiply"; x.fillRect(0, 0, W, H); x.globalCompositeOperation = "source-over"; }
+  $("meter").style.width = Math.round(8 + M.energy * 92) + "%";
+  const legsOk = body && body.la.v > .5 && body.ra.v > .5;
+  $("hint").style.opacity = !fresh || !legsOk ? 1 : 0;
+  $("hint").textContent = !fresh ? (demo ? "" : "Đứng vào khung hình camera") : "Lùi ra thêm để thấy cả chân";
+  drawCam();
+}
+requestAnimationFrame(loop);
+
+let toastT; function toast(t, sub) { $("toast").innerHTML = t + (sub ? `<small>${sub}</small>` : ""); $("toast").classList.add("on"); clearTimeout(toastT); toastT = setTimeout(() => $("toast").classList.remove("on"), 1500); }
+
+/* ======================= LƯU ẢNH ======================= */
+$("bSave").onclick = () => {
+  cv.toBlob(async b => {
+    const f = new File([b], `handmagination-move-${Date.now()}.png`, { type: "image/png" });
+    if (navigator.canShare?.({ files: [f] })) { try { await navigator.share({ files: [f], title: "HandMagination Move" }); return; } catch {} }
+    const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = f.name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  }, "image/png");
+};
+
+/* ======================= DEMO: vũ công ảo trình diễn đủ 7 combo ======================= */
+function demoPose(now) {
+  const t = (now / 1000) % 26, lm = Array.from({ length: 33 }, () => ({ x: .5, y: .5, visibility: 1 }));
+  const T = .16, hip = { x: .5, y: .6 }; let jumpY = 0, swayX = Math.sin(t * 1.3) * .015;
+  let aL = [2.6, 2.2], aR = [.55, .95];            // góc [vai→khuỷu, khuỷu→cổ tay] (rad, 0 = sang phải, π/2 = xuống)
+  const ph = (a, b) => t >= a && t < b, u = (a, b) => (t - a) / (b - a);
+  if (ph(0, 3)) { const w = Math.sin(t * 3) * .4; aL = [2.3 + w, 2.0 + w]; aR = [.85 - w, 1.1 - w]; }
+  if (ph(3, 5.5)) { aL = [-2.0, -1.9]; aR = [-1.15, -1.25]; }                                // 🙌 hai tay qua đầu
+  if (ph(5.5, 8.5)) { const f = Math.sin(u(5.5, 8.5) * Math.PI * 6) * .5; aL = [Math.PI - f, Math.PI - f * 1.2]; aR = [f, f * 1.2]; }   // 🦋 vỗ cánh
+  if (ph(8.5, 10.4)) { const a = u(8.5, 10.4) * Math.PI * 2.6; aR = [a, a]; }                   // 🌀 quay tay phải
+  if (ph(11, 13)) { const a = Math.PI * .9 + Math.min(1, u(11, 13) * 1.4) * Math.PI * 1.2; aL = [a, a]; }   // 🌈 tay trái vung từ trái, qua đầu, sang phải
+  if (ph(13, 14.6)) { const k = u(13, 14.6); jumpY = k > .3 && k < .7 ? -Math.sin((k - .3) / .4 * Math.PI) * .09 : 0; aL = [-2.4, -2.2]; aR = [-.75, -.9]; }   // 🦘
+  if (ph(14.6, 18.5)) swayX = Math.sin(u(14.6, 18.5) * Math.PI * 7) * .06;                 // 💃
+  if (ph(18.5, 21)) { aL = [2.0, -.05]; aR = [1.14, Math.PI + .05]; }                               // 🙏 chắp tay
+  const H0 = { x: hip.x + swayX, y: hip.y + jumpY };
+  const set = (i, p) => { lm[i] = { x: p.x, y: p.y, visibility: 1 }; };
+  const sh = { x: H0.x, y: H0.y - T }, ls = { x: sh.x - .06, y: sh.y }, rs = { x: sh.x + .06, y: sh.y };
+  const arm = (s, A) => { const e = { x: s.x + Math.cos(A[0]) * .12, y: s.y + Math.sin(A[0]) * .12 * .75 }; return [e, { x: e.x + Math.cos(A[1]) * .11, y: e.y + Math.sin(A[1]) * .11 * .75 }]; };
+  const [le, lw] = arm(ls, aL), [re, rw] = arm(rs, aR);
+  set(11, ls); set(12, rs); set(13, le); set(14, re); set(15, lw); set(16, rw);
+  set(0, { x: sh.x + swayX * .3, y: sh.y - .07 }); set(7, { x: sh.x - .025, y: sh.y - .075 }); set(8, { x: sh.x + .025, y: sh.y - .075 });
+  const lh = { x: H0.x - .04, y: H0.y }, rh = { x: H0.x + .04, y: H0.y }; set(23, lh); set(24, rh);
+  const kneeB = Math.sin(t * 2.6) * .01, legY = Math.min(.14, .14 - jumpY * .4);
+  set(25, { x: lh.x - .01, y: lh.y + legY * .9 + kneeB }); set(26, { x: rh.x + .01, y: rh.y + legY * .9 - kneeB });
+  set(27, { x: lh.x - .015, y: lh.y + legY * 1.75 - jumpY * .2 }); set(28, { x: rh.x + .015, y: rh.y + legY * 1.75 - jumpY * .2 });
+  set(31, { x: lh.x - .04, y: lh.y + legY * 1.8 - jumpY * .2 }); set(32, { x: rh.x + .04, y: rh.y + legY * 1.8 - jumpY * .2 });
+  return lm;
+}
+window.__move = { hit, M, st, get body() { return body; } };
+</script>
+</body>
+</html>
