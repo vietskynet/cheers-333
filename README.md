@@ -81,3 +81,14 @@ Camera chỉ chạy trên HTTPS (link `*.netlify.app` đã là HTTPS).
 npm i -g netlify-cli
 netlify dev        # cần file .env chứa các biến ở trên
 ```
+
+## Game `/combatNew/` – Boxing bằng cả người
+
+`public/combatNew/index.html` – đấm bốc đối mặt 2 máy, MediaPipe **PoseLandmarker** (nửa người trên: mũi, vai, khuỷu, cổ tay, hông).
+
+- Toạ độ chuẩn hoá theo giữa 2 vai, đơn vị = độ rộng vai → không phụ thuộc khoảng cách tới camera.
+- Đòn: đấm thẳng (cổ tay lao tới / duỗi tay nhanh), móc ngang (vung ngang, khuỷu cao), móc ngược (vọt lên từ dưới), song chưởng (2 tay chập đẩy tới, 100⚡).
+- Phòng thủ: 2 găng che mặt (đỡ thẳng + móc; móc ngược chỉ đỡ được khi 2 găng khép sát), 2 găng che bụng, né = nghiêng/cúi đầu so với tư thế chuẩn (nút "chỉnh tư thế").
+- Bên đánh tính trúng vùng đầu/thân theo tư thế đối thủ; **bên bị đánh** quyết định đỡ/né theo tư thế thật của mình rồi gửi kết quả lại.
+- Gửi tư thế ~33 Hz (P2P) / ~22 Hz (relay). Mạng dùng chung khối PeerJS + MQTT relay của `/combat/` (tiền tố `hmbox`).
+- Test: `/combatNew/#local` ở 2 cửa sổ, hoặc "Tập với võ sĩ máy".
