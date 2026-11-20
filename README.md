@@ -92,4 +92,5 @@ netlify dev        # cần file .env chứa các biến ở trên
 - Trúng/đỡ/né = **va chạm 3D thật**: đường đi của nắm đấm so với đầu (cầu), thân (khối trụ), cẳng tay + găng của đối thủ (đỡ). Bên bị đánh kiểm tra lại với tư thế hiện tại của mình rồi trả kết quả.
 - Khi ra đòn thân xoay theo tay đánh; trúng đòn đầu giật ra sau.
 - Gửi tư thế 11 điểm (cm) ~33 Hz. Mạng dùng chung với `/combat/` (PeerJS + Cloudflare TURN + MQTT relay).
-- Test: `/combatNew/#local` 2 cửa sổ, hoặc "Tập với võ sĩ máy" (máy tự nâng thủ / lắc né bằng chính cơ thể).
+- **Tập tư thế** (nút 🎯 ở sảnh): không cần đối thủ, hình nộm đứng yên + khung huấn luyện 13 bài (thủ thế, thẳng/móc/móc ngược từng tay, né trái/phải, cúi, đỡ & né đòn thật của hình nộm, combo), báo máy nhận đòn gì, tay nào, tốc độ m/s; sau đó tập tự do.
+- Test: `/combatNew/#local` 2 cửa sổ, hoặc "Đấu thử với võ sĩ máy" (máy tự nâng thủ / lắc né bằng chính cơ thể).

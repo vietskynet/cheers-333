@@ -75,6 +75,18 @@
   .chips button{border:0;background:transparent;border-radius:99px;padding:7px 9px;font:inherit;font-size:11px;font-weight:800;white-space:nowrap;cursor:pointer;color:var(--ink)}
   .chips button.hit{background:#F2B70588}
   .chips button.lock{opacity:.4}
+  #coach{position:absolute;left:10px;right:10px;bottom:calc(env(safe-area-inset-bottom) + 62px);background:#ffffffe8;backdrop-filter:blur(8px);border-radius:18px;padding:10px 12px;box-shadow:0 6px 20px #0002;display:none}
+  #coach.on{display:block}
+  #coach .cs{font-size:10px;font-weight:800;letter-spacing:1.2px;color:var(--mute)}
+  #coach .ct{font-size:19px;font-weight:800;line-height:1.2;margin-top:2px}
+  #coach .ct b{background:linear-gradient(transparent 60%,#F2B70599 60%)}
+  #coach .cf{font-size:13px;font-weight:700;min-height:18px;margin-top:4px}
+  #coach .cf.ok{color:var(--teal)} #coach .cf.no{color:#dc2626}
+  #coach .cst{font-size:11px;color:var(--mute);margin-top:3px}
+  #coach .cb{display:flex;gap:6px;margin-top:7px}
+  #coach .cb button{border:0;border-radius:99px;background:#f1efe9;padding:6px 11px;font:inherit;font-size:11px;font-weight:800}
+  body.train #state{bottom:auto;top:calc(env(safe-area-inset-top) + 160px)}
+  body.train .side.r .hp,body.train .side.r .tube,body.train .side.r .enl,body.train .side .tube,body.train .side .enl{visibility:hidden}
   #toast{position:absolute;left:50%;top:30%;transform:translate(-50%,-50%) scale(.8);background:var(--ink);color:#fff;font-weight:800;font-size:17px;padding:11px 16px;border-radius:16px;opacity:0;pointer-events:none;transition:all .3s cubic-bezier(.2,1.4,.4,1);text-align:center;max-width:86vw}
   #toast.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
   #toast small{display:block;font-weight:600;opacity:.8;font-size:13px;margin-top:3px}
@@ -107,7 +119,8 @@
   <button class="cta" id="bCreate">Tạo phòng mới</button>
   <div class="row"><input class="code" id="inCode" maxlength="4" placeholder="MÃ" autocomplete="off" autocapitalize="characters"><button class="cta alt" id="bJoin" style="width:auto;padding:16px 22px">Vào</button></div>
   <div class="err" id="lobbyErr"></div>
-  <button class="ghost" id="bSolo">Tập với võ sĩ máy</button>
+  <button class="cta" id="bTrain" style="background:#14a39a;margin-top:6px">🎯 Tập tư thế (không cần đối thủ)</button>
+  <button class="ghost" id="bSolo">Đấu thử với võ sĩ máy</button>
   <div class="moves">
     <div><b>👊 Đấm thẳng</b><span>tung tay thẳng về phía trước</span></div>
     <div><b>🪝 Móc ngang</b><span>vung tay ngang, khuỷu cao</span></div>
@@ -158,6 +171,7 @@
   <div id="state"><span id="sGuard">🛡 ĐỠ MẶT</span><span id="sBody">🛡 ĐỠ BỤNG</span><span id="sDodge">↔️ NÉ</span><span id="sCombo">COMBO</span></div>
   <div class="chips" id="chips"></div>
   <div class="tools"><button id="bCal">↺ chỉnh tư thế</button><button id="bSwap">⇄ đảo trái/phải</button></div>
+  <div id="coach"><div class="cs" id="cStep"></div><div class="ct" id="cTask"></div><div class="cf" id="cFb"></div><div class="cst" id="cStats"></div><div class="cb"><button id="cRedo">↺ làm lại</button><button id="cSkip">bỏ qua ›</button><button id="cFree">tập tự do</button></div></div>
   <div id="toast"></div>
   <div id="banner"><div id="bannerTx"></div></div>
   <div id="endBox"><button id="bRematch">Đấu lại</button><button id="bExit" style="background:#fff;color:#14161b">Thoát</button></div>
@@ -426,7 +440,7 @@ function startRound(delay) {
   seenHits = new Set(); fx.length = 0; texts.length = 0; game.timer = ROUND_SEC;
   show("game"); resize(); $("endBox").classList.remove("on");
   game.phase = "count"; game.startAt = performance.now() + delay; lastCount = -1;
-  $("n1").textContent = me.side === 0 ? "BẠN · XANH" : "XANH"; $("n2").textContent = me.side === 1 ? "BẠN · ĐỎ" : (game.ai ? "MÁY · ĐỎ" : "ĐỎ");
+  $("n1").textContent = me.side === 0 ? "BẠN · XANH" : "XANH"; $("n2").textContent = me.side === 1 ? "BẠN · ĐỎ" : (game.train ? "HÌNH NỘM" : game.ai ? "MÁY · ĐỎ" : "ĐỎ");
 }
 function endRound(win) {
   if (game.phase === "end") return;
@@ -434,7 +448,7 @@ function endRound(win) {
   banner(win === null ? "HOÀ" : win ? "THẮNG!" : "K.O.", win === null ? "Hết giờ" : win ? "Bạn hạ gục đối thủ" : "Bạn bị hạ gục", 0);
   $("endBox").classList.add("on"); me.ready = false; op.ready = false;
 }
-$("bRematch").onclick = () => { if (game.ai) return startAI(); me.ready = true; send({ t: "rematch" }); banner("CHỜ ĐỐI THỦ…", "Đối thủ bấm Đấu lại là bắt đầu", 0); if (op.ready) maybeStart(); };
+$("bRematch").onclick = () => { if (game.train) return startTrain(); if (game.ai) return startAI(); me.ready = true; send({ t: "rematch" }); banner("CHỜ ĐỐI THỦ…", "Đối thủ bấm Đấu lại là bắt đầu", 0); if (op.ready) maybeStart(); };
 $("bExit").onclick = () => location.reload();
 
 /* ======================= NHẬN DIỆN TƯ THẾ 3D ======================= */
@@ -492,6 +506,7 @@ function analyse(R, now) {
   if (!calib.neutral && game.phase === "fight") calib.neutral = { ...hc };
   const nb = calib.neutral || hc;
   me.dodge = Math.abs(hc.L - nb.L) > .1 || nb.U - hc.U > .1 || nb.F - hc.F > .09;
+  me.dL = hc.L - nb.L; me.dU = nb.U - hc.U; me.dF = nb.F - hc.F;
   // ---- tấn công ----
   const V = {};
   ["lw", "rw"].forEach(a => {
@@ -508,7 +523,7 @@ function analyse(R, now) {
   const T = TUNE.v;
   const bothUp = V.lw.v.U > T * .7 && V.rw.v.U > T * .7;
   const close = len(sub(R.lw, R.rw)) < .2;
-  if (close && V.lw.v.F > T * .9 && V.rw.v.F > T * .9 && me.en >= MOVES.special.cost && now > armCD.lw && now > armCD.rw) return startSwing("special", "rw", now);
+  if (close && V.lw.v.F > T * .9 && V.rw.v.F > T * .9 && V.lw.v.F > Math.abs(V.lw.v.U) && V.rw.v.F > Math.abs(V.rw.v.U) && me.en >= MOVES.special.cost && now > armCD.lw && now > armCD.rw) return startSwing("special", "rw", now, len(V.rw.v));
   for (const a of ["lw", "rw"]) {
     const { v, from } = V[a]; if (now < armCD[a] || len(v) < T) continue;
     const S = R[ARM[a].s], E = R[ARM[a].e], inward = Math.sign(v.L) === -ARM[a].sign;
@@ -516,7 +531,7 @@ function analyse(R, now) {
     if (!bothUp && v.U > T && v.U > Math.abs(v.L) && v.U > v.F * .8 && from.U < S.U) kind = "upper";
     else if (Math.abs(v.L) > T && inward && Math.abs(v.L) > v.F * .8 && E.U > S.U - .16) kind = "hook";
     else if (v.F > T && !bothUp && v.F > 1.5 * Math.abs(v.L) && v.F > 1.2 * Math.abs(v.U)) kind = "straight";
-    if (kind) { startSwing(kind, a, now); break; }
+    if (kind) { startSwing(kind, a, now, len(v)); break; }
   }
 }
 function swap(on) { SWAP = on; try { localStorage.setItem("hmbox-swap", on ? "1" : "0"); } catch {} me.pose = null; toast(on ? "Đã đảo trái ↔ phải" : "Trái/phải theo mặc định", "Giơ tay TRÁI lên: găng chữ T phải nhấc lên", 2200); }
@@ -524,7 +539,8 @@ $("bSwap").onclick = () => swap(!SWAP);
 $("bCal").onclick = () => { calib.neutral = null; toast("Đã chỉnh lại tư thế chuẩn", "Đứng thẳng, thủ thế"); };
 
 /* ======================= ĐÁNH & ĐỠ ======================= */
-function startSwing(kind, arm, now) {
+function startSwing(kind, arm, now, sp = 0) {
+  trainEv({ type: "swing", kind, arm, sp });
   const M = MOVES[kind];
   if (kind === "special") { me.en -= M.cost; armCD.lw = armCD.rw = now + 900; game.shake = 8; }
   else { armCD[arm] = now + ARM_CD; const o = arm === "lw" ? "rw" : "lw"; armCD[o] = Math.max(armCD[o], now + 120); }
@@ -563,7 +579,7 @@ function defend(m, P, isAI) {
   const c = P ? contact(path, P, m.kind === "special" ? TUNE.specialR : TUNE.fistR) : { r: "hit", zone: "head", at: path[path.length - 1] };
   let r = "dodge", zone = "head", dmg = 0, at = path[path.length - 1];
   if (c) { zone = c.zone; at = c.at; const base = m.dmg * (zone === "body" ? .65 : 1); r = c.r; dmg = Math.ceil(r === "block" ? base * (m.kind === "special" ? .5 : .15) : base); }
-  if (isAI) { op.hp = Math.max(0, op.hp - dmg); if (r === "hit") op.flinch = 1; if (op.hp <= 0 && !op.ko) { op.ko = true; setTimeout(() => endRound(true), 300); } }
+  if (isAI) { op.hp = Math.max(0, op.hp - dmg); if (r === "hit") op.flinch = 1; if (game.train) op.hp = 100; if (op.hp <= 0 && !op.ko) { op.ko = true; setTimeout(() => endRound(true), 300); } }
   return { r, zone, dmg, at: [Math.round(at.L * 100), Math.round(at.F * 100), Math.round(at.U * 100)] };
 }
 function takeHit(m) {
@@ -575,10 +591,13 @@ function takeHit(m) {
   if (res.r !== "hit") { me.en = Math.min(100, me.en + EN.onDefend); toast(res.r === "dodge" ? "↔️ NÉ ĐƯỢC!" : "🛡 ĐỠ ĐƯỢC!", ""); if (res.r === "block") burst(sp.x, sp.y, 8, [PAL.teal, "#fff"], 3); }
   else { me.flinch = 1; $("hurt").classList.add("on"); setTimeout(() => $("hurt").classList.remove("on"), 120); game.shake = m.kind === "special" ? 16 : 7; navigator.vibrate?.(35); me.combo = 0; burst(sp.x, sp.y, 14, [PAL.yellow, PAL.red, PAL.ink], 5); }
   addText(res.r === "hit" ? "-" + res.dmg : res.r === "block" ? "ĐỠ" : "NÉ", sp.x, sp.y - 30, res.r === "hit" ? PAL.red : PAL.teal, 30);
+  trainEv({ type: "def", r: res.r });
+  if (game.train) me.hp = 100;
   if (me.hp <= 0) { me.ko = true; if (!game.ai) send({ t: "ko" }); endRound(false); }
   return res;
 }
 function onResult(m) {
+  trainEv({ type: "res", r: m.r, zone: m.zone, kind: m.kind });
   const at = m.at ? V3(m.at[0] / 100, m.at[1] / 100, m.at[2] / 100) : null;
   const os = me.side ? 0 : 1, sp = at ? project(at, os) : { x: W / 2, y: H / 2 };
   if (m.r === "hit") {
@@ -623,8 +642,9 @@ function stepAI(now) {
   const P = aiBase(now);
   const s = ai.swing;
   if (s) {
-    const k = Math.min(1, (now - s.t0) / 230), e = Math.sin(k * Math.PI / 2);
-    const tgt = me.pose ? add(toOther(headC(me.pose)), V3(s.err, -.05, s.errU)) : V3(0, .6, .62);
+    const k = Math.min(1, (now - s.t0) / (s.dur || 230)), e = Math.sin(k * Math.PI / 2);
+    if (!s.tgt) s.tgt = me.pose ? add(toOther(headC(me.pose)), V3(s.err, -.05, s.errU)) : V3(0, .6, .62);   // nhắm vào chỗ đầu lúc ra đòn, không bám theo
+    const tgt = s.tgt;
     const start = P[s.arm], sg = ARM[s.arm].sign;
     let w;
     if (s.kind === "straight") w = lerp3(start, tgt, e);
@@ -639,11 +659,12 @@ function stepAI(now) {
         if (c) { s.done = true; takeHit({ kind: s.kind, dmg: MOVES[s.kind].dmg, path: s.path.map(p => [Math.round(p.L * 100), Math.round(p.F * 100), Math.round(p.U * 100)]) }); }
       }
     }
-    if (k >= 1 && now - s.t0 > 330) ai.swing = null;
+    if (k >= 1 && now - s.t0 > (s.dur || 230) + 100) ai.swing = null;
   }
   op.pose = P; op.cur = P; op.reach = .63;
   if (game.phase !== "fight") return;
   op.en = Math.min(100, op.en + EN.regen / 60);
+  if (game.train) return;
   if (now > ai.next && !ai.swing) {
     ai.next = now + 650 + Math.random() * 900;
     const kind = ["straight", "straight", "hook", "upper"][Math.floor(Math.random() * 4)], arm = Math.random() < .5 ? "lw" : "rw";
@@ -776,6 +797,85 @@ function render(now) {
   if (grain) { x.fillStyle = grain; x.globalCompositeOperation = "multiply"; x.fillRect(0, 0, W, H); x.globalCompositeOperation = "source-over"; }
 }
 
+/* ======================= TẬP TƯ THẾ (không đối thủ) ======================= */
+const ARMN = { lw: "TRÁI", rw: "PHẢI" };
+const DRILLS = [
+  { t: "Thủ thế: đưa <b>2 găng lên ngang cằm</b>, giữ 1 giây", hold: () => me.guard, ms: 1000 },
+  { t: "👊 Đấm thẳng tay <b>TRÁI</b>", sw: ["straight", "lw"] },
+  { t: "👊 Đấm thẳng tay <b>PHẢI</b>", sw: ["straight", "rw"] },
+  { t: "🪝 Móc ngang tay <b>TRÁI</b> (khuỷu ngang vai, vung vào trong)", sw: ["hook", "lw"] },
+  { t: "🪝 Móc ngang tay <b>PHẢI</b>", sw: ["hook", "rw"] },
+  { t: "⤴️ Móc ngược tay <b>TRÁI</b> (từ dưới lên cằm)", sw: ["upper", "lw"] },
+  { t: "⤴️ Móc ngược tay <b>PHẢI</b>", sw: ["upper", "rw"] },
+  { t: "↔️ Nghiêng đầu né sang <b>TRÁI</b> của bạn", hold: () => me.dL > .1, ms: 250 },
+  { t: "↔️ Nghiêng đầu né sang <b>PHẢI</b> của bạn", hold: () => me.dL < -.1, ms: 250 },
+  { t: "⬇️ <b>Cúi người</b> xuống tránh đòn", hold: () => me.dU > .1, ms: 250 },
+  { t: "🛡 Hình nộm sắp đấm – <b>giơ găng đỡ</b>!", atk: true, want: "block" },
+  { t: "↔️ Hình nộm sắp đấm – <b>né đầu</b> đi!", atk: true, want: "dodge" },
+  { t: "🔥 Combo: <b>TRÁI thẳng → PHẢI thẳng → TRÁI móc</b>", combo: [["straight", "lw"], ["straight", "rw"], ["hook", "lw"]] },
+];
+const tr = { i: 0, free: false, holdAt: 0, okAt: 0, combo: 0, comboAt: 0, atkAt: 0, stats: { n: 0, hit: 0, best: 0, kinds: {} } };
+function startTrain() {
+  game.train = true; document.body.classList.add("train"); $("coach").classList.add("on");
+  Object.assign(tr, { i: 0, free: false, okAt: 0 }); tr.stats = { n: 0, hit: 0, best: 0, kinds: {} };
+  startAI(); game.timer = 0; showDrill();
+}
+function showDrill() {
+  const d = DRILLS[tr.i];
+  tr.holdAt = 0; tr.combo = 0; tr.okAt = 0; tr.atkAt = d && d.atk ? performance.now() + 2200 : 0;
+  $("cStep").textContent = tr.free ? "TẬP TỰ DO" : `BÀI ${tr.i + 1}/${DRILLS.length}`;
+  $("cTask").innerHTML = tr.free ? "Đánh thoải mái vào hình nộm – xem máy nhận ra đòn gì" : d.t;
+  fb(d && d.atk ? "Chuẩn bị… hình nộm ra đòn sau 2 giây" : "", "");
+  stats();
+}
+function fb(t, cls) { $("cFb").textContent = t; $("cFb").className = "cf " + cls; }
+function stats() { const S = tr.stats, k = Object.entries(S.kinds).map(([a, b]) => `${MOVES[a]?.ic || ""}${b}`).join(" "); $("cStats").textContent = `Đòn: ${S.n} · trúng ${S.hit} · nhanh nhất ${S.best.toFixed(1)} m/s ${k ? "· " + k : ""}`; }
+function pass(msg) {
+  if (tr.okAt) return;
+  fb("✓ " + (msg || "Chuẩn!"), "ok"); tr.okAt = performance.now(); navigator.vibrate?.(20);
+  setTimeout(() => { if (!game.train || tr.free) return; tr.i++; if (tr.i >= DRILLS.length) { tr.free = true; banner("XONG!", "Bạn đã qua hết bài – tập tự do", 1600); } showDrill(); }, 1100);
+}
+function trainEv(e) {
+  if (!game.train) return;
+  const d = tr.free ? null : DRILLS[tr.i], now = performance.now();
+  if (e.type === "swing") {
+    const S = tr.stats; S.n++; S.best = Math.max(S.best, e.sp || 0); S.kinds[e.kind] = (S.kinds[e.kind] || 0) + 1; stats();
+    const said = `Máy nhận: ${MOVES[e.kind].name} tay ${ARMN[e.arm]} · ${(e.sp || 0).toFixed(1)} m/s`;
+    if (!d || tr.okAt) return fb(said, "");
+    if (d.sw) {
+      if (e.kind === d.sw[0] && e.arm === d.sw[1]) pass(said);
+      else fb(said + (e.arm !== d.sw[1] ? ` – cần tay ${ARMN[d.sw[1]]}` : ` – cần ${MOVES[d.sw[0]].name}`), "no");
+    } else if (d.combo) {
+      const want = d.combo[tr.combo];
+      if (tr.combo && now - tr.comboAt > 1600) tr.combo = 0;
+      if (e.kind === want[0] && e.arm === want[1]) { tr.combo++; tr.comboAt = now; fb(`${tr.combo}/${d.combo.length} ✓ ${said}`, "ok"); if (tr.combo >= d.combo.length) pass("Combo hoàn hảo!"); }
+      else { tr.combo = 0; fb(said + " – làm lại từ đầu combo", "no"); }
+    } else fb(said, "");
+  }
+  if (e.type === "res") { if (e.r === "hit") { tr.stats.hit++; stats(); } }
+  if (e.type === "def" && d && d.atk && !tr.okAt) {
+    if (e.r === d.want || (d.want === "block" && e.r === "block")) pass(e.r === "block" ? "Đỡ gọn!" : "Né đẹp!");
+    else { fb(e.r === "hit" ? "Bị trúng – thử lại" : e.r === "block" ? "Bạn đỡ – bài này cần NÉ đầu" : "Bạn né – bài này cần ĐỠ bằng găng", "no"); tr.atkAt = now + 1800; }
+  }
+}
+function trainTick(now) {
+  const d = tr.free ? null : DRILLS[tr.i];
+  if (!d || tr.okAt || game.phase !== "fight") return;
+  if (d.hold) {
+    if (d.hold()) { if (!tr.holdAt) tr.holdAt = now; fb(`Giữ… ${Math.max(0, (d.ms - (now - tr.holdAt)) / 1000).toFixed(1)}s`, ""); if (now - tr.holdAt >= d.ms) pass(); }
+    else if (tr.holdAt) { tr.holdAt = 0; fb("", ""); }
+  }
+  if (d.atk && tr.atkAt && now > tr.atkAt && !ai.swing) {
+    tr.atkAt = 0; fb("Đòn đang tới!", "");
+    ai.swing = { kind: "straight", arm: Math.random() < .5 ? "lw" : "rw", t0: now, dur: 520, path: [], err: 0, errU: 0, done: false };
+    op.twist = ai.swing.arm === "rw" ? 1 : -1;
+    setTimeout(() => { if (!game.train || tr.okAt || DRILLS[tr.i] !== d || tr.atkAt) return; if (d.want === "dodge") pass("Né đẹp – đòn trượt qua!"); else { fb("Bạn né – bài này cần ĐỠ bằng găng", "no"); tr.atkAt = performance.now() + 1500; } }, 900);
+  }
+}
+$("cSkip").onclick = () => { if (tr.free) return; tr.i = (tr.i + 1) % DRILLS.length; showDrill(); };
+$("cRedo").onclick = () => { tr.free = false; showDrill(); };
+$("cFree").onclick = () => { tr.free = true; showDrill(); };
+
 /* ======================= HUD ======================= */
 const lagW = [100, 100];
 function hud(now) {
@@ -785,7 +885,7 @@ function hud(now) {
     $("en" + k).style.width = Math.round(p.en) + "%"; $("tube" + k).classList.toggle("full", p.en >= 100);
     $("enl" + k).textContent = p.en >= 100 ? "SONG CHƯỞNG SẴN SÀNG 🔥" : "NĂNG LƯỢNG " + Math.round(p.en);
   });
-  $("timer").textContent = Math.ceil(game.timer);
+  $("timer").textContent = game.train ? "TẬP" : Math.ceil(game.timer);
   $("sGuard").classList.toggle("on", me.guard); $("sBody").classList.toggle("on", me.bodyGuard); $("sDodge").classList.toggle("on", me.dodge);
   const comboOn = now - me.comboAt < 1300 && me.combo >= 2; $("sCombo").classList.toggle("on", comboOn); $("sCombo").textContent = comboOn ? `COMBO x${me.combo}` : "COMBO";
   $("k-special").classList.toggle("lock", me.en < 100);
@@ -815,11 +915,12 @@ function loop(now) {
   if (game.phase === "fight") {
     me.en = Math.min(100, me.en + EN.regen * dt);
     if (net.host || game.ai) {
-      game.timer = Math.max(0, game.timer - dt);
-      if (game.timer <= 0) { const win = me.hp > op.hp ? me.side : me.hp < op.hp ? (me.side ? 0 : 1) : -1; if (!game.ai) send({ t: "timeup", win }); endRound(win === -1 ? null : win === me.side); }
+      if (!game.train) game.timer = Math.max(0, game.timer - dt);
+      if (game.timer <= 0 && !game.train) { const win = me.hp > op.hp ? me.side : me.hp < op.hp ? (me.side ? 0 : 1) : -1; if (!game.ai) send({ t: "timeup", win }); endRound(win === -1 ? null : win === me.side); }
     }
   }
-  if (game.ai && me.swing && !me.swing.reacted) { me.swing.reacted = true; if (Math.random() < .7) aiReact(now); }
+  if (game.train) trainTick(now);
+  if (game.ai && !game.train && me.swing && !me.swing.reacted) { me.swing.reacted = true; if (Math.random() < .7) aiReact(now); }
   stepAI(now); sendState(now); render(now); hud(now);
 }
 requestAnimationFrame(loop);
@@ -829,6 +930,7 @@ $("bCreate").onclick = createRoom;
 $("bJoin").onclick = () => joinRoom($("inCode").value);
 $("inCode").onkeydown = e => { if (e.key === "Enter") joinRoom($("inCode").value); };
 $("bSolo").onclick = startAI;
+$("bTrain").onclick = startTrain;
 $("bCam").onclick = async () => {
   $("bCam").disabled = true; $("bCam").textContent = "Đang mở camera…"; $("roomErr").textContent = "";
   try { await startCamera(); $("bCam").textContent = "Sẵn sàng ✓"; setReady(); }
@@ -837,7 +939,7 @@ $("bCam").onclick = async () => {
 $("bLeave").onclick = () => location.reload();
 resize();
 /* Kiểm thử: bơm tư thế 3D giả (hệ L/F/U, mét) */
-window.__box = { me, op, game, setReady, net, ai, contact, toOther, setPose: (P, now) => { const t = now ?? performance.now(); me.pose = me.pose || clone(P); KEYS.forEach(k => Object.assign(me.pose[k], P[k])); analyse(me.pose, t); } };
+window.__box = { me, op, game, setReady, net, ai, contact, toOther, tr, setPose: (P, now) => { const t = now ?? performance.now(); me.pose = me.pose || clone(P); KEYS.forEach(k => Object.assign(me.pose[k], P[k])); analyse(me.pose, t); } };
 </script>
 </body>
 </html>
