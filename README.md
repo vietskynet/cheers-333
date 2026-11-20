@@ -10,11 +10,17 @@ Luồng chỉ 2 bước: **Scan tay → Ra hình**. Trong lúc chờ có màn h�
 
 ## Ứng dụng con `/tech/`
 
-`public/tech/index.html` – camera theo dõi tối đa 2 bàn tay theo thời gian thực; trên màn hình là bàn tay đồ hoạ (mảng hình phẳng kiểu in lụa) cử động theo tay thật:
-- **Chụm** ngón cái + trỏ: rắc mảng màu · **Xoè tay**: đẩy mảng hình nền ra · **Nắm tay**: hút mảng hình lại
-- Chữ lớn chạy dọc mép đổi theo cử chỉ (MỞ RA, NẮM CHẶT, CHIẾN THẮNG, YÊU, CHỈ LỐI…)
-- Nút lưu khung hình, đổi camera, ẩn/hiện camera nhỏ; có chế độ demo không cần camera
-- Chạy hoàn toàn trên trình duyệt, không gọi API, không tốn tiền
+`public/tech/index.html` – camera theo dõi 2 bàn tay theo thời gian thực, chạy hoàn toàn trên trình duyệt (không gọi API):
+- **Tay trái → bông hoa**: mỗi đầu ngón là một cánh hoa, xoè tay hoa nở, nắm tay thành nụ; thân và lá đung đưa.
+- **Tay phải → vũ công**: ngón trỏ và ngón út là hai tay, ngón giữa vẽ dải lụa, ngón áp út làm váy xoè, chân nhảy theo nhịp và tốc độ di chuyển.
+- **5 combo** (bảng hướng dẫn trên màn hình, sáng lên + ✓ khi mở khoá):
+  1. 🌸 Nở hoa – tay trái nắm rồi xoè nhanh
+  2. 🌀 Xoay vũ điệu – tay phải xoay cổ tay nửa vòng
+  3. 💞 Trao hoa – đưa hai bàn tay sát nhau
+  4. 🎆 Pháo hoa – xoè cả hai tay giơ cao
+  5. ✌️ Chiến thắng – cả hai tay làm chữ V
+- Chụm ngón: hoa rắc cánh, vũ công rắc sao. Xoè đẩy / nắm hút mảng hình nền.
+- Nút ⇄ đổi tay trái/phải nếu camera nhận ngược; chế độ demo tự diễn các combo.
 
 ## Cấu trúc
 

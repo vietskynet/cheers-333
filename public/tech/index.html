@@ -24,6 +24,20 @@
   .round{width:48px;height:48px;border-radius:50%;border:0;background:#ffffffe8;box-shadow:0 4px 16px #00000018;font-size:18px;cursor:pointer;color:#14161b}
   .shot{width:68px;height:68px;border-radius:50%;border:5px solid #14161b;background:#fff;cursor:pointer}
   .hint{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 100px);text-align:center;font-size:13px;color:#6b7280;font-weight:600;pointer-events:none;transition:opacity .4s}
+  .combo{position:fixed;top:calc(env(safe-area-inset-top) + 52px);left:12px;width:min(250px,64vw);background:#ffffffe6;backdrop-filter:blur(8px);border-radius:16px;box-shadow:0 8px 28px #0000001c;padding:10px 12px 8px;font-size:12px;z-index:3}
+  .cHead{display:flex;align-items:center;justify-content:space-between;font-weight:800;font-size:12px;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
+  .cHead button{border:0;background:#f3f4f6;border-radius:8px;width:24px;height:24px;font-weight:800;cursor:pointer}
+  .combo.min ol{display:none}
+  .combo ol{list-style:none}
+  .combo li{display:flex;gap:8px;align-items:flex-start;padding:6px 4px;border-radius:10px;transition:background .3s}
+  .combo li .ic{font-size:18px;line-height:1}
+  .combo li b{display:block;font-size:13px;color:#14161b}
+  .combo li span{color:#6b7280;line-height:1.35}
+  .combo li.hit{background:#F2B70555;animation:hit .6s ease}
+  .combo li.done b::after{content:" ✓";color:#14a39a}
+  @keyframes hit{0%{transform:scale(1)}40%{transform:scale(1.05)}100%{transform:scale(1)}}
+  #toast{position:fixed;left:50%;top:42%;transform:translate(-50%,-50%) scale(.8);background:#14161b;color:#fff;font-weight:800;font-size:22px;padding:14px 22px;border-radius:18px;opacity:0;pointer-events:none;transition:all .35s cubic-bezier(.2,1.4,.4,1);white-space:nowrap;z-index:4}
+  #toast.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
   /* màn mở đầu */
   #start{position:fixed;inset:0;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;z-index:5}
   #start h1{font-size:36px;line-height:1.08;font-weight:800;letter-spacing:-1px;margin-top:22px}
@@ -44,12 +58,18 @@
   <span class="sp"></span><span class="stat" id="stat"></span>
 </div>
 <div id="preview" class="hide"><video id="vid" playsinline muted></video></div>
-<div class="hint" id="hint">Giơ tay trước camera ✋</div>
+<div class="hint" id="hint">Giơ cả hai tay trước camera ✋ 🤚</div>
+<div id="combo" class="combo">
+  <div class="cHead">Combo đặc biệt <button id="cToggle">–</button></div>
+  <ol id="cList"></ol>
+</div>
+<div id="toast"></div>
 <div class="dock">
   <button class="round" id="bPrev" title="Ẩn/hiện camera">👁</button>
   <button class="round" id="bFlip" title="Đổi camera">⟲</button>
   <button class="shot" id="bShot" title="Lưu khung hình"></button>
   <button class="round" id="bClear" title="Xoá hạt">✦</button>
+  <button class="round" id="bSwap" title="Đổi tay trái/phải">⇄</button>
   <a class="round" href="/" title="Về HandMagination" style="display:grid;place-items:center;text-decoration:none">←</a>
 </div>
 
@@ -61,8 +81,8 @@
     <i style="width:56px;height:56px;left:54px;top:92px;background:#a3e635"></i>
     <i style="width:36px;height:36px;left:132px;top:16px;background:#F2B705"></i>
   </div>
-  <h1>Bàn tay của bạn<br>là <em>cây cọ</em>.</h1>
-  <p>Cử động tay trước camera để điều khiển bàn tay đồ hoạ trên màn hình. Chụm hai ngón để rắc màu, xoè tay để đẩy mảng hình, nắm tay để gom chúng lại.</p>
+  <h1>Tay trái là <em>bông hoa</em>,<br>tay phải là <em>vũ công</em>.</h1>
+  <p>Giơ hai tay trước camera: tay trái điều khiển một bông hoa, tay phải điều khiển một người đang nhảy múa. Thử 5 combo cử động để mở khoá hiệu ứng đặc biệt.</p>
   <button class="cta" id="go">Bật camera</button>
   <button class="ghost" id="demo">Xem chế độ demo (không cần camera)</button>
   <div class="err" id="err"></div>
@@ -108,7 +128,7 @@ function seedBg() {
   }
   bg.forEach(b => { b.hx = b.x; b.hy = b.y; });
 }
-function drawShape(k, s, col, alpha = 1) {
+let drawShape = function (k, s, col, alpha = 1) {
   x.globalAlpha = alpha; x.fillStyle = col;
   x.beginPath();
   if (k === "circle") x.arc(0, 0, s / 2, 0, 6.283);
@@ -159,73 +179,199 @@ function smoothHand(i, pts) {
   return smooth[i];
 }
 
-/* Cử chỉ: ngón nào đang duỗi */
+/* Cử chỉ cơ bản của một bàn tay */
 const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+const lerp = (a, b, t) => ({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
 function gesture(P) {
   const palm = dist(P[0], P[9]) || 1;
   const ext = FINGERS.map(([m, p, , t], i) => i === 0 ? dist(P[4], P[17]) > dist(P[2], P[17]) * 1.15 : dist(P[t], P[0]) > dist(P[p], P[0]) * 1.2);
-  const pinch = dist(P[4], P[8]) < palm * .32;
   const n = ext.filter(Boolean).length;
-  let name = "";
-  if (pinch && !ext[2]) name = "CHẠM";
-  else if (n >= 5) name = "MỞ RA";
-  else if (n === 0 || (n === 1 && ext[0])) name = "NẮM CHẶT";
-  else if (ext[1] && ext[2] && !ext[3] && !ext[4]) name = "CHIẾN THẮNG";
-  else if (ext[0] && ext[1] && ext[4] && !ext[2]) name = "YÊU";
-  else if (ext[1] && !ext[2] && !ext[3]) name = "CHỈ LỐI";
-  else if (ext[4] && ext[0] && !ext[1]) name = "VUI LÊN";
-  else name = "BAY BỔNG";
-  return { name, pinch, open: n >= 5, fist: n === 0 || (n === 1 && ext[0]), palm, pinchAt: { x: (P[4].x + P[8].x) / 2, y: (P[4].y + P[8].y) / 2 } };
+  const ux = (P[9].x - P[0].x) / palm, uy = (P[9].y - P[0].y) / palm;
+  return {
+    ext, n, palm, u: { x: ux, y: uy }, r: { x: -uy, y: ux }, angle: Math.atan2(uy, ux),
+    open: n >= 5, fist: n === 0 || (n === 1 && ext[0]),
+    victory: ext[1] && ext[2] && !ext[3] && !ext[4],
+    pinch: dist(P[4], P[8]) < palm * .32, pinchAt: lerp(P[4], P[8], .5),
+    c: lerp(P[0], P[9], .55),
+  };
 }
 
-/* ================= VẼ BÀN TAY ĐỒ HOẠ ================= */
-function drawHand(P, set, g) {
-  const pw = g.palm;
-  x.save(); x.globalCompositeOperation = "multiply"; x.lineCap = x.lineJoin = "round";
-  // lớp lệch màu (misregistration) phía sau
-  x.translate(pw * .06, pw * .05); x.globalAlpha = .35; x.fillStyle = x.strokeStyle = PAL.teal;
-  x.beginPath(); PALM.forEach((i, k) => k ? x.lineTo(P[i].x, P[i].y) : x.moveTo(P[i].x, P[i].y)); x.closePath(); x.fill(); x.lineWidth = pw * .3; x.stroke();
-  x.setTransform(DPR, 0, 0, DPR, 0, 0); x.globalAlpha = .92;
-  // lòng bàn tay
-  x.fillStyle = x.strokeStyle = set.palm;
-  x.beginPath(); PALM.forEach((i, k) => k ? x.lineTo(P[i].x, P[i].y) : x.moveTo(P[i].x, P[i].y)); x.closePath(); x.fill(); x.lineWidth = pw * .34; x.stroke();
-  // ngón tay: mỗi ngón một thanh màu, thon dần
-  FINGERS.forEach((f, fi) => {
-    x.strokeStyle = set.fingers[fi];
-    const chain = [fi === 0 ? 1 : f[0], ...f.slice(fi === 0 ? 1 : 1)];
-    for (let k = 0; k < chain.length - 1; k++) {
-      x.lineWidth = pw * (0.3 - k * .045);
-      x.beginPath(); x.moveTo(P[chain[k]].x, P[chain[k]].y); x.lineTo(P[chain[k + 1]].x, P[chain[k + 1]].y); x.stroke();
-    }
+/* ================= HÌNH MỚI: các dạng mảng màu thêm ================= */
+function shapePath(k, s) {
+  x.beginPath();
+  if (k === "petal") x.ellipse(0, 0, s * .5, s * .2, 0, 0, 6.283);
+  else if (k === "heart") { const r = s * .28; x.moveTo(0, s * .38); x.bezierCurveTo(-s * .6, 0, -r, -s * .45, 0, -s * .15); x.bezierCurveTo(r, -s * .45, s * .6, 0, 0, s * .38); }
+  else if (k === "star") { for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? s * .2 : s * .5; i ? x.lineTo(Math.cos(a) * rr, Math.sin(a) * rr) : x.moveTo(Math.cos(a) * rr, Math.sin(a) * rr); } x.closePath(); }
+  else return false;
+  return true;
+}
+const _drawShape = drawShape;
+drawShape = function (k, s, col, alpha = 1) {
+  if (["petal", "heart", "star"].includes(k)) { x.globalAlpha = alpha; x.fillStyle = col; shapePath(k, s); x.fill(); x.globalAlpha = 1; }
+  else _drawShape(k, s, col, alpha);
+};
+function burstKind(px, py, n, kinds, cols, speed = 5, up = 1.5) {
+  for (let i = 0; i < n; i++) {
+    const a = Math.random() * 6.283, sp = 1 + Math.random() * speed;
+    parts.push({ x: px, y: py, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - up, s: 10 + Math.random() * 26, kind: kinds[i % kinds.length], col: cols[i % cols.length], rot: Math.random() * 6.28, vr: (Math.random() - .5) * .2, life: 1 });
+  }
+  if (parts.length > 600) parts.splice(0, parts.length - 600);
+}
+
+/* ================= BÔNG HOA (tay trái) ================= */
+let bloom = 0;               // xung nở hoa (combo)
+function drawFlower(P, g, t) {
+  const pw = g.palm, C = g.c, u = g.u, r = g.r;
+  x.save(); x.globalCompositeOperation = "multiply"; x.lineCap = "round";
+  // thân + lá
+  const sway = Math.sin(t * .002) * pw * .35;
+  const S = { x: C.x - u.x * pw * 2.8, y: C.y - u.y * pw * 2.8 };
+  const K = { x: C.x - u.x * pw * 1.4 + r.x * sway, y: C.y - u.y * pw * 1.4 + r.y * sway };
+  x.strokeStyle = "#3f7d20"; x.lineWidth = pw * .14;
+  x.beginPath(); x.moveTo(C.x, C.y); x.quadraticCurveTo(K.x, K.y, S.x, S.y); x.stroke();
+  [[.45, 1], [.7, -1]].forEach(([k, side]) => {
+    const p = { x: C.x + (S.x - C.x) * k + r.x * sway * k, y: C.y + (S.y - C.y) * k + r.y * sway * k };
+    x.save(); x.translate(p.x, p.y); x.rotate(g.angle + Math.PI / 2 + side * .9); x.translate(side * pw * .35, 0);
+    x.fillStyle = PAL.lime; x.beginPath(); x.ellipse(0, 0, pw * .42, pw * .16, 0, 0, 6.283); x.fill(); x.restore();
   });
-  // đầu ngón: chấm tròn
-  [4, 8, 12, 16, 20].forEach((t, k) => {
-    x.fillStyle = k === 1 ? set.tip : PAL.yellow;
-    x.beginPath(); x.arc(P[t].x, P[t].y, pw * (k === 1 ? .2 : .14), 0, 6.283); x.fill();
+  // cánh hoa: mỗi đầu ngón là một cánh, xen giữa là cánh nhỏ
+  const tips = [4, 8, 12, 16, 20].map(i => P[i]);
+  const petals = [];
+  tips.forEach((T, k) => { petals.push({ T, big: true, col: [PAL.red, PAL.yellow, PAL.red, PAL.yellow, PAL.red][k] }); if (k < 4) petals.push({ T: lerp(T, tips[k + 1], .5), big: false, col: "#ff8a3d" }); });
+  const grow = 1 + bloom * .45;
+  petals.sort((a, b) => a.big - b.big).forEach(pt => {
+    const dx = pt.T.x - C.x, dy = pt.T.y - C.y, len = Math.max(pw * .5, Math.hypot(dx, dy)) * (pt.big ? 1 : .8) * grow;
+    const a = Math.atan2(dy, dx);
+    x.save(); x.translate(C.x, C.y); x.rotate(a);
+    x.fillStyle = pt.col; x.globalAlpha = .9; x.beginPath(); x.ellipse(len / 2, 0, len / 2, len * (pt.big ? .24 : .18), 0, 0, 6.283); x.fill();
+    x.globalAlpha = .35; x.fillStyle = PAL.navy; x.beginPath(); x.ellipse(len * .55, len * .04, len * .3, len * .05, 0, 0, 6.283); x.fill();
+    x.restore();
   });
-  // khớp cổ tay
-  x.fillStyle = PAL.navy; x.beginPath(); x.arc(P[0].x, P[0].y, pw * .22, 0, 6.283); x.fill();
+  // nhuỵ
+  x.globalAlpha = 1; x.fillStyle = PAL.navy; x.beginPath(); x.arc(C.x, C.y, pw * .36, 0, 6.283); x.fill();
+  x.fillStyle = PAL.yellow;
+  for (let k = 0; k < 8; k++) { const a = k / 8 * 6.283 + t * .001; x.beginPath(); x.arc(C.x + Math.cos(a) * pw * .22, C.y + Math.sin(a) * pw * .22, pw * .06, 0, 6.283); x.fill(); }
   x.restore();
-  // vòng chụm
-  if (g.pinch) { x.save(); x.strokeStyle = "#14161b"; x.lineWidth = 3; x.setLineDash([6, 6]); x.beginPath(); x.arc(g.pinchAt.x, g.pinchAt.y, pw * .45, 0, 6.283); x.stroke(); x.restore(); }
 }
 
-/* ================= CHỮ LỚN THEO CỬ CHỈ ================= */
+/* ================= VŨ CÔNG (tay phải) ================= */
+const ribbon = [];           // vệt dải lụa theo ngón giữa
+let spin = 0;                // pha xoay (combo)
+function drawDancer(P, g, t, vel) {
+  const pw = g.palm, u = g.u, r = g.r;
+  const hip = P[0];
+  const sh = lerp(P[0], lerp(P[5], P[17], .5), .85);
+  const head = { x: sh.x + u.x * pw * .55, y: sh.y + u.y * pw * .55 };
+  const mid = lerp(hip, head, .5);
+  x.save(); x.globalCompositeOperation = "multiply"; x.lineCap = x.lineJoin = "round";
+  if (spin > 0) { x.translate(mid.x, mid.y); x.scale(Math.cos(spin * Math.PI * 4) || .02, 1); x.translate(-mid.x, -mid.y); }
+  // dải lụa
+  ribbon.push({ x: P[12].x, y: P[12].y }); if (ribbon.length > 26) ribbon.shift();
+  if (g.ext[2] && ribbon.length > 3) {
+    x.strokeStyle = PAL.teal; x.globalAlpha = .75;
+    for (let k = 1; k < ribbon.length; k++) { x.lineWidth = pw * .16 * (k / ribbon.length); x.beginPath(); x.moveTo(ribbon[k - 1].x, ribbon[k - 1].y); x.lineTo(ribbon[k].x, ribbon[k].y); x.stroke(); }
+    x.globalAlpha = 1;
+  }
+  // chân: đá theo nhịp + tốc độ di chuyển + độ xoè ngón cái
+  const thumbOpen = Math.min(1, dist(P[4], P[5]) / pw);
+  const beat = Math.sin(t * .009 + vel * .05);
+  x.strokeStyle = PAL.navy; x.lineWidth = pw * .15;
+  [-1, 1].forEach(side => {
+    const a = g.angle + Math.PI + side * (.22 + thumbOpen * .5) + beat * .35 * side;
+    const knee = { x: hip.x + Math.cos(a) * pw * .7 + r.x * side * pw * .12, y: hip.y + Math.sin(a) * pw * .7 + r.y * side * pw * .12 };
+    const a2 = a - side * (.3 + Math.max(0, beat * side) * .6);
+    const foot = { x: knee.x + Math.cos(a2) * pw * .7, y: knee.y + Math.sin(a2) * pw * .7 };
+    x.beginPath(); x.moveTo(hip.x, hip.y); x.lineTo(knee.x, knee.y); x.lineTo(foot.x, foot.y); x.stroke();
+    x.fillStyle = PAL.red; x.beginPath(); x.ellipse(foot.x, foot.y, pw * .13, pw * .08, a2, 0, 6.283); x.fill();
+  });
+  // váy xoè (theo ngón áp út + tốc độ)
+  const flare = .45 + (g.ext[3] ? .25 : 0) + Math.min(.4, vel * .01) + spin * .6;
+  x.fillStyle = PAL.red; x.globalAlpha = .92;
+  x.beginPath();
+  x.moveTo(sh.x + r.x * pw * .2, sh.y + r.y * pw * .2); x.lineTo(sh.x - r.x * pw * .2, sh.y - r.y * pw * .2);
+  const hl = { x: hip.x - u.x * pw * .15, y: hip.y - u.y * pw * .15 };
+  x.lineTo(hl.x - r.x * pw * flare, hl.y - r.y * pw * flare);
+  x.quadraticCurveTo(hl.x - u.x * pw * .2, hl.y - u.y * pw * .2, hl.x + r.x * pw * flare, hl.y + r.y * pw * flare);
+  x.closePath(); x.fill(); x.globalAlpha = 1;
+  // thân trên
+  x.strokeStyle = PAL.blue; x.lineWidth = pw * .22; x.beginPath(); x.moveTo(mid.x, mid.y); x.lineTo(sh.x, sh.y); x.stroke();
+  // tay: ngón trỏ và ngón út
+  x.strokeStyle = PAL.blue; x.lineWidth = pw * .12;
+  [[5, 6, 7, 8, 1], [17, 18, 19, 20, -1]].forEach(([a0, b, c, d, side]) => {
+    const s0 = { x: sh.x + r.x * side * pw * .22, y: sh.y + r.y * side * pw * .22 };
+    x.beginPath(); x.moveTo(s0.x, s0.y); x.lineTo(P[b].x, P[b].y); x.lineTo(P[c].x, P[c].y); x.lineTo(P[d].x, P[d].y); x.stroke();
+    x.fillStyle = PAL.yellow; x.beginPath(); x.arc(P[d].x, P[d].y, pw * .08, 0, 6.283); x.fill();
+  });
+  // đầu + búi tóc
+  x.fillStyle = PAL.yellow; x.beginPath(); x.arc(head.x, head.y, pw * .28, 0, 6.283); x.fill();
+  x.fillStyle = PAL.navy; x.beginPath(); x.arc(head.x + u.x * pw * .22 + r.x * pw * .12, head.y + u.y * pw * .22 + r.y * pw * .12, pw * .13, 0, 6.283); x.fill();
+  x.restore();
+}
+
+/* ================= CHỮ LỚN DỌC MÉP ================= */
 let word = "GIƠ TAY LÊN", wordShown = word, wordAlpha = 1;
 function drawWord() {
   if (word !== wordShown) { wordAlpha -= .08; if (wordAlpha <= 0) { wordShown = word; wordAlpha = 0; } }
   else if (wordAlpha < 1) wordAlpha = Math.min(1, wordAlpha + .08);
   x.save(); x.globalAlpha = wordAlpha; x.fillStyle = "#14161b";
   let fs = Math.min(W, H) * .2; x.font = `800 ${fs}px "Be Vietnam Pro", sans-serif`;
-  while (x.measureText(wordShown).width > H * .78 && fs > 30) { fs -= 4; x.font = `800 ${fs}px "Be Vietnam Pro", sans-serif`; }
+  while (x.measureText(wordShown).width > H * .7 && fs > 30) { fs -= 4; x.font = `800 ${fs}px "Be Vietnam Pro", sans-serif`; }
   x.translate(W - 22, H * .86); x.rotate(-Math.PI / 2); x.fillText(wordShown, 0, 0);
   x.restore();
 }
 
-/* ================= DEMO: bàn tay giả lập chuyển động ================= */
-function demoHand(t) {
-  const cx = W * .45 + Math.sin(t * .0007) * W * .15, cy = H * .55 + Math.cos(t * .0009) * H * .08, s = Math.min(W, H) * .16;
-  const open = (Math.sin(t * .0012) + 1) / 2, ang = Math.sin(t * .0005) * .4;
+/* ================= 5 COMBO ================= */
+const COMBOS = [
+  { id: "bloom", ic: "🌸", name: "NỞ HOA", how: "Tay trái nắm lại rồi xoè ra thật nhanh" },
+  { id: "spin", ic: "🌀", name: "XOAY VŨ ĐIỆU", how: "Tay phải xoay cổ tay nửa vòng" },
+  { id: "give", ic: "💞", name: "TRAO HOA", how: "Đưa hai bàn tay lại sát nhau" },
+  { id: "fire", ic: "🎆", name: "PHÁO HOA", how: "Xoè cả hai tay, giơ cao lên trên" },
+  { id: "win", ic: "✌️", name: "CHIẾN THẮNG", how: "Cả hai tay cùng làm chữ V" },
+];
+$("cList").innerHTML = COMBOS.map(c => `<li id="c-${c.id}"><span class="ic">${c.ic}</span><div><b>${c.name}</b><span>${c.how}</span></div></li>`).join("");
+$("cToggle").onclick = () => { $("combo").classList.toggle("min"); $("cToggle").textContent = $("combo").classList.contains("min") ? "+" : "–"; };
+const lastFire = {}; let lastAny = 0, comboWord = "", comboUntil = 0;
+const pending = [];          // pháo hoa nổ lần lượt
+function fireCombo(id, ctx = {}) {
+  const now = performance.now();
+  if (now - (lastFire[id] || 0) < 2600 || now - lastAny < 1200) return;
+  lastFire[id] = lastAny = now;
+  const c = COMBOS.find(k => k.id === id);
+  comboWord = c.name; comboUntil = now + 2600;
+  const li = $("c-" + id); li.classList.remove("hit"); void li.offsetWidth; li.classList.add("hit", "done");
+  const tt = $("toast"); tt.textContent = `${c.ic} ${c.name}`; tt.classList.add("on"); clearTimeout(fireCombo.t); fireCombo.t = setTimeout(() => tt.classList.remove("on"), 1300);
+  navigator.vibrate?.([20, 30, 40]);
+  const cols = [PAL.red, PAL.yellow, PAL.blue, PAL.teal, PAL.lime];
+  if (id === "bloom") { bloom = 1; const p = ctx.at || { x: W * .3, y: H * .5 }; burstKind(p.x, p.y, 46, ["petal"], [PAL.red, PAL.yellow, "#ff8a3d"], 7, 2); }
+  if (id === "spin") { spin = 1; const p = ctx.at || { x: W * .7, y: H * .5 }; for (let k = 0; k < 24; k++) { const a = k / 24 * 6.283; parts.push({ x: p.x + Math.cos(a) * 60, y: p.y + Math.sin(a) * 60, vx: -Math.sin(a) * 6, vy: Math.cos(a) * 6 - 1, s: 14 + Math.random() * 14, kind: ["circle", "bar", "diamond"][k % 3], col: cols[k % 5], rot: a, vr: .2, life: 1 }); } }
+  if (id === "give") { const p = ctx.at || { x: W / 2, y: H * .45 }; burstKind(p.x, p.y, 30, ["heart"], [PAL.red, "#ff8a3d", PAL.yellow], 5, 3); }
+  if (id === "fire") { for (let k = 0; k < 5; k++) pending.push({ at: now + k * 260, x: W * (.15 + Math.random() * .7), y: H * (.12 + Math.random() * .3) }); }
+  if (id === "win") { for (let k = 0; k < 60; k++) parts.push({ x: Math.random() * W, y: -20 - Math.random() * H * .4, vx: (Math.random() - .5) * 2, vy: 2 + Math.random() * 3, s: 14 + Math.random() * 22, kind: "star", col: cols[k % 5], rot: Math.random() * 6, vr: (Math.random() - .5) * .2, life: 1.4 }); }
+}
+
+/* Trạng thái theo dõi để nhận combo */
+const track = { leftFistAt: 0, rightAngles: [], prevC: [null, null] };
+function unwrap(list) { let sum = 0; for (let k = 1; k < list.length; k++) { let d = list[k].a - list[k - 1].a; if (d > Math.PI) d -= 6.283; if (d < -Math.PI) d += 6.283; sum += d; } return sum; }
+function detectCombos(L, R, now) {
+  if (L) {
+    if (L.g.fist) track.leftFistAt = now;
+    else if (L.g.open && now - track.leftFistAt < 900 && track.leftFistAt) { fireCombo("bloom", { at: L.g.c }); track.leftFistAt = 0; }
+  }
+  if (R) {
+    track.rightAngles.push({ t: now, a: R.g.angle });
+    while (track.rightAngles.length && now - track.rightAngles[0].t > 1200) track.rightAngles.shift();
+    if (Math.abs(unwrap(track.rightAngles)) > 2.6) { fireCombo("spin", { at: R.g.c }); track.rightAngles = []; }
+  } else track.rightAngles = [];
+  if (L && R) {
+    if (dist(L.g.c, R.g.c) < (L.g.palm + R.g.palm) * .95) fireCombo("give", { at: lerp(L.g.c, R.g.c, .5) });
+    if (L.g.open && R.g.open && L.g.c.y < H * .38 && R.g.c.y < H * .38) fireCombo("fire");
+    if (L.g.victory && R.g.victory) fireCombo("win");
+  }
+}
+
+/* ================= DEMO: hai tay giả lập + tự diễn combo ================= */
+function demoHand(t, cx, cy, open, ang) {
+  const s = Math.min(W, H) * .13;
   const base = [[0, 0], [-.35, -.25], [-.65, -.55], [-.85, -.85], [-1.0, -1.1], [-.35, -1.0], [-.4, -1.55], [-.42, -1.9], [-.44, -2.2], [0, -1.05], [0, -1.65], [0, -2.05], [0, -2.4], [.32, -1.0], [.36, -1.55], [.38, -1.9], [.4, -2.15], [.6, -.9], [.7, -1.3], [.78, -1.55], [.84, -1.8]];
   return base.map(([bx, by], i) => {
     const f = i >= 5 && i % 4 !== 1 ? (1 - open) : 0;
@@ -234,72 +380,92 @@ function demoHand(t) {
     return { x: cx + X * Math.cos(ang) - Y * Math.sin(ang), y: cy + X * Math.sin(ang) + Y * Math.cos(ang) };
   });
 }
+let demoNext = 0, demoIdx = 0;
 
 /* ================= VÒNG LẶP ================= */
-let lastTs = -1, fps = 0, tPrev = performance.now(), pinchCool = 0, hintTimer = 0;
+let lastTs = -1, fps = 0, tPrev = performance.now(), pinchCool = 0, hintTimer = 0, swap = false;
+const velOf = [0, 0];
 function loop(now) {
   if (!running) return;
   requestAnimationFrame(loop);
-  // khung giấy
   x.setTransform(DPR, 0, 0, DPR, 0, 0);
   x.fillStyle = "#f4f1ea"; x.fillRect(0, 0, W, H);
 
-  // lấy tay
-  let hands = [];
+  // lấy tay + phân biệt trái/phải
+  let raw = [];
   const v = $("vid");
-  if (demo) hands = [demoHand(now)];
-  else if (hand && v.readyState >= 2 && v.currentTime !== lastTs) {
+  if (demo) {
+    const o = (Math.sin(now * .0011) + 1) / 2;
+    raw = [
+      { pts: demoHand(now, W * .3 + Math.sin(now * .0006) * W * .05, H * .55, o, Math.sin(now * .0005) * .3), left: true },
+      { pts: demoHand(now, W * .7 + Math.cos(now * .0007) * W * .06, H * .5 + Math.sin(now * .002) * 20, 1 - o * .6, Math.sin(now * .0013) * .5), left: false },
+    ];
+    if (now > demoNext) { if (demoNext) fireCombo(COMBOS[demoIdx++ % 5].id, {}); demoNext = now + 3600; }
+  } else if (hand && v.readyState >= 2 && v.currentTime !== lastTs) {
     lastTs = v.currentTime;
     const r = hand.detectForVideo(v, now);
-    hands = (r.landmarks || []).map(lm => mapPoints(lm, v.videoWidth, v.videoHeight));
-    loop.last = hands;
-  } else hands = loop.last || [];
-  const H2 = hands.map((p, i) => smoothHand(i, p));
-  if (!H2.length) { smooth[0] = smooth[1] = null; }
-  const G = H2.map(gesture);
+    // MediaPipe gán nhãn tay như với ảnh đã lật gương; khung camera chưa lật nên nhãn bị ngược
+    raw = (r.landmarks || []).map((lm, i) => ({ pts: mapPoints(lm, v.videoWidth, v.videoHeight), left: ((r.handednesses?.[i]?.[0]?.categoryName || "Left") === "Right") !== swap }));
+    if (raw.length === 2 && raw[0].left === raw[1].left) { raw.sort((a, b) => a.pts[0].x - b.pts[0].x); raw[0].left = true; raw[1].left = false; }
+    loop.last = raw;
+  } else raw = loop.last || [];
+  const slots = [null, null];          // 0 = trái (hoa), 1 = phải (vũ công)
+  raw.forEach(h => { const k = h.left ? 0 : 1; if (!slots[k]) slots[k] = h.pts; });
+  const hands = slots.map((p, k) => p ? smoothHand(k, p) : (smooth[k] = null, null));
+  const G = hands.map(P => P ? gesture(P) : null);
+  hands.forEach((P, k) => { if (P) { const c = G[k].c, pc = track.prevC[k]; velOf[k] = velOf[k] * .8 + (pc ? dist(c, pc) : 0) * .2; track.prevC[k] = { ...c }; } else track.prevC[k] = null; });
+  const L = hands[0] ? { P: hands[0], g: G[0] } : null, R = hands[1] ? { P: hands[1], g: G[1] } : null;
+  if (!demo) detectCombos(L, R, now);
 
-  // mảng hình nền: trôi nhẹ, bị đầu ngón đẩy (tay mở) hoặc hút về (nắm tay)
+  // mảng hình nền: đẩy khi xoè, hút khi nắm
   x.save(); x.globalCompositeOperation = "multiply";
   for (const b of bg) {
     b.vx += (b.hx - b.x) * .002; b.vy += (b.hy - b.y) * .002;
-    H2.forEach((P, i) => {
-      const g = G[i];
-      if (g.fist) { const c = P[9]; const d = dist(b, c) || 1; if (d < Math.min(W, H) * .6) { b.vx += (c.x - b.x) / d * .9; b.vy += (c.y - b.y) / d * .9; } }
-      else for (const t of [4, 8, 12, 16, 20]) { const d = dist(b, P[t]); const R = b.s * .6 + g.palm * (g.open ? 1.2 : .6); if (d < R) { const f = (R - d) / R * (g.open ? 3.2 : 1.6); b.vx += (b.x - P[t].x) / (d || 1) * f; b.vy += (b.y - P[t].y) / (d || 1) * f; } }
+    hands.forEach((P, i) => {
+      if (!P) return; const g = G[i];
+      if (g.fist) { const c = g.c; const d = dist(b, c) || 1; if (d < Math.min(W, H) * .6) { b.vx += (c.x - b.x) / d * .7; b.vy += (c.y - b.y) / d * .7; } }
+      else for (const t of [4, 8, 12, 16, 20]) { const d = dist(b, P[t]); const R2 = b.s * .6 + g.palm * (g.open ? 1.1 : .5); if (d < R2) { const f = (R2 - d) / R2 * (g.open ? 3 : 1.4); b.vx += (b.x - P[t].x) / (d || 1) * f; b.vy += (b.y - P[t].y) / (d || 1) * f; } }
     });
     b.vx *= .9; b.vy *= .9; b.x += b.vx; b.y += b.vy; b.rot += b.vr + b.vx * .002;
-    x.save(); x.translate(b.x, b.y); x.rotate(b.rot); drawShape(b.kind, b.s, b.col, b.a); x.restore();
+    x.save(); x.translate(b.x, b.y); x.rotate(b.rot); drawShape(b.kind, b.s, b.col, b.a * .8); x.restore();
   }
   x.restore();
 
-  // chữ lớn
-  word = G[0]?.name || "GIƠ TAY LÊN";
+  // chữ lớn: tên combo, hoặc trạng thái
+  word = now < comboUntil ? comboWord : (L && R ? "HOA & VŨ" : L ? "BÔNG HOA" : R ? "VŨ CÔNG" : "GIƠ TAY LÊN");
   drawWord();
 
-  // hạt màu
+  // pháo hoa chờ nổ
+  for (let k = pending.length - 1; k >= 0; k--) if (now >= pending[k].at) { const p = pending.splice(k, 1)[0]; burstKind(p.x, p.y, 34, ["circle", "star", "bar"], [PAL.red, PAL.yellow, PAL.blue, PAL.teal, PAL.lime], 8, .5); }
+  // chụm ngón: hoa rắc cánh, vũ công rắc sao
   pinchCool = Math.max(0, pinchCool - 1);
-  G.forEach((g, i) => { if (g.pinch && pinchCool === 0) { burst(g.pinchAt.x, g.pinchAt.y, 10, [PAL.red, PAL.yellow, PAL.blue, PAL.lime, PAL.teal]); pinchCool = 3; navigator.vibrate?.(8); } });
+  if (pinchCool === 0) {
+    if (L?.g.pinch) { burstKind(L.g.pinchAt.x, L.g.pinchAt.y, 6, ["petal"], [PAL.red, PAL.yellow], 4); pinchCool = 4; }
+    if (R?.g.pinch) { burstKind(R.g.pinchAt.x, R.g.pinchAt.y, 6, ["star"], [PAL.blue, PAL.teal, PAL.yellow], 4); pinchCool = 4; }
+  }
+  // hạt
   x.save(); x.globalCompositeOperation = "multiply";
   for (let i = parts.length - 1; i >= 0; i--) {
-    const p = parts[i]; p.vy += .08; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.rot += p.vr; p.life -= .006;
-    if (p.life <= 0 || p.y > H + 50) { parts.splice(i, 1); continue; }
+    const p = parts[i]; p.vy += p.kind === "petal" ? .03 : .07; p.vx *= .99; p.x += p.vx + (p.kind === "petal" ? Math.sin(now * .003 + i) * .6 : 0); p.y += p.vy; p.rot += p.vr; p.life -= .005;
+    if (p.life <= 0 || p.y > H + 60) { parts.splice(i, 1); continue; }
     x.save(); x.translate(p.x, p.y); x.rotate(p.rot); drawShape(p.kind, p.s, p.col, Math.min(1, p.life * 1.5)); x.restore();
   }
   x.restore();
 
-  // bàn tay đồ hoạ
-  H2.forEach((P, i) => drawHand(P, HAND_SETS[i % 2], G[i]));
+  // hoa & vũ công
+  if (L) drawFlower(L.P, L.g, now);
+  if (R) drawDancer(R.P, R.g, now, velOf[1]);
+  bloom = Math.max(0, bloom - .012); spin = Math.max(0, spin - .012);
 
-  // chữ nhỏ rải rác + vân in
+  // chữ nhỏ + vân in
   x.save(); x.fillStyle = "#14161b"; x.font = '700 12px "Be Vietnam Pro", sans-serif'; x.globalAlpha = .55;
-  x.fillText("HAND + IMAGINATION", 18, H - 150); x.fillText(`${H2.length} TAY · ${parts.length} MẢNG MÀU`, 18, H - 132); x.restore();
+  x.fillText("TAY TRÁI · BÔNG HOA", 18, H - 150); x.fillText("TAY PHẢI · VŨ CÔNG", 18, H - 132); x.restore();
   if (grain) { x.save(); x.fillStyle = grain; x.globalCompositeOperation = "multiply"; x.fillRect(0, 0, W, H); x.restore(); }
 
-  // trạng thái
   const dt = now - tPrev; tPrev = now; fps = fps * .9 + (1000 / Math.max(dt, 1)) * .1;
   if ((hintTimer = (hintTimer + 1) % 20) === 0) {
     $("stat").textContent = demo ? "demo" : `${Math.round(fps)} fps`;
-    $("hint").style.opacity = H2.length ? 0 : 1;
+    $("hint").style.opacity = (L || R) ? 0 : 1;
   }
 }
 
@@ -324,6 +490,7 @@ $("go").onclick = () => begin(false);
 $("demo").onclick = () => begin(true);
 $("bPrev").onclick = () => $("preview").classList.toggle("hide");
 $("bFlip").onclick = async () => { if (demo) return; facing = facing === "user" ? "environment" : "user"; smooth[0] = smooth[1] = null; try { await startCam(); } catch {} };
+$("bSwap").onclick = () => { swap = !swap; smooth[0] = smooth[1] = null; $("bSwap").style.background = swap ? "#F2B705" : ""; };
 $("bClear").onclick = () => { parts.length = 0; bg.forEach(b => { b.x = b.hx; b.y = b.hy; }); };
 $("bShot").onclick = () => {
   cv.toBlob(b => { const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = "handmagination-tech.png"; document.body.append(a); a.click(); a.remove(); }, "image/png");
