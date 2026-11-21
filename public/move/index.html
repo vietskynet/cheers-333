@@ -49,6 +49,11 @@
   .chips button{flex:none;border:0;border-radius:99px;background:#ffffffe6;backdrop-filter:blur(8px);padding:8px 12px;font:inherit;font-size:12px;font-weight:800;box-shadow:0 3px 12px #00000018;cursor:pointer;transition:transform .2s,background .2s}
   .chips button.fire{background:#F2B705;transform:scale(1.12)}
   .chips button .n{display:inline-block;min-width:16px;margin-left:4px;font-size:10px;color:var(--mute)}
+  #score{position:absolute;left:50%;top:calc(env(safe-area-inset-top) + 50px);transform:translateX(-50%);font-size:13px;font-weight:800;background:#ffffffdd;border-radius:99px;padding:6px 12px;box-shadow:0 3px 12px #0001;white-space:nowrap;display:none}
+  #score.on{display:block}
+  #score .bar{display:inline-block;width:60px;height:6px;border-radius:9px;background:#0001;vertical-align:middle;margin-left:6px;overflow:hidden}
+  #score .bar i{display:block;height:100%;background:linear-gradient(90deg,#ff5733,#F2B705,#14a39a);width:0}
+  .btns button.off{opacity:.45}
   #hint{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom) + 62px);transform:translateX(-50%);font-size:12px;font-weight:700;color:var(--mute);background:#ffffffcc;border-radius:99px;padding:6px 12px;white-space:nowrap;transition:opacity .4s}
   #toast{position:absolute;left:50%;top:22%;transform:translate(-50%,-50%) scale(.7);font-weight:800;font-size:30px;letter-spacing:-.5px;opacity:0;pointer-events:none;transition:all .35s cubic-bezier(.2,1.5,.4,1);text-align:center;white-space:nowrap}
   #toast.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
@@ -75,8 +80,8 @@
     <i style="width:30px;height:30px;left:190px;top:140px;background:#a3e635"></i>
   </div>
   <h1>Cơ thể bạn là<br><em>bức tranh</em>.</h1>
-  <p class="lead">Đứng trước camera và chuyển động. Một hình người bằng mảng màu nhảy theo bạn, tay chân vẽ thành vệt màu, hoa nở quanh bạn. Làm đúng combo để bung hiệu ứng.</p>
-  <button class="cta" id="bStart">Bật camera & bắt đầu</button>
+  <p class="lead">Đứng trước camera và chuyển động. Một hình người bằng mảng màu nhảy theo bạn, tay chân vẽ thành vệt màu, hoa nở quanh bạn. Các nốt nhạc bài <b>Jingle Bells</b> rơi xuống – chạm tay vào nốt nào, nốt đó vang lên. Làm đúng combo để bung thêm hiệu ứng.</p>
+  <button class="cta" id="bStart">🎵 Bật camera & chơi Jingle Bells</button>
   <div class="err" id="err"></div>
   <button class="ghost" id="bDemo">Xem demo (không cần camera)</button>
   <div class="list" id="list"></div>
@@ -87,8 +92,9 @@
   <canvas id="art"></canvas>
   <div class="top"><a class="brand" href="/"><span class="dot"></span><b>Hand</b>Magination <span class="tag">MOVE</span></a><div class="meter" title="Năng lượng chuyển động"><i id="meter"></i></div></div>
   <div id="camBox"><canvas id="camCv" width="180" height="240"></canvas></div>
-  <div class="btns"><button id="bSave" title="Lưu ảnh">📸</button><button id="bFlip" title="Đổi camera trước/sau">🔄</button><button id="bCam" title="Ẩn/hiện camera nhỏ">👁</button><button id="bClear" title="Xoá hoa">🧹</button></div>
+  <div class="btns"><button id="bMusic" title="Bật/tắt nốt nhạc rơi">🎵</button><button id="bSave" title="Lưu ảnh">📸</button><button id="bFlip" title="Đổi camera trước/sau">🔄</button><button id="bCam" title="Ẩn/hiện camera nhỏ">👁</button><button id="bClear" title="Xoá hoa">🧹</button></div>
   <div id="toast"></div>
+  <div id="score"></div>
   <div id="hint">Lùi ra để camera thấy cả người</div>
   <div id="sheet"></div>
   <div class="chips" id="chips"></div>
@@ -137,6 +143,7 @@ async function openCam() {
   vid.srcObject = stream; await vid.play(); lastVT = -1;
 }
 async function start() {
+  audio(); musicReset();
   $("bStart").disabled = true; $("bStart").textContent = "Đang mở camera…"; $("err").textContent = "";
   try {
     vision = vision || await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm");
@@ -146,7 +153,7 @@ async function start() {
 }
 function go() { show("stage"); resize(); seedGarden(); }
 $("bStart").onclick = start;
-$("bDemo").onclick = () => { demo = true; $("camBox").classList.add("off"); go(); };
+$("bDemo").onclick = () => { audio(); musicReset(); demo = true; $("camBox").classList.add("off"); go(); };
 $("bFlip").onclick = async () => { if (demo) return; facing = facing === "user" ? "environment" : "user"; try { await openCam(); F = null; toast(facing === "user" ? "Camera trước" : "Camera sau", "Quay người khác cũng được"); } catch { facing = "user"; } };
 $("bCam").onclick = () => $("camBox").classList.toggle("off");
 $("bClear").onclick = () => { parts.length = 0; ribbons.forEach(r => r.length = 0); seedGarden(); };
@@ -388,6 +395,8 @@ function drawParts(now) {
     else if (p.k === "fly") { p.x += p.vx + Math.sin(age * .003 + p.ph) * 1.4; p.y += p.vy; const f = Math.abs(Math.sin(age * .025 + p.ph)); x.save(); x.globalAlpha = Math.min(1, a * 2); x.translate(p.x, p.y); x.fillStyle = p.c; [-1, 1].forEach(s => { x.beginPath(); x.ellipse(s * p.s * .45 * f, -p.s * .15, p.s * .5 * f + 1, p.s * .42, s * .5, 0, 6.283); x.fill(); x.beginPath(); x.ellipse(s * p.s * .32 * f, p.s * .3, p.s * .32 * f + 1, p.s * .26, -s * .4, 0, 6.283); x.fill(); }); x.fillStyle = C.ink; x.fillRect(-1.5, -p.s * .4, 3, p.s * .9); x.restore(); }
     else if (p.k === "ring") { p.r += 9 * p.sp; x.save(); x.globalAlpha = a; x.strokeStyle = p.c; x.lineWidth = 8 * a + 1; x.beginPath(); x.arc(p.x, p.y, p.r, 0, 6.283); x.stroke(); x.restore(); }
     else if (p.k === "rainbow") { const cols = [C.red, C.yellow, C.lime, C.teal, C.blue, C.pink], grow = Math.min(1, age / 500), n = Math.max(2, Math.floor(p.pts.length * grow)); x.save(); x.lineCap = x.lineJoin = "round"; cols.forEach((c, j) => { x.globalAlpha = Math.min(.85, a * 1.5); x.strokeStyle = c; x.lineWidth = 14; x.beginPath(); for (let q = 0; q < n; q++) { const P = p.pts[q], cx = W / 2, cy = H * .6, dx = P.x - cx, dy = P.y - cy, dd = Math.hypot(dx, dy) || 1, off = (j - 2.5) * 13; const X = P.x + dx / dd * off, Y = P.y + dy / dd * off; q ? x.lineTo(X, Y) : x.moveTo(X, Y); } x.stroke(); }); x.restore(); }
+    else if (p.k === "star") { p.x += p.vx; p.y += p.vy; p.vx *= .94; p.vy *= .94; x.save(); x.globalAlpha = a; x.translate(p.x, p.y); x.rotate(age * .006); x.fillStyle = p.c; x.beginPath(); for (let j = 0; j < 8; j++) { const rr = j % 2 ? p.s * .3 : p.s; x.lineTo(Math.cos(j * Math.PI / 4) * rr, Math.sin(j * Math.PI / 4) * rr); } x.closePath(); x.fill(); x.restore(); }
+    else if (p.k === "label") { x.save(); x.globalAlpha = Math.min(1, a * 1.6); x.fillStyle = p.c; x.font = `800 ${Math.round(22 + (1 - a) * 8)}px "Be Vietnam Pro", sans-serif`; x.textAlign = "center"; x.fillText(p.t, p.x, p.y - (1 - a) * 40); x.restore(); }
     else if (p.k === "lotus") { p.s += (Math.min(W, H) * .22 - p.s) * .08; lotus(p.x, p.y, p.s, Math.min(1, a * 2)); }
   }
   if (parts.length > 600) parts.splice(0, parts.length - 600);
@@ -410,6 +419,104 @@ function drawCam() {
   [["ls", "le"], ["le", "lw"], ["rs", "re"], ["re", "rw"], ["ls", "rs"], ["ls", "lh"], ["rs", "rh"], ["lh", "rh"], ["lh", "lk"], ["lk", "la"], ["rh", "rk"], ["rk", "ra"]].forEach(([a, b]) => { if (body[a].v < .4 || body[b].v < .4) return; const p = pt(a), q = pt(b); cx2.beginPath(); cx2.moveTo(p.x, p.y); cx2.lineTo(q.x, q.y); cx2.stroke(); });
 }
 
+/* ======================= NỐT NHẠC RƠI: JINGLE BELLS ======================= */
+// Giai điệu Jingle Bells (James Lord Pierpont, 1857 – đã hết bản quyền). [nốt, số phách]
+const SONG = "E1 E1 E2 E1 E1 E2 E1 G1 C1.5 D.5 E4 F1 F1 F1.5 F.5 F1 E1 E1 E.5 E.5 E1 D1 D1 E1 D2 G2 E1 E1 E2 E1 E1 E2 E1 G1 C1.5 D.5 E4 F1 F1 F1.5 F.5 F1 E1 E1 E.5 E.5 G1 G1 F1 D1 C4"
+  .split(" ").map(t => ({ n: t[0], b: parseFloat(t.slice(1)) }));
+const NOTE = {   // làn trái→phải đặt theo độ tiện tay: Mi (nốt nhiều nhất) & Fa ở hai bên người, Sol trên đầu
+  C: { name: "Đô", f: 523.25, lane: .1, c: C.red },
+  E: { name: "Mi", f: 659.25, lane: .27, c: C.teal },
+  G: { name: "Sol", f: 783.99, lane: .5, c: C.pink },
+  F: { name: "Fa", f: 698.46, lane: .73, c: C.blue },
+  D: { name: "Rê", f: 587.33, lane: .9, c: C.yellow },
+};
+const BPM = 84, SPB = 60 / BPM;
+const mus = { on: true, t: 0, i: 0, next: 0, notes: [], hits: 0, miss: 0, combo: 0, best: 0, done: false, wait: 0 };
+SONG.reduce((acc, n) => { n.at = acc; return acc + n.b * SPB; }, 0);
+function musicReset() { Object.assign(mus, { t: -1.2, i: 0, notes: [], hits: 0, miss: 0, combo: 0, done: false, wait: 0 }); }
+/* ---- âm thanh: chuông tổng hợp bằng Web Audio + tiếng lục lạc ---- */
+let AC = null, master = null, noiseBuf = null;
+function audio() {
+  try {
+    if (!AC) {
+      AC = new (window.AudioContext || window.webkitAudioContext)();
+      master = AC.createGain(); master.gain.value = .8;
+      const comp = AC.createDynamicsCompressor(); master.connect(comp); comp.connect(AC.destination);
+      noiseBuf = AC.createBuffer(1, AC.sampleRate * .25, AC.sampleRate); const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 3);
+    }
+    if (AC.state === "suspended") AC.resume();
+  } catch {}
+}
+function bell(f, vel = 1) {
+  if (!AC) return; const t = AC.currentTime;
+  [[1, 1, 1.8], [2, .45, 1.1], [3, .22, .7], [4.16, .16, .45], [5.43, .1, .3]].forEach(([m, a, dur]) => {
+    const o = AC.createOscillator(), g = AC.createGain(); o.type = "sine"; o.frequency.value = f * m;
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(a * .3 * vel, t + .004); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    o.connect(g); g.connect(master); o.start(t); o.stop(t + dur + .05);
+  });
+  // lục lạc
+  for (let k = 0; k < 3; k++) { const src = AC.createBufferSource(), bp = AC.createBiquadFilter(), g = AC.createGain(); src.buffer = noiseBuf; bp.type = "bandpass"; bp.frequency.value = 7000 + Math.random() * 2500; bp.Q.value = 6; g.gain.value = .12 * vel; src.connect(bp); bp.connect(g); g.connect(master); src.start(t + k * .045); }
+}
+const laneX = n => W * NOTE[n].lane;
+function musicStep(dt, now, hands) {
+  if (!mus.on) return;
+  if (mus.done) { mus.wait -= dt; if (mus.wait <= 0) musicReset(); }
+  else mus.t += dt;
+  const fall = H / 3.6;                                   // px/giây: mỗi nốt rơi ~3,6 s hết màn hình
+  while (!mus.done && mus.i < SONG.length && mus.t >= SONG[mus.i].at) {
+    const n = SONG[mus.i++]; mus.notes.push({ n: n.n, x: laneX(n.n), y: -40, ph: Math.random() * 6, r: Math.max(32, Math.min(W, H) * .085), hit: false, born: now });
+  }
+  for (let i = mus.notes.length - 1; i >= 0; i--) {
+    const o = mus.notes[i];
+    o.y += fall * dt; o.x = laneX(o.n) + Math.sin(now * .002 + o.ph) * 8;
+    if (!o.hit && hands) for (const h of hands) { if (Math.hypot(h.x - o.x, h.y - o.y) < o.r + h.r) { hitNote(o, h); break; } }
+    if (!o.hit && demo && o.y > H * .42) hitNote(o, { x: o.x, y: o.y });        // demo tự chơi
+    if (o.hit) { if (now - o.hitAt > 450) mus.notes.splice(i, 1); }
+    else if (o.y > H + o.r) { mus.notes.splice(i, 1); mus.miss++; mus.combo = 0; }
+  }
+  if (!mus.done && mus.i >= SONG.length && !mus.notes.some(o => !o.hit)) {
+    mus.done = true; mus.wait = 5;
+    const pct = Math.round(mus.hits / SONG.length * 100);
+    toast(pct >= 90 ? "🔔 Tuyệt vời!" : pct >= 60 ? "🎄 Hay lắm!" : "🎵 Hết bài", `Chạm ${mus.hits}/${SONG.length} nốt · combo dài nhất ${mus.best}. Bài mới bắt đầu sau 5 giây`);
+    for (let i = 0; i < 40; i++) spawnFlower(rnd(0, W), rnd(H * .1, H * .9), rnd(12, 26), 3000);
+  }
+  const sc = $("score"); sc.classList.add("on");
+  sc.innerHTML = `♪ ${mus.hits}/${SONG.length}${mus.combo >= 3 ? ` · combo x${mus.combo}` : ""}<span class="bar"><i style="width:${Math.round(Math.min(mus.i, SONG.length) / SONG.length * 100)}%"></i></span>`;
+}
+function hitNote(o, h) {
+  o.hit = true; o.hitAt = performance.now(); mus.hits++; mus.combo++; mus.best = Math.max(mus.best, mus.combo);
+  const N = NOTE[o.n]; bell(N.f, 1);
+  ring(o.x, o.y, N.c, 2); ring(o.x, o.y, C.yellow, 1.2);
+  for (let i = 0; i < 10; i++) { const a = i / 10 * 6.283, v = rnd(2, 5); parts.push({ k: "star", x: o.x, y: o.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, s: rnd(6, 13), c: i % 2 ? C.yellow : N.c, born: o.hitAt, life: rnd(700, 1100) }); }
+  for (let i = 0; i < 8; i++) { const a = rnd(0, 6.283), v = rnd(1, 4); parts.push({ k: "flower", x: o.x, y: o.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 1, s: 0, ts: rnd(8, 16), rot: rnd(0, 6), vr: rnd(-.08, .08), n: pick([5, 6]), c: pick(FLOWER_COLS), c2: C.yellow, born: o.hitAt, life: 1300 }); }
+  parts.push({ k: "label", x: o.x, y: o.y - o.r, t: `${N.name} ♪`, c: N.c, born: o.hitAt, life: 900 });
+  if (mus.combo > 0 && mus.combo % 8 === 0) { toast(`🔔 Combo x${mus.combo}!`, ""); garden.forEach(g => g.b = 1.3); }
+  navigator.vibrate?.(12);
+}
+function drawNotes(now) {
+  if (!mus.on) return;
+  // làn nhạc mờ + tên nốt ở đáy
+  x.save(); x.font = '800 12px "Be Vietnam Pro", sans-serif'; x.textAlign = "center";
+  Object.entries(NOTE).forEach(([k, N]) => { const lx = W * N.lane; x.globalAlpha = .1; x.strokeStyle = N.c; x.lineWidth = 2; x.setLineDash([4, 10]); x.beginPath(); x.moveTo(lx, 80); x.lineTo(lx, H - 70); x.stroke(); x.setLineDash([]); const ly = H * .79; x.globalAlpha = .9; x.fillStyle = "#ffffffd9"; x.beginPath(); x.roundRect(lx - 20, ly - 14, 40, 20, 10); x.fill(); x.fillStyle = N.c; x.fillText(N.name, lx, ly + 1); });
+  x.restore();
+  mus.notes.forEach(o => {
+    const N = NOTE[o.n], r = o.r;
+    if (o.hit) { const k = (now - o.hitAt) / 450; x.save(); x.globalAlpha = Math.max(0, 1 - k); x.fillStyle = N.c; x.beginPath(); x.arc(o.x, o.y, r * (1 + k * 1.2), 0, 6.283); x.fill(); x.restore(); return; }
+    const pulse = 1 + Math.sin(now * .008 + o.ph) * .05;
+    x.save(); x.translate(o.x, o.y); x.scale(pulse, pulse);
+    x.globalAlpha = .28; x.fillStyle = N.c; x.beginPath(); x.arc(0, 0, r * 1.3, 0, 6.283); x.fill();      // quầng
+    x.globalAlpha = 1; x.fillStyle = "#fff"; x.beginPath(); x.arc(0, 0, r, 0, 6.283); x.fill();
+    x.lineWidth = 5; x.strokeStyle = N.c; x.stroke();
+    // nốt móc đơn ♪
+    x.fillStyle = N.c; x.beginPath(); x.ellipse(-r * .12, r * .22, r * .3, r * .22, -.4, 0, 6.283); x.fill();
+    x.fillRect(r * .1, -r * .52, r * .1, r * .76);
+    x.beginPath(); x.moveTo(r * .2, -r * .52); x.quadraticCurveTo(r * .55, -r * .35, r * .42, -r * .02); x.quadraticCurveTo(r * .42, -r * .25, r * .2, -r * .28); x.fill();
+    x.font = `800 ${Math.round(r * .34)}px "Be Vietnam Pro", sans-serif`; x.textAlign = "center"; x.fillStyle = C.ink; x.fillText(N.name, 0, r + r * .45);
+    x.restore();
+  });
+}
+$("bMusic").onclick = () => { audio(); mus.on = !mus.on; $("bMusic").classList.toggle("off", !mus.on); if (mus.on) musicReset(); else { mus.notes = []; $("score").classList.remove("on"); } toast(mus.on ? "🎵 Jingle Bells" : "Tắt nốt nhạc", mus.on ? "Chạm tay vào nốt đang rơi" : ""); };
+
 /* ======================= VÒNG LẶP ======================= */
 function loop(now) {
   requestAnimationFrame(loop);
@@ -427,6 +534,9 @@ function loop(now) {
   else drawRibbons(null);
   // cánh hoa theo tay khi chuyển động nhanh
   if (fresh) ["lw", "rw"].forEach(k => { const v = M.sp[k]; if (v && Math.hypot(v.x, v.y) > 2.2 && Math.random() < .5) { const p = toScreen(disp[k]); spawnPetal(p.x, p.y, -v.x * .4 + rnd(-1, 1), -v.y * .4 + rnd(-1, 1)); } });
+  const handR = Math.min(H * .21, W * .3) * .22;
+  musicStep(Math.min(.05, (now - (loop.prev || now)) / 1000), now, fresh ? ["lw", "rw"].map(k => ({ ...toScreen(disp[k]), r: handR })) : null); loop.prev = now;
+  drawNotes(now);
   drawParts(now);
   x.setTransform(DPR, 0, 0, DPR, 0, 0);
   if (grain) { x.fillStyle = grain; x.globalCompositeOperation = "multiply"; x.fillRect(0, 0, W, H); x.globalCompositeOperation = "source-over"; }
@@ -477,7 +587,7 @@ function demoPose(now) {
   set(31, { x: lh.x - .04, y: lh.y + legY * 1.8 - jumpY * .2 }); set(32, { x: rh.x + .04, y: rh.y + legY * 1.8 - jumpY * .2 });
   return lm;
 }
-window.__move = { hit, M, st, get body() { return body; } };
+window.__move = { hit, M, st, mus, hitNote, SONG, get body() { return body; } };
 </script>
 </body>
 </html>

@@ -102,4 +102,5 @@ netlify dev        # cần file .env chứa các biến ở trên
 
 - Chống giật: lọc One-Euro từng điểm, chỉ xử lý khung hình mới, giữ điểm bị khuất, nội suy 60 fps, tự căn khung (người luôn cao ~2/3 màn hình, vẫn thấy di chuyển ngang & nhảy).
 - 7 combo: 🙌 Nở rộ (2 tay qua đầu), 🦋 Cánh bướm (dang tay vỗ 2 lần), 🌀 Vòng xoáy (quay tay tròn), 🌈 Cầu vồng (vung tay qua đầu sang bên kia – chờ 0,45 s để phân biệt với vòng xoáy), 🦘 Bật nhảy, 💃 Lắc lư (lắc hông trái–phải), 🙏 Hoa sen (chắp tay trước ngực 1 s).
+- 🎵 **Nốt nhạc Jingle Bells** (bật mặc định, nút 🎵 để tắt): 51 nốt điệp khúc rơi theo nhịp 84 BPM trên 5 làn Đô–Mi–Sol–Fa–Rê (Mi và Fa ở hai bên người, Sol trên đầu). Bàn tay chạm nốt → chuông tổng hợp Web Audio (5 hoạ âm + lục lạc) + vòng sáng, sao lấp lánh, hoa bung, chữ tên nốt. Đếm nốt chạm, combo, hết bài tổng kết rồi chơi lại sau 5 giây. Demo tự chơi hết bài.
 - Nút: 📸 lưu/chia sẻ ảnh, 🔄 camera trước/sau (vẽ người khác), 👁 camera nhỏ, 🧹 xoá hoa. Chế độ demo có vũ công ảo diễn đủ 7 combo.
