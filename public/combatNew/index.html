@@ -231,7 +231,7 @@
   <div id="camBox"><canvas id="camCv" width="320" height="240"></canvas></div>
   <div id="state"><span id="sGuard">🛡 ĐỠ MẶT</span><span id="sBody">🛡 ĐỠ BỤNG</span><span id="sDodge">↔️ NÉ</span><span id="sCombo">COMBO</span></div>
   <div class="chips" id="chips"></div>
-  <div class="tools"><button id="bCal">↺ đặt lại tâm tay trái</button><button id="bSwap">⇄ đảo vai trò 2 tay</button></div>
+  <div class="tools"><button id="bCal">↺ đặt lại tâm tay trái</button><button id="bSwap">⇄ đảo vai trò 2 tay</button><button id="bMirror">⇋ lật ngang camera</button></div>
   <div id="coach"><div class="cs" id="cStep"></div><div class="ct" id="cTask"></div><div class="cf" id="cFb"></div><div class="cst" id="cStats"></div><div class="cb"><button id="cRedo">↺ làm lại</button><button id="cSkip">bỏ qua ›</button><button id="cFree">tập tự do</button></div></div>
   <div id="toast"></div>
   <div id="banner"><div id="bannerTx"></div></div>
@@ -430,6 +430,8 @@ const me = mkF(0), op = mkF(1);
 const game = { phase: "lobby", startAt: 0, timer: ROUND_SEC, ai: false, train: false, lvl: 1, hitId: 0, shake: 0, flash: 0, aiSetup: false };
 const proj = [], fx = [], texts = [], tele = [];
 let seen = new Set(), SWAP = false;
+/* MIRROR = có lật ngang ảnh camera hay không. Mặc định KHÔNG lật (theo phản hồi: bản lật làm ngược tay và ngược hướng); nút ⇋ để đổi, có ghi nhớ. */
+let MIRROR = (() => { try { return localStorage.getItem("hmac-mirror") === "1"; } catch { return false; } })();
 const readyMsg = () => ({ t: "ready", name: me.name, ch: me.ch });
 const C = f => CH[f.ch || 0];
 
@@ -498,7 +500,7 @@ function readHands(now) {
   if (!hl || vid.readyState < 2 || vid.currentTime === lastVT) return; lastVT = vid.currentTime;
   const r = hl.detectForVideo(vid, now), asp = vid.videoWidth / vid.videoHeight;
   // hiển thị như gương; x nhân tỉ lệ khung hình để đơn vị ngang = dọc
-  let list = (r.landmarks || []).map(lm => lm.map(p => ({ x: (1 - p.x) * asp, y: p.y }))).map(P => ({ P, cx: (P[0].x + P[5].x + P[9].x + P[13].x + P[17].x) / 5 / asp }));
+  let list = (r.landmarks || []).map(lm => lm.map(p => ({ x: (MIRROR ? 1 - p.x : p.x) * asp, y: p.y }))).map(P => ({ P, cx: (P[0].x + P[5].x + P[9].x + P[13].x + P[17].x) / 5 / asp }));
   // tay nào ở nửa TRÁI màn hình là tay trái (di chuyển), nửa PHẢI là tay phải (ra đòn)
   let L = null, R = null; if (list.length >= 2) { list.sort((a, b) => a.cx - b.cx); L = list[0]; R = list[list.length - 1]; } else if (list.length === 1) (list[0].cx < .5 ? (L = list[0]) : (R = list[0]));
   if (SWAP) [L, R] = [R, L];
@@ -539,6 +541,7 @@ function readHands(now) {
 addEventListener("keydown", e => { if (e.repeat) return; KEY[e.code] = 1; const m = { KeyW: "jump", KeyJ: "punch", KeyU: "upper", KeyK: "spin", KeyL: "blast", KeyI: me.en >= 100 ? "ult" : "thunder" }[e.code]; if (m === "jump") IN.jump = true; else if (m) IN.act = m; });
 addEventListener("keyup", e => { KEY[e.code] = 0; });
 $("bSwap").onclick = () => { SWAP = !SWAP; HANDS.L.anchor = null; toast(SWAP ? "Đã đảo: tay PHẢI di chuyển, tay TRÁI đánh" : "Tay TRÁI di chuyển, tay PHẢI đánh", ""); };
+$("bMirror").onclick = () => { MIRROR = !MIRROR; try { localStorage.setItem("hmac-mirror", MIRROR ? "1" : "0"); } catch {} Object.assign(HANDS.L, mkHand()); Object.assign(HANDS.R, mkHand()); toast("Đã lật ngang camera", "Tay trái và hướng chạy đổi bên. Bấm lần nữa để trả lại"); };
 $("bCal").onclick = () => { HANDS.L.anchor = null; toast("Đã đặt lại tâm cần điều khiển", "Tâm = chỗ tay trái đang đứng"); };
 
 /* ======================= LUẬT ĐÁNH ======================= */
@@ -769,7 +772,7 @@ function drawTele(now) {
 const BONES = [[0, 1, 2, 3, 4], [0, 5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16], [0, 17, 18, 19, 20], [5, 9, 13, 17]];
 function drawCam(now) {
   const c = $("camCv"), g = c.getContext("2d"), w = c.width, h = c.height; g.fillStyle = "#111"; g.fillRect(0, 0, w, h);
-  if (vid.readyState >= 2) { const s = Math.max(w / vid.videoWidth, h / vid.videoHeight); g.save(); g.translate(w, 0); g.scale(-1, 1); g.globalAlpha = .75; g.drawImage(vid, (w - vid.videoWidth * s) / 2, (h - vid.videoHeight * s) / 2, vid.videoWidth * s, vid.videoHeight * s); g.restore(); }
+  if (vid.readyState >= 2) { const s = Math.max(w / vid.videoWidth, h / vid.videoHeight); g.save(); if (MIRROR) { g.translate(w, 0); g.scale(-1, 1); } g.globalAlpha = .75; g.drawImage(vid, (w - vid.videoWidth * s) / 2, (h - vid.videoHeight * s) / 2, vid.videoWidth * s, vid.videoHeight * s); g.restore(); }
   g.strokeStyle = "#ffffff55"; g.setLineDash([5, 5]); g.beginPath(); g.moveTo(w / 2, 0); g.lineTo(w / 2, h); g.stroke(); g.setLineDash([]);
   g.font = "800 11px Be Vietnam Pro, sans-serif"; g.textAlign = "center"; g.fillStyle = "#5eead4"; g.fillText(SWAP ? "ĐÁNH" : "DI CHUYỂN", w * .25, 14); g.fillStyle = "#fdba74"; g.fillText(SWAP ? "DI CHUYỂN" : "ĐÁNH", w * .75, 14);
   const asp = HANDS.L.asp || HANDS.R.asp || 4 / 3, vw = vid.videoWidth || 640, vh = vid.videoHeight || 480, s = Math.max(w / vw, h / vh), ox = (w - vw * s) / 2, oy = (h - vh * s) / 2, T = p => ({ x: ox + p.x / asp * vw * s, y: oy + p.y * vh * s });
