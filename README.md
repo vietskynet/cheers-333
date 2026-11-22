@@ -159,3 +159,16 @@ netlify dev        # cần file .env chứa các biến ở trên
 - **Đấu máy 3 cấp** (`AIL`: Dễ / Vừa / Khó): khác nhau về nhịp ra đòn, độ chính xác, phản xạ đỡ/né, sát thương, di chuyển và tần suất dùng kỹ năng.
 
 - (22/11, chỉnh độ khớp tay) Khuỷu/cổ tay lấy vị trí ngang–dọc từ **khung xương 2D trên ảnh camera** (đổi ra mét theo tỉ lệ vai), chiều sâu tính từ độ co ngắn của cánh tay; tự xoay thẳng chỉ sửa góc lệch kéo dài > 17° (không "xoay ngược" khi vai đưa ra lúc đấm); góc nhìn xoay 35° và trục trước–sau được kéo giãn ×1,65 khi vẽ; cú đấm được giữ hình ở điểm vươn xa nhất 0,26 s, có vệt găng và vạch gió.
+
+### Cập nhật tối 22/11: AGENCY COMBAT chuyển sang điều khiển bằng HAI BÀN TAY
+
+`public/combatNew/index.html` được dựng lại (bản dùng cả người trước đó nằm trong lịch sử git, commit `a1c5d9c`). Sảnh 8-bit và khối mạng giữ nguyên.
+
+- **Nhận diện:** MediaPipe HandLandmarker 2 tay. Tay ở nửa trái khung hình = tay trái (di chuyển), nửa phải = tay phải (ra đòn); nút đảo vai trò. Thế tay: ✊ ✋ ✌️ ☝️ (lấy theo đa số 5 khung hình gần nhất).
+- **Tay trái (cần điều khiển ảo):** tâm = chỗ tay xuất hiện (tự trôi chậm khi đứng yên); lệch ngang > 0,55 cỡ bàn tay → chạy, lệch xa → chạy nhanh ×1,35; hất lên > 1,15 → nhảy; nắm ✊ → đỡ.
+- **Tay phải:** hất nhanh (> 4,2 cỡ tay/giây và đi > 0,75 cỡ tay, hoặc tay to lên > 20% = đẩy về camera) với ✊ → Đấm (hất lên → Móc lên), ✌️ → Bay xoáy (25), ✋ → Chưởng (30); ☝️ giữ 0,42 s → Sấm sét (50) hoặc Tuyệt chiêu khi mana 100. Lệnh được giữ 0,3 s nếu nhân vật đang bận.
+- **Bàn phím** (thử trên laptop): A D đi, W nhảy, S đỡ, J đấm, U móc, K xoáy, L chưởng, I sấm/tuyệt chiêu.
+- **Đấu trường** rộng 22 m, máy quay bám theo và tự thu phóng. Bối cảnh **văn phòng ngày tận thế**: trời đỏ lửa, thành phố cháy, khung kính vỡ, đèn tuýp chớp tắt, bàn ghế máy in đổ nát, lửa và tàn lửa, nổ ngẫu nhiên ở hậu cảnh.
+- **8 nhân vật** (`CH`): Art Director (chí mạng 25%), Account (135 máu, đỡ chặn 92%), Planner (nhanh, hồi mana ×1,8), Copywriter (Chưởng rẻ và mạnh hơn), Designer (tầm đánh +35%), Creative Director (sát thương +30%, ra đòn chậm), Producer (nhảy 2 lần), Media (hút máu 30%). Mỗi người một tuyệt chiêu: Mưa màu, Chốt deal, Bão insight, Big idea, Pixel perfect, Reject!, Action!, Viral.
+- **Phòng tập chiêu thức:** 11 bài (chạy trái/phải, nhảy, đỡ, đấm, móc, xoáy, chưởng, sấm, tuyệt chiêu, đỡ đòn bao cát) + tập tự do; mana hồi rất nhanh, bao cát không chết.
+- Đấu máy 3 cấp; đấu 2 máy: mỗi máy tự mô phỏng nhân vật của mình, bên đánh tính trúng, bên bị đánh tính đỡ.
