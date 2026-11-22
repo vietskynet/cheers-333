@@ -134,3 +134,13 @@ netlify dev        # cần file .env chứa các biến ở trên
 - Không vẽ đè lên mặt; khung xương là dòng năng lượng neon; vợt vẽ dáng thon dài mặt đen viền hồng → xanh (không có logo/chữ thương hiệu).
 - Mana: tăng khi đánh chuẩn, tụt dần; ≥ 60 thì mắt xoẹt năng lượng và điểm ×2. Mọi cú vào sân đều có tia sáng, vòng sáng, vệt bóng.
 - Nút ⏺ quay video (hình + hiệu ứng + tiếng), xem lại, lưu, chia sẻ.
+
+## Công cụ `/testReal/` – đo độ trễ giữa 2 thiết bị
+
+`public/testReal/index.html` – dùng lại khối mạng của game (PeerJS P2P + Cloudflare TURN + relay MQTT, tiền tố `hmtest`).
+
+- **Máy A** (điện thoại): camera → PoseLandmarker lite → nhân vật 13 điểm; gửi mỗi khung (~30 gói/giây, kênh không gửi lại) kèm số thứ tự và giờ gửi. **Máy B** (laptop): nhập mã 4 ký tự, vẽ lại nhân vật.
+- Đồng bộ đồng hồ kiểu NTP (B hỏi mỗi 0,4 s, lấy mẫu có khứ hồi nhỏ nhất) → B tính độ trễ một chiều từng gói: trung bình / min / max / p95 trong 5 giây, tính cả từ lúc A bắt đầu xử lý khung hình, tốc độ nhận, dao động, % rớt gói, gói sai thứ tự, biểu đồ 20 giây. B gửi số đo về để A cũng thấy.
+- Hiện đường truyền thật: P2P trực tiếp (LAN / Internet), P2P qua TURN, hay chuyển tiếp MQTT (đọc từ `getStats`).
+- Kiểm tra bằng mắt: nút "⚡ Chớp cả 2 máy"; đồng hồ mili-giây trên cả 2 màn hình (B hiện giờ-máy-A của hình đang vẽ → chụp chung 2 màn hình để thấy chênh lệch thật, gồm cả độ trễ màn hình); trên A có bóng trắng mờ = hình B đang thấy.
+- Không đo được: độ trễ cảm biến camera của A (thường 30–80 ms) và độ trễ màn hình. `#local` = test 2 cửa sổ cùng máy với nhân vật giả lập; `#sim` = máy A không dùng camera.

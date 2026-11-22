@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HandMagination · Test độ trễ 2 thiết bị</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{--ink:#14161b;--mute:#6b7280}
+  html,body{height:100%;background:#fff;color:var(--ink);font-family:"Be Vietnam Pro",system-ui,sans-serif;-webkit-tap-highlight-color:transparent;overflow:hidden}
+  .scr{display:none;position:fixed;inset:0;flex-direction:column;align-items:center;padding:calc(env(safe-area-inset-top) + 16px) 20px calc(env(safe-area-inset-bottom) + 20px);overflow:auto}
+  .scr.on{display:flex}
+  .brand{align-self:flex-start;font-size:15px;font-weight:600;color:var(--mute);display:flex;align-items:center;gap:8px;text-decoration:none}
+  .brand b{color:var(--ink);font-weight:800}.brand .dot{width:10px;height:10px;border-radius:50%;background:#F2B705}
+  .tag{font-size:10px;font-weight:800;letter-spacing:1.5px;background:var(--ink);color:#fff;border-radius:99px;padding:3px 8px}
+  h1{font-size:34px;line-height:1.05;font-weight:800;letter-spacing:-1.2px;text-align:center;margin-top:26px}
+  h1 em{font-style:normal;background:linear-gradient(transparent 60%,#5ad1ff88 60%)}
+  .lead{color:var(--mute);font-size:15px;line-height:1.55;text-align:center;max-width:400px;margin:12px auto 20px}
+  .cta{width:100%;max-width:380px;border:0;border-radius:16px;padding:16px;font:inherit;font-weight:800;font-size:16px;background:var(--ink);color:#fff;cursor:pointer;margin-top:8px}
+  .cta small{display:block;font-weight:600;font-size:12px;opacity:.75;margin-top:2px}
+  .cta.alt{background:#2563eb}
+  .row{display:flex;gap:10px;width:100%;max-width:380px;margin-top:10px}
+  .code{flex:1;min-width:0;border:2px solid #e5e7eb;border-radius:16px;padding:14px;font:inherit;font-weight:800;font-size:22px;letter-spacing:6px;text-align:center;text-transform:uppercase}
+  .err{color:#dc2626;font-size:13px;min-height:18px;margin-top:10px;text-align:center;max-width:380px}
+  .note{font-size:12px;color:var(--mute);text-align:center;max-width:380px;margin-top:10px;line-height:1.5}
+  .bigcode{font-size:64px;font-weight:800;letter-spacing:12px;margin:10px 0 2px}
+  .players{display:flex;gap:12px;margin:18px 0;width:100%;max-width:380px}
+  .pl{flex:1;border-radius:16px;padding:14px;background:#f6f4ef;text-align:left}.pl b{display:block;font-size:15px}.pl span{font-size:12px;color:var(--mute)}.pl.ok{background:#e7f6f3}
+  .diag{font-size:11px;color:var(--mute);background:#f6f4ef;border-radius:12px;padding:8px 12px;margin-top:8px;max-width:380px;width:100%;line-height:1.6;display:none}.diag.on{display:block}.diag b{color:var(--ink)}
+  .ghost{background:none;border:0;color:var(--mute);font:inherit;font-size:14px;padding:10px;cursor:pointer;text-decoration:underline}
+  #stage{padding:0;background:#0b1220;color:#fff}
+  #cv{position:absolute;inset:0;width:100%;height:100%}
+  #panel{position:absolute;left:10px;top:calc(env(safe-area-inset-top) + 10px);background:#000a;backdrop-filter:blur(8px);border-radius:14px;padding:10px 12px;font-size:12px;line-height:1.65;max-width:min(92vw,360px)}
+  #panel h3{font-size:11px;letter-spacing:1.2px;opacity:.7}
+  #panel .big{font-size:34px;font-weight:800;line-height:1.1}
+  #panel .big small{font-size:13px;font-weight:700;opacity:.8}
+  #panel b{color:#a3e635}
+  #panel .bad{color:#ff7a59}
+  #clock{position:absolute;right:12px;top:calc(env(safe-area-inset-top) + 10px);font:800 30px ui-monospace,Menlo,monospace;background:#000a;border-radius:12px;padding:6px 12px;text-align:right}
+  #clock small{display:block;font:600 10px "Be Vietnam Pro";opacity:.7}
+  @media(max-width:600px){#clock{top:auto;bottom:calc(env(safe-area-inset-bottom) + 70px);font-size:24px}}
+  .bar{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 12px);display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:0 10px}
+  .pill{background:#000a;backdrop-filter:blur(8px);border-radius:99px;padding:10px 14px;font-size:13px;font-weight:800;border:0;color:#fff;font-family:inherit;cursor:pointer}
+  .pill.hot{background:#F2B705;color:#14161b}
+  #banner{position:absolute;inset:0;display:none;place-items:center;background:#000b;text-align:center;font-size:30px;font-weight:800}
+  #banner.on{display:grid}#banner small{display:block;font-size:14px;font-weight:600;opacity:.8}
+</style>
+</head>
+<body>
+<section class="scr on" id="lobby">
+  <a class="brand" href="/"><span class="dot"></span><b>Hand</b>Magination <span class="tag">TEST ĐỘ TRỄ</span></a>
+  <h1>Đo độ trễ giữa<br><em>hai thiết bị</em>.</h1>
+  <p class="lead">Máy A (điện thoại) dùng camera đọc chuyển động của bạn và điều khiển một nhân vật. Máy B (laptop) hiện cùng nhân vật đó và đo xem dữ liệu mất bao nhiêu mili-giây để sang tới nơi, có rớt gói không.</p>
+  <button class="cta" id="bCreate">📱 Đây là MÁY A – điều khiển<small>Mở camera, tạo mã phòng</small></button>
+  <div class="row"><input class="code" id="inCode" maxlength="4" placeholder="MÃ" autocomplete="off" autocapitalize="characters"><button class="cta alt" id="bJoin" style="width:auto;padding:16px 20px;margin:0">💻 Máy B – xem</button></div>
+  <div class="err" id="lobbyErr"></div>
+  <p class="note">Bước 1: bấm "Máy A" trên điện thoại để lấy mã 4 ký tự. Bước 2: mở trang này trên laptop, nhập mã rồi bấm "Máy B".</p>
+</section>
+<section class="scr" id="room">
+  <a class="brand" href="/"><span class="dot"></span><b>Hand</b>Magination <span class="tag">TEST ĐỘ TRỄ</span></a>
+  <p class="lead" style="margin:30px auto 0">Mã phòng</p>
+  <div class="bigcode" id="codeBig">----</div>
+  <div class="note" id="roomStatus">Đang tạo phòng…</div>
+  <div class="players"><div class="pl" id="p1Card"><b>📱 Máy A</b><span id="p1St">Điều khiển</span></div><div class="pl" id="p2Card"><b>💻 Máy B</b><span id="p2St">Đang chờ…</span></div></div>
+  <div class="err" id="roomErr"></div>
+  <div class="diag" id="diag"></div>
+  <button class="ghost" onclick="location.reload()">← Quay lại</button>
+</section>
+<section class="scr" id="stage">
+  <canvas id="cv"></canvas>
+  <div id="panel"></div>
+  <div id="clock"><span id="clockT">00.000</span><small id="clockL"></small></div>
+  <div class="bar" id="bar"></div>
+  <div id="banner"><div id="bannerTx"></div></div>
+  <div id="endBox" style="display:none"></div>
+</section>
+<script src="./peerjs.min.js"></script>
+<script src="./mqtt.min.js"></script>
+<script type="module">
+import { FilesetResolver, PoseLandmarker } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs";
+const $ = id => document.getElementById(id);
+const show = id => document.querySelectorAll(".scr").forEach(s => s.classList.toggle("on", s.id === id));
+function banner(t, sub) { $("bannerTx").innerHTML = t + (sub ? `<small>${sub}</small>` : ""); $("banner").classList.add("on"); }
+const me = { ready: false };
+
+/* ======================= MẠNG ======================= */
+// Ưu tiên WebRTC P2P (PeerJS): kênh "state" không gửi lại cho vị trí, kênh "event" chắc chắn cho đòn đánh.
+// Không nối thẳng được (NAT 4G…) → tự chuyển sang CHUYỂN TIẾP qua máy chủ MQTT công cộng (WebSocket).
+const net = { peer: null, st: null, ev: null, host: false, code: "", rtt: 0, connected: false, local: null, mode: "", relay: null, relayUp: false };
+const LOCAL = location.hash === "#local";   // chế độ test 2 cửa sổ trên cùng trình duyệt
+const ID = c => "hmtest-v1-" + c.toUpperCase();
+const P2P_WAIT = 6500;
+let ICE = [
+  { urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] },
+  { urls: "stun:stun.cloudflare.com:3478" },
+  { urls: "turn:eu-0.turn.peerjs.com:3478", username: "peerjs", credential: "peerjsp" },
+  { urls: "turn:us-0.turn.peerjs.com:3478", username: "peerjs", credential: "peerjsp" },
+];
+const iceReady = fetch("/api/ice").then(r => r.json()).then(d => { if (d.iceServers?.length) { ICE = [...d.iceServers, ...ICE]; diagSet("turn", "có TURN riêng ✓"); } }).catch(() => {});
+const BROKERS = ["wss://broker.hivemq.com:8884/mqtt", "wss://broker.emqx.io:8084/mqtt", "wss://test.mosquitto.org:8081"];
+const diagState = {};
+function diagSet(k, v) {
+  diagState[k] = v;
+  const L = { sig: "Máy chủ ghép phòng", p2p: "Kết nối trực tiếp", ice: "Trạng thái ICE", relay: "Chuyển tiếp", turn: "TURN" };
+  $("diag").innerHTML = Object.entries(diagState).map(([a, b]) => `${L[a] || a}: <b>${b}</b>`).join("<br>");
+  $("diag").classList.add("on");
+}
+function newCode() { const A = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; return Array.from({ length: 4 }, () => A[Math.floor(Math.random() * A.length)]).join(""); }
+function send(msg, reliable = true) {
+  if (LOCAL) { net.local?.postMessage({ from: net.host ? "h" : "g", msg }); return; }
+  if (net.mode === "relay") { relaySend(msg); return; }
+  const c = reliable ? net.ev : net.st;
+  if (c && c.open) { try { c.send(msg); } catch {} }
+  else if (net.relayUp && msg.t !== "s") relaySend(msg);
+}
+function wire(c) {
+  if (c.label === "state") net.st = c; else net.ev = c;
+  c.on("data", m => { if (net.mode !== "relay") onMsg(m); });
+  c.on("open", () => { if (net.st?.open && net.ev?.open && !net.connected) { net.mode = "p2p"; diagSet("p2p", "đã nối ✓"); onConnected(); } });
+  c.on("close", () => { if (net.mode === "p2p") onDisconnect(); });
+  c.on("error", e => console.warn("conn", e));
+  const t = setInterval(() => { const st = c.peerConnection?.iceConnectionState; if (st) diagSet("ice", st); if (net.connected || st === "failed") clearInterval(t); }, 400);
+}
+/* ---- chuyển tiếp qua MQTT ---- */
+const topic = dir => `hmtest/v1/${net.code}/${dir}`;
+function relayStart() {
+  if (net.relay || typeof mqtt === "undefined") return Promise.resolve(false);
+  return new Promise(res => {
+    let i = 0, done = false;
+    const tryNext = () => {
+      if (i >= BROKERS.length) { diagSet("relay", "không vào được máy chủ chuyển tiếp ✗"); return res(false); }
+      const url = BROKERS[i++];
+      const cl = mqtt.connect(url, { clientId: "hmc_" + Math.random().toString(36).slice(2, 10), clean: true, connectTimeout: 5000, reconnectPeriod: 2000, keepalive: 30 });
+      const fail = setTimeout(() => { if (!done) { cl.end(true); tryNext(); } }, 5500);
+      cl.on("connect", () => {
+        if (done) return; done = true; clearTimeout(fail);
+        net.relay = cl; net.relayUp = true;
+        cl.subscribe(topic(net.host ? "toHost" : "toGuest"), { qos: 0 });
+        diagSet("relay", "sẵn sàng (" + new URL(url).hostname + ")");
+        res(true);
+      });
+      cl.on("message", (tp, buf) => { let m; try { m = JSON.parse(buf.toString()); } catch { return; } onRelayMsg(m); });
+      cl.on("error", () => {});
+    };
+    tryNext();
+  });
+}
+function relaySend(msg) { if (net.relay && net.relayUp) net.relay.publish(topic(net.host ? "toGuest" : "toHost"), JSON.stringify(msg), { qos: 0 }); }
+function onRelayMsg(m) {
+  if (m.t === "rhello") {               // bên kia xin nối qua chuyển tiếp
+    if (net.mode === "p2p" && net.connected) return;
+    net.mode = "relay";
+    if (net.host) relaySend({ t: "rhello" });
+    diagSet("p2p", "không nối thẳng được → dùng chuyển tiếp"); onConnected(); return;
+  }
+  if (net.mode === "relay" || !net.connected) onMsg(m);
+}
+async function goRelay(reason) {
+  if (net.connected) return;
+  diagSet("p2p", reason);
+  const ok = await relayStart();
+  if (!ok) { $("roomErr").textContent = "Không kết nối được. Thử lại sau hoặc đổi mạng (wifi ↔ 4G)."; return; }
+  relaySend({ t: "rhello" });
+  const iv = setInterval(() => { if (net.connected) return clearInterval(iv); relaySend({ t: "rhello" }); }, 1500);
+  setTimeout(() => { if (!net.connected) $("roomErr").textContent = "Chưa vào được phòng. Kiểm tra lại mã phòng, và để máy A mở sẵn màn hình có mã."; }, 12000);
+}
+async function createRoom() {
+  net.host = true; $("lobbyErr").textContent = ""; show("room");
+  $("p1St").textContent = "Máy này"; $("p2St").textContent = "Đang chờ…";
+  if (LOCAL) return localOpen(newCode());
+  await iceReady;
+  let ok = false;
+  for (let tries = 0; tries < 4 && !ok; tries++) {
+    const code = newCode();
+    try { await openPeer(ID(code)); net.code = code; ok = true; }
+    catch (e) { if (e?.type !== "unavailable-id") break; }
+  }
+  if (!ok) { net.code = newCode(); diagSet("sig", "lỗi – chỉ dùng chuyển tiếp"); }
+  else { diagSet("sig", "đã kết nối ✓"); net.peer.on("connection", wire); }
+  $("codeBig").textContent = net.code; $("roomStatus").textContent = "Phòng đã mở. Mở trang này trên máy B và nhập mã.";
+  relayStart();                        // chủ phòng luôn nghe cả kênh chuyển tiếp
+}
+function openPeer(id) {
+  return new Promise((res, rej) => {
+    const opt = { debug: 0, config: { iceServers: ICE } };
+    const p = id ? new Peer(id, opt) : new Peer(opt);
+    const to = setTimeout(() => { if (!net.peer) { p.destroy(); rej({ type: "timeout" }); } }, 8000);
+    p.on("open", () => { clearTimeout(to); net.peer = p; res(p); });
+    p.on("error", e => { if (!net.peer) { clearTimeout(to); p.destroy(); rej(e); } else onPeerError(e); });
+    p.on("disconnected", () => { try { p.reconnect(); } catch {} });
+  });
+}
+async function joinRoom(code) {
+  code = code.toUpperCase().trim();
+  if (!/^[A-Z0-9]{4}$/.test(code)) { $("lobbyErr").textContent = "Mã phòng gồm 4 ký tự."; return; }
+  net.host = false; net.code = code; show("room");
+  $("codeBig").textContent = code; $("roomStatus").textContent = "Đang kết nối…";
+  $("p1St").textContent = "Điều khiển"; $("p2St").textContent = "Máy này";
+  if (LOCAL) return localOpen(code);
+  await iceReady;
+  relayStart();                        // chuẩn bị sẵn đường chuyển tiếp
+  try { await openPeer(); diagSet("sig", "đã kết nối ✓"); }
+  catch (e) { diagSet("sig", "lỗi (" + (e?.type || "?") + ")"); return goRelay("bỏ qua – máy chủ ghép phòng lỗi"); }
+  diagSet("p2p", "đang thử…");
+  const opts = { serialization: "json" };
+  wire(net.peer.connect(ID(code), { ...opts, label: "state", reliable: false }));
+  wire(net.peer.connect(ID(code), { ...opts, label: "event", reliable: true }));
+  setTimeout(() => { if (!net.connected) goRelay("không nối thẳng được (NAT/4G) → chuyển tiếp"); }, P2P_WAIT);
+}
+function onPeerError(e) {
+  if (e?.type === "peer-unavailable") { diagSet("p2p", "không thấy phòng qua P2P"); goRelay("không thấy phòng qua P2P → thử chuyển tiếp"); }
+  else if (e?.type) console.warn("peer", e.type);
+}
+function localOpen(code) {
+  net.code = code; $("codeBig").textContent = code; net.mode = "local";
+  net.local = new BroadcastChannel("hmtest-" + code);
+  net.local.onmessage = e => { const { from, msg } = e.data; if ((from === "h") === net.host) return; onMsg(msg); };
+  if (net.host) $("roomStatus").textContent = "Chế độ test 2 cửa sổ · chờ cửa sổ kia vào…";
+  else send({ t: "hello" });
+}
+function onConnected() {
+  if (net.connected) return;
+  net.connected = true;
+  $("roomErr").textContent = "";
+  $("roomStatus").textContent = net.mode === "relay" ? "Đã kết nối qua chuyển tiếp." : "Đã kết nối!";
+  (net.host ? $("p2Card") : $("p1Card")).classList.add("ok");
+  (net.host ? $("p2St") : $("p1St")).textContent = "Đã vào phòng";
+  setInterval(() => send({ t: "ping", ts: performance.now() }), 1000);
+  if (me.ready) send({ t: "ready" });
+}
+function onDisconnect() {
+  if (!net.connected) return;
+  net.connected = false;
+  banner("MẤT KẾT NỐI", "Máy kia đã rời phòng", 0);
+  $("endBox").classList.add("on");
+}
+
+
+
+/* ======================= ĐO ĐỘ TRỄ ======================= */
+const KP = { nose: 0, ls: 11, rs: 12, le: 13, re: 14, lw: 15, rw: 16, lh: 23, rh: 24, lk: 25, rk: 26, la: 27, ra: 28 };
+const KEYS = Object.keys(KP);
+const now = () => performance.now();
+const S = {                       // trạng thái chung
+  role: "", started: false, aspect: .75,
+  // máy A
+  seq: 0, pose: null, hist: [], sendN: 0, sendHz: 0, detMs: 0, fps: 0, rep: null, flashAck: null, sim: false,
+  // máy B
+  off: null, offRtt: 1e9, syncs: [], last: null, lastSeq: -1, lost: 0, got: 0, ooo: 0, samp: [], flashD: null, smooth: false, disp: null,
+  flash: 0, flashN: 0,
+};
+function onMsg(m) {
+  if (!m || !m.t) return;
+  if (m.t === "hello") { if (net.host) send({ t: "hello" }); onConnected(); return; }
+  if (m.t === "ping") return send({ t: "pong", ts: m.ts });
+  if (m.t === "pong") { const r = now() - m.ts; net.rtt = net.rtt ? net.rtt * .7 + r * .3 : r; return; }
+  // --- đồng bộ đồng hồ kiểu NTP: B hỏi, A trả lời kèm giờ của A ---
+  if (m.t === "sy") return send({ t: "sy2", t0: m.t0, ta: now() }, false);
+  if (m.t === "sy2") { const t3 = now(), rtt = t3 - m.t0, off = m.ta - (m.t0 + rtt / 2); S.syncs.push({ rtt, off, t: t3 }); if (S.syncs.length > 30) S.syncs.shift(); const best = S.syncs.reduce((a, b) => b.rtt < a.rtt ? b : a); S.off = best.off; S.offRtt = best.rtt; return; }
+  if (m.t === "info") { S.aspect = m.a; return; }
+  if (m.t === "p") {              // gói tư thế từ A
+    const t = now(); S.got++;
+    if (S.lastSeq >= 0) { if (m.q > S.lastSeq + 1) S.lost += m.q - S.lastSeq - 1; else if (m.q <= S.lastSeq) { S.ooo++; return; } }
+    S.lastSeq = m.q; S.last = { P: unpack(m.r), ts: m.ts, tc: m.tc, t };
+    if (S.off !== null) { S.samp.push({ t, d: t + S.off - m.ts, dc: t + S.off - m.tc }); while (S.samp.length && t - S.samp[0].t > 20000) S.samp.shift(); }
+    return;
+  }
+  if (m.t === "fl") { S.flash = 1; S.flashN = m.n; const d = S.off !== null ? now() + S.off - m.ts : null; S.flashD = d; send({ t: "fla", n: m.n, d }); return; }
+  if (m.t === "fla") { S.flashAck = { n: m.n, d: m.d, rt: now() - S.flashSent }; return; }
+  if (m.t === "rep") { S.rep = m; return; }
+}
+const pack = P => KEYS.map(k => [Math.round(P[k].x * 1000), Math.round(P[k].y * 1000), P[k].v > .4 ? 1 : 0]);
+const unpack = a => Object.fromEntries(KEYS.map((k, i) => [k, { x: a[i][0] / 1000, y: a[i][1] / 1000, v: a[i][2] }]));
+
+/* ---------- máy A: camera → tư thế → gửi ---------- */
+class OneEuro {
+  constructor(mc, b, dc = 1) { this.mc = mc; this.b = b; this.dc = dc; this.x = null; this.dx = 0; this.t = 0; }
+  static a(c, dt) { const tau = 1 / (2 * Math.PI * c); return 1 / (1 + tau / dt); }
+  f(v, t) { if (this.x === null) { this.x = v; this.t = t; return v; } const dt = Math.max(1 / 120, (t - this.t) / 1000); this.t = t; const dx = (v - this.x) / dt; this.dx += (dx - this.dx) * OneEuro.a(this.dc, dt); this.x += (v - this.x) * OneEuro.a(this.mc + this.b * Math.abs(this.dx), dt); return this.x; }
+}
+const vid = document.createElement("video"); vid.playsInline = true; vid.muted = true;
+let pose = null, lastVT = -1, F = null, frames = [];
+async function startCam() {
+  try {
+    const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm");
+    const o = d => ({ baseOptions: { modelAssetPath: "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task", delegate: d }, runningMode: "VIDEO", numPoses: 1 });
+    const [p, s] = await Promise.all([PoseLandmarker.createFromOptions(vision, o("GPU")).catch(() => PoseLandmarker.createFromOptions(vision, o("CPU"))), navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30 } } })]);
+    pose = p; vid.srcObject = s; await vid.play(); S.aspect = vid.videoWidth / vid.videoHeight;
+  } catch (e) { S.sim = true; S.camErr = String(e.message || e); S.aspect = .75; }
+  send({ t: "info", a: S.aspect });
+}
+function simPose(t) {       // nhân vật giả lập (khi không có camera): vẫy tay đều để nhìn độ trễ
+  const a = t * .004, P = {}, pt = (k, x, y) => P[k] = { x, y, v: 1 }, cx = .5 + Math.sin(a * .5) * .12;
+  pt("nose", cx, .2); pt("ls", cx - .1, .32); pt("rs", cx + .1, .32); pt("lh", cx - .07, .6); pt("rh", cx + .07, .6);
+  pt("le", cx - .2, .32 + Math.sin(a) * .1); pt("lw", cx - .28, .32 + Math.sin(a) * .22 - .05); pt("re", cx + .2, .32 - Math.sin(a) * .1); pt("rw", cx + .28, .32 - Math.sin(a) * .22 - .05);
+  pt("lk", cx - .08, .78); pt("rk", cx + .08, .78); pt("la", cx - .08, .95); pt("ra", cx + .08, .95); return P;
+}
+function stepA(t) {
+  let P = null, tc = t;
+  if (S.sim) { if (t - (S.simT || 0) < 33) return; S.simT = t; P = simPose(t); }
+  else {
+    if (!pose || vid.readyState < 2 || vid.currentTime === lastVT) return; lastVT = vid.currentTime;
+    const r = pose.detectForVideo(vid, t); S.detMs = S.detMs * .9 + (now() - t) * .1;
+    const lm = r.landmarks?.[0]; if (!lm) return;
+    if (!F) F = Object.fromEntries(KEYS.map(k => [k, [new OneEuro(1.5, 40), new OneEuro(1.5, 40)]]));
+    P = {}; KEYS.forEach(k => { const p = lm[KP[k]]; P[k] = { x: F[k][0].f(1 - p.x, t), y: F[k][1].f(p.y, t), v: p.visibility ?? 1 }; });
+  }
+  S.pose = P; const ts = now(); S.hist.push({ t: ts, P }); while (S.hist.length && ts - S.hist[0].t > 1500) S.hist.shift();
+  frames.push(ts); while (frames.length && ts - frames[0] > 1000) frames.shift(); S.fps = frames.length;
+  send({ t: "p", q: S.seq++, ts, tc, r: pack(P) }, false);
+}
+function flashA() { S.flashN++; S.flash = 1; S.flashSent = now(); S.flashAck = null; send({ t: "fl", n: S.flashN, ts: now() }); }
+
+/* ---------- máy B: thống kê ---------- */
+function stats() {
+  const t = now(), A = S.samp.filter(s => t - s.t < 5000); if (!A.length) return null;
+  const d = A.map(s => s.d).sort((a, b) => a - b), avg = d.reduce((a, b) => a + b, 0) / d.length, dc = A.reduce((a, b) => a + b.dc, 0) / A.length;
+  const gaps = []; for (let i = 1; i < A.length; i++) gaps.push(A[i].t - A[i - 1].t); const gm = gaps.reduce((a, b) => a + b, 0) / (gaps.length || 1), jit = Math.sqrt(gaps.reduce((a, b) => a + (b - gm) ** 2, 0) / (gaps.length || 1));
+  return { avg, min: d[0], max: d[d.length - 1], p95: d[Math.floor(d.length * .95)], dc, hz: A.length / 5, jit, loss: S.got ? S.lost / (S.got + S.lost) * 100 : 0 };
+}
+let route = "";
+async function probeRoute() {       // P2P đi thẳng hay qua TURN?
+  if (net.mode === "relay") { route = "chuyển tiếp MQTT (chậm)"; return; } if (net.mode === "local") { route = "cùng máy (test)"; return; }
+  try { const pc = (net.st || net.ev)?.peerConnection; if (!pc) return; const st = await pc.getStats(); let pair = null; st.forEach(r => { if (r.type === "transport" && r.selectedCandidatePairId) pair = st.get(r.selectedCandidatePairId); }); if (!pair) st.forEach(r => { if (r.type === "candidate-pair" && r.nominated && r.state === "succeeded") pair = r; });
+    if (pair) { const lc = st.get(pair.localCandidateId), rc = st.get(pair.remoteCandidateId), ty = [lc?.candidateType, rc?.candidateType]; route = ty.includes("relay") ? "P2P qua TURN (Cloudflare/relay)" : ty.every(x => x === "host") ? "P2P trực tiếp – cùng mạng LAN" : "P2P trực tiếp qua Internet"; } } catch {}
+}
+
+/* ---------- vẽ nhân vật ---------- */
+const cv = $("cv"), x = cv.getContext("2d"); let W = 0, H = 0, DPR = 1;
+function resize() { W = innerWidth; H = innerHeight; DPR = Math.min(2, devicePixelRatio || 1); cv.width = W * DPR; cv.height = H * DPR; }
+addEventListener("resize", resize);
+function drawChar(P, col, alpha) {
+  const bw = Math.min(W, H * S.aspect), bh = bw / S.aspect, ox = (W - bw) / 2, oy = (H - bh) / 2, T = k => ({ x: ox + P[k].x * bw, y: oy + P[k].y * bh }), ok = (...ks) => ks.every(k => P[k].v);
+  const u = Math.max(20, Math.hypot(T("ls").x - T("rs").x, T("ls").y - T("rs").y));
+  x.save(); x.globalAlpha = alpha; x.lineCap = x.lineJoin = "round"; x.strokeStyle = col.limb; 
+  const ln = (w, ...ks) => { if (!ok(...ks)) return; x.lineWidth = w; x.beginPath(); ks.forEach((k, i) => { const p = T(k); i ? x.lineTo(p.x, p.y) : x.moveTo(p.x, p.y); }); x.stroke(); };
+  ln(u * .22, "lh", "lk", "la"); ln(u * .22, "rh", "rk", "ra");
+  if (ok("ls", "rs", "lh", "rh")) { x.fillStyle = col.body; x.strokeStyle = col.body; x.lineWidth = u * .18; x.beginPath(); ["ls", "rs", "rh", "lh"].forEach((k, i) => { const p = T(k); i ? x.lineTo(p.x, p.y) : x.moveTo(p.x, p.y); }); x.closePath(); x.fill(); x.stroke(); }
+  x.strokeStyle = col.arm; ln(u * .18, "ls", "le", "lw"); ln(u * .18, "rs", "re", "rw");
+  const n = T("nose"); x.fillStyle = col.head; x.beginPath(); x.arc(n.x, n.y, u * .32, 0, 6.283); x.fill();
+  x.fillStyle = "#14161b"; [-1, 1].forEach(s => { x.beginPath(); x.arc(n.x + s * u * .11, n.y - u * .03, u * .035, 0, 6.283); x.fill(); });
+  x.fillStyle = col.hand; ["lw", "rw"].forEach(k => { if (!P[k].v) return; const p = T(k); x.beginPath(); x.arc(p.x, p.y, u * .14, 0, 6.283); x.fill(); });
+  x.restore();
+}
+const COL = { body: "#2563eb", limb: "#1e1b4b", arm: "#14a39a", head: "#F2B705", hand: "#ff5733" }, GHOST = { body: "#fff", limb: "#fff", arm: "#fff", head: "#fff", hand: "#fff" };
+const lerpP = (a, b, k) => Object.fromEntries(KEYS.map(q => [q, { x: a[q].x + (b[q].x - a[q].x) * k, y: a[q].y + (b[q].y - a[q].y) * k, v: b[q].v }]));
+const fmtClock = ms => { const s = (ms / 1000) % 100; return s.toFixed(3).padStart(6, "0"); };
+const ms = v => v == null || isNaN(v) ? "–" : Math.round(v) + " ms";
+let lastUI = 0, lastSync = 0, lastRep = 0, lastProbe = 0;
+function loop(t) {
+  requestAnimationFrame(loop);
+  if (!S.started) { if (net.connected) begin(); return; }
+  x.setTransform(DPR, 0, 0, DPR, 0, 0); x.fillStyle = "#0b1220"; x.fillRect(0, 0, W, H);
+  x.strokeStyle = "#ffffff10"; x.lineWidth = 1; for (let i = 1; i < 8; i++) { x.beginPath(); x.moveTo(W * i / 8, 0); x.lineTo(W * i / 8, H); x.moveTo(0, H * i / 8); x.lineTo(W, H * i / 8); x.stroke(); }
+  if (t - lastProbe > 2000) { lastProbe = t; probeRoute(); }
+  if (S.role === "A") {
+    stepA(t);
+    if (S.pose) {
+      const d = S.rep?.avg; if (d && S.hist.length > 2) { const tt = now() - d - 8; let g = S.hist[0].P; for (let i = S.hist.length - 1; i >= 0; i--) if (S.hist[i].t <= tt) { g = S.hist[i].P; break; } drawChar(g, GHOST, .28); }   // bóng mờ = hình máy B đang thấy lúc này
+      drawChar(S.pose, COL, 1);
+    }
+    $("clockT").textContent = fmtClock(now()); $("clockL").textContent = "đồng hồ máy A";
+    if (t - lastUI > 250) { lastUI = t; const r = S.rep, f = S.flashAck;
+      $("panel").innerHTML = `<h3>MÁY A · ĐIỀU KHIỂN</h3>` + (r ? `<div class="big">${Math.round(r.avg)} <small>ms tới máy B</small></div>ít nhất <b>${ms(r.min)}</b> · nhiều nhất <b>${ms(r.max)}</b> · 95% dưới <b>${ms(r.p95)}</b><br>Rớt gói: <b class="${r.loss > 2 ? "bad" : ""}">${r.loss.toFixed(1)}%</b> · B nhận ${r.hz.toFixed(0)} gói/giây<br>` : `Đang chờ máy B báo số đo…<br>`) +
+        `Ping khứ hồi: <b>${ms(net.rtt)}</b><br>Đường truyền: <b>${route || "…"}</b><br>${S.sim ? `<span class="bad">Không có camera → nhân vật giả lập</span>` : `Nhận diện: <b>${S.detMs.toFixed(0)} ms</b>/khung · ${S.fps} khung/giây`}` + (f ? `<br>⚡ Chớp #${f.n}: B nhận sau <b>${ms(f.d)}</b>` : "") + `<br><span style="opacity:.7">Bóng trắng mờ = hình máy B đang thấy</span>`; }
+  } else {
+    if (t - lastSync > 400) { lastSync = t; send({ t: "sy", t0: now() }, false); }
+    const st = stats();
+    if (t - lastRep > 500 && st) { lastRep = t; send({ t: "rep", avg: st.avg, min: st.min, max: st.max, p95: st.p95, loss: st.loss, hz: st.hz }, false); }
+    if (S.last) { if (S.smooth) { S.disp = S.disp ? lerpP(S.disp, S.last.P, .35) : S.last.P; drawChar(S.disp, COL, 1); } else drawChar(S.last.P, COL, 1); if (t - S.last.t > 400) { x.fillStyle = "#ff7a59"; x.font = '800 18px "Be Vietnam Pro"'; x.textAlign = "center"; x.fillText("Không nhận được dữ liệu " + ((t - S.last.t) / 1000).toFixed(1) + " s", W / 2, H * .5); } }
+    // biểu đồ độ trễ 20 giây gần nhất
+    const gx = 10, gw = Math.min(360, W - 20), gh = 70, gy = H - gh - 70, top = Math.max(100, ...S.samp.map(s => s.d)) * 1.1;
+    x.fillStyle = "#0008"; x.fillRect(gx, gy, gw, gh); x.strokeStyle = "#ffffff30"; x.beginPath(); [50, 100].forEach(v => { const y = gy + gh - v / top * gh; x.moveTo(gx, y); x.lineTo(gx + gw, y); }); x.stroke();
+    x.strokeStyle = "#a3e635"; x.lineWidth = 1.5; x.beginPath(); S.samp.forEach((s, i) => { const px = gx + gw - (t - s.t) / 20000 * gw, py = gy + gh - clampN(s.d, 0, top) / top * gh; i ? x.lineTo(px, py) : x.moveTo(px, py); }); x.stroke();
+    x.fillStyle = "#fff"; x.font = '600 10px "Be Vietnam Pro"'; x.textAlign = "left"; x.fillText(`độ trễ mạng 20 giây gần nhất (vạch: 50 / 100 ms, đỉnh ${Math.round(top)} ms)`, gx + 4, gy + 12);
+    $("clockT").textContent = S.last ? fmtClock(S.last.ts) : "--.---"; $("clockL").textContent = "giờ máy A của hình đang hiện";
+    if (t - lastUI > 250) { lastUI = t;
+      $("panel").innerHTML = `<h3>MÁY B · XEM</h3>` + (st ? `<div class="big">${Math.round(st.avg)} <small>ms từ máy A</small></div>ít nhất <b>${ms(st.min)}</b> · nhiều nhất <b>${ms(st.max)}</b> · 95% dưới <b>${ms(st.p95)}</b><br>Tính từ lúc A bắt đầu xử lý khung hình: <b>${ms(st.dc)}</b><br>Rớt gói: <b class="${st.loss > 2 ? "bad" : ""}">${st.loss.toFixed(1)}%</b> (${S.lost}/${S.got + S.lost}) · sai thứ tự ${S.ooo}<br>Nhận <b>${st.hz.toFixed(0)}</b> gói/giây · dao động ±${st.jit.toFixed(0)} ms<br>` : `Đang đồng bộ đồng hồ với máy A…<br>`) +
+        `Ping khứ hồi: <b>${ms(net.rtt)}</b> · sai số đồng hồ ±${ms(S.offRtt / 2)}<br>Đường truyền: <b>${route || "…"}</b>` + (S.flashD != null ? `<br>⚡ Chớp #${S.flashN}: nhận sau <b>${ms(S.flashD)}</b>` : ""); }
+  }
+  if (S.flash > .02) { x.fillStyle = `rgba(242,183,5,${S.flash})`; x.fillRect(0, 0, W, H); x.fillStyle = "#14161b"; x.globalAlpha = S.flash; x.font = `800 ${Math.min(W, H) * .4}px "Be Vietnam Pro"`; x.textAlign = "center"; x.textBaseline = "middle"; x.fillText(S.flashN, W / 2, H / 2); x.globalAlpha = 1; x.textBaseline = "alphabetic"; S.flash *= .9; }
+}
+const clampN = (v, a, b) => Math.max(a, Math.min(b, v));
+function begin() {
+  S.started = true; S.role = net.host ? "A" : "B"; show("stage"); resize();
+  if (S.role === "A") { $("bar").innerHTML = `<button class="pill hot" id="bFlash">⚡ Chớp cả 2 máy</button>`; $("bFlash").onclick = flashA; if (LOCAL || location.hash === "#sim") { S.sim = true; send({ t: "info", a: .75 }); } else startCam(); }
+  else { $("bar").innerHTML = `<button class="pill" id="bSmooth">Làm mượt: TẮT</button><button class="pill" id="bReset">↺ Đo lại</button>`;
+    $("bSmooth").onclick = () => { S.smooth = !S.smooth; $("bSmooth").textContent = "Làm mượt: " + (S.smooth ? "BẬT (+~30 ms)" : "TẮT"); };
+    $("bReset").onclick = () => { S.samp.length = 0; S.lost = S.got = S.ooo = 0; S.lastSeq = -1; }; }
+}
+requestAnimationFrame(loop);
+$("bCreate").onclick = createRoom;
+$("bJoin").onclick = () => joinRoom($("inCode").value);
+$("inCode").onkeydown = e => { if (e.key === "Enter") joinRoom($("inCode").value); };
+window.__t = { S, net, stats };
+</script>
+</body>
+</html>
