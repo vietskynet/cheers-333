@@ -125,3 +125,12 @@ netlify dev        # cần file .env chứa các biến ở trên
 - Chạm = đường đi mặt vợt cắt bóng trong cửa sổ k 0,90–1,14. Tốc độ vung (vai/giây): < 1,2 rúc lưới, 1,2–8,5 vào sân (càng mạnh càng sâu), > 8,5 ra ngoài; Dink: > 3,5 là mạnh quá. Lệch nhịp → bóng lệch ngang, quá ±150 ms ra biên. (Mô hình đơn giản hoá, không phải vật lý thật.)
 - Siêu chiêu anime (+3 điểm, cần vung ≥ 4,5 vai/giây và lệch nhịp < 90 ms): 🔥 Hoả Long (bổ xuống), ⚡ Lôi Tốc (quét ngang), 🌪 Lốc Xoáy (hất lên). Hiệu ứng: băng tên chiêu chéo, vạch tốc độ manga, chớp màu, rung màn hình, vệt lửa / tia sét / xoáy, nổ khi bóng chạm sân. Vào sân thường +1; chuỗi ≥ 3 cộng thêm 1.
 - Demo: người ảo tự đánh đủ các kiểu.
+
+### Cập nhật 22/11: DragonPickleBall
+
+- Đổi tên game thành **DragonPickleBall**; màn mở đầu "Đấu trường đỉnh cao" (chữ DRAGON / PICKLEBALL đập vào, VS Siêu Quỷ Pickleball, FIGHT!).
+- Đối thủ **Siêu Quỷ Pickleball** thay máy bắn bóng: có thanh máu (20 + 8/level), bóng vào sân trừ 1 máu, siêu chiêu trừ 3, mana ≥ 60 nhân đôi; hạ quỷ +10×level điểm, quỷ hồi sinh level cao hơn và giao bóng nhanh hơn 6%/level.
+- Chạm bóng tính theo **đỉnh tốc độ vung 3D** (worldLandmarks, tính cả chiều sâu khi vung từ sau ra trước) trong lúc vợt ở gần điểm đánh; không vung mà vợt chặn đúng đường bóng thì tính chạm nhẹ.
+- Không vẽ đè lên mặt; khung xương là dòng năng lượng neon; vợt vẽ dáng thon dài mặt đen viền hồng → xanh (không có logo/chữ thương hiệu).
+- Mana: tăng khi đánh chuẩn, tụt dần; ≥ 60 thì mắt xoẹt năng lượng và điểm ×2. Mọi cú vào sân đều có tia sáng, vòng sáng, vệt bóng.
+- Nút ⏺ quay video (hình + hiệu ứng + tiếng), xem lại, lưu, chia sẻ.
