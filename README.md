@@ -109,9 +109,9 @@ netlify dev        # cần file .env chứa các biến ở trên
 
 `public/play/index.html` – MediaPipe HandLandmarker (2 tay, lọc One-Euro).
 
-- Chụm ngón cái + trỏ ở 2 tay rồi kéo ra → căng 1 dây (tối đa 10); chụm 1 tay vào đầu dây để dời; kéo ra ngoài màn hình để xoá.
+- Tạo dây có chủ đích: 2 điểm chụm phải sát nhau (< 22% cạnh ngắn màn hình), giữ yên 0,45 s (vòng vàng nạp đầy) rồi mới kéo ra → căng 1 dây (tối đa 10); nút "✏️ Kéo dây" khoá việc tạo dây khi chỉ muốn gảy; chụm 1 tay vào đầu dây để dời; kéo ra ngoài màn hình để xoá.
 - Quẹt đầu ngón tay cắt ngang dây → gảy (1 lần/bàn tay/dây mỗi 110 ms); tốc độ quẹt = độ to. Dây ngắn = nốt cao (thang Ngũ cung / Đô trưởng / La thứ, 3 quãng tám).
 - Tiếng: Guitar (Karplus–Strong), Đàn hạc (hoạ âm sine), Synth (saw + lọc); có reverb tự tạo.
-- Hiệu ứng: dây gradient cầu vồng phát sáng, rung theo điểm gảy rồi theo hoạ âm, vạch phím; tia lửa vuông góc dây, vòng sóng, nốt ♪ bay, tên nốt, chớp màu toàn màn hình, cực quang nền sáng theo nhịp; khung xương tay neon theo màu ngón + vệt sáng đầu ngón; nền camera hoặc nền vũ trụ.
+- Hiệu ứng (đã tiết chế): dây gradient phát sáng nhẹ, rung theo điểm gảy rồi theo hoạ âm, vạch phím; chỉ khi gảy mới có 1–2 nốt ♪♫ bay ra; khung xương tay neon mảnh; nền camera hoặc nền vũ trụ, màu nền dịu.
 - Quay video: MediaRecorder ghép `canvas.captureStream(30)` + âm thanh Web Audio (MP4 trên Safari/iOS, WebM trên Chrome/Android) → xem lại, lưu, chia sẻ.
 - Demo: hai tay ảo tự kéo 3 dây và gảy.

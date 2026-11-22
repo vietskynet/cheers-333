@@ -73,13 +73,14 @@
     <b style="left:8px;top:18px"></b><b style="left:232px;top:52px"></b>
   </div>
   <h1>Kéo dây đàn<br>bằng <em>hai bàn tay</em>.</h1>
-  <p class="lead">Chụm ngón cái + ngón trỏ ở hai tay rồi kéo ra để căng một sợi dây. Quẹt ngón tay qua dây để gảy. Dây ngắn tiếng cao, dây dài tiếng trầm. Quay video lại để khoe.</p>
+  <p class="lead">Chụm hai tay sát nhau, giữ yên rồi kéo ra để căng một sợi dây. Quẹt ngón tay qua dây để gảy. Dây ngắn tiếng cao, dây dài tiếng trầm. Quay video lại để khoe.</p>
   <button class="cta" id="bStart">Bật camera & chơi</button>
   <div class="err" id="err"></div>
   <button class="ghost" id="bDemo">Xem demo (không cần camera)</button>
   <div class="steps">
-    <div><span>🤏🤏</span>Chụm cả 2 tay, kéo ra xa nhau rồi thả → có một dây đàn</div>
-    <div><span>☝️</span>Quẹt ngón tay cắt ngang dây → dây rung và vang tiếng</div>
+    <div><span>🤏🤏</span>Chụm 2 tay sát nhau, giữ yên nửa giây cho vòng vàng đầy, rồi kéo ra và thả → có một dây đàn</div>
+    <div><span>☝️</span>Quẹt ngón tay cắt ngang dây → dây rung, vang tiếng, nốt nhạc bay ra</div>
+    <div><span>🔒</span>Bấm "✏️ Kéo dây" để khoá: lúc đó chụm tay không tạo dây nữa, chỉ gảy</div>
     <div><span>🤏</span>Chụm 1 tay vào đầu dây để kéo dây đi chỗ khác; kéo ra ngoài màn hình để xoá</div>
     <div><span>⏺</span>Bấm nút đỏ để quay video (có cả tiếng đàn)</div>
   </div>
@@ -88,7 +89,7 @@
 
 <section class="scr" id="stage">
   <canvas id="cv"></canvas>
-  <div class="tl"><button class="pill" id="bInst">🎸 Guitar</button><button class="pill" id="bScale">🎼 Ngũ cung</button><button class="pill" id="bHelp">?</button></div>
+  <div class="tl"><button class="pill" id="bLock">✏️ Kéo dây: BẬT</button><button class="pill" id="bInst">🎸 Guitar</button><button class="pill" id="bScale">🎼 Ngũ cung</button><button class="pill" id="bHelp">?</button></div>
   <div id="timer"><span class="dot"></span><span id="tTx">0:00</span></div>
   <div id="toast"></div>
   <div class="bar">
@@ -100,7 +101,7 @@
   </div>
   <div id="help">
     <h3>Cách chơi</h3>
-    <div><span>🤏🤏</span><p>Chụm ngón cái + ngón trỏ ở <b>cả hai tay</b>, kéo ra xa nhau, thả tay → dây được căng cố định.</p></div>
+    <div><span>🤏🤏</span><p>Đưa 2 tay <b>sát nhau</b>, chụm ngón cái + trỏ cả hai tay, <b>giữ yên</b> đến khi vòng vàng đầy, rồi kéo ra và thả → có dây. Bấm <b>✏️ Kéo dây</b> để khoá khi chỉ muốn gảy.</p></div>
     <div><span>☝️</span><p>Quẹt <b>đầu ngón tay</b> cắt ngang qua dây để gảy. Quẹt càng nhanh tiếng càng to.</p></div>
     <div><span>📏</span><p>Dây <b>ngắn</b> = nốt cao, dây <b>dài</b> = nốt trầm. Tên nốt hiện giữa dây.</p></div>
     <div><span>🤏</span><p>Chụm 1 tay ngay đầu dây để <b>dời</b> đầu dây. Kéo ra ngoài màn hình để <b>xoá</b>.</p></div>
@@ -213,6 +214,8 @@ $("bHelpOk").onclick = () => { audio(); $("help").classList.remove("on"); };
 $("bFlip").onclick = async () => { if (demo) return; facing = facing === "user" ? "environment" : "user"; try { await openCam(); hands.forEach(h => h.F = null); } catch { facing = "user"; } };
 $("bInst").onclick = () => { audio(); inst = (inst + 1) % INST.length; $("bInst").textContent = INST[inst].name; toast(INST[inst].name, "Gảy thử một dây"); };
 $("bScale").onclick = () => { scale = (scale + 1) % SCALES.length; $("bScale").textContent = SCALES[scale].name; strings.forEach(s => Object.assign(s, noteFor(len(s)))); toast(SCALES[scale].name, ""); };
+let lock = false;
+$("bLock").onclick = () => { lock = !lock; pending = null; making = null; $("bLock").textContent = lock ? "🔒 Kéo dây: TẮT" : "✏️ Kéo dây: BẬT"; $("bLock").style.background = lock ? "#0008" : "#14a39acc"; toast(lock ? "🔒 Đã khoá – chỉ gảy" : "✏️ Có thể kéo dây mới", lock ? "Chụm tay sẽ không tạo dây nữa" : "Chụm 2 tay sát nhau, giữ yên rồi kéo ra"); };
 $("bClear").onclick = () => { strings.length = 0; toast("🧹 Đã xoá hết dây", ""); };
 $("bMute").onclick = () => { audio(); muted = !muted; speaker.gain.value = muted ? 0 : 1; $("bMute").textContent = muted ? "🔇" : "🔊"; };
 let camBg = true; $("bBg").onclick = () => { camBg = !camBg; $("bBg").textContent = camBg ? "🌌" : "📷"; toast(camBg ? "Nền camera" : "Nền vũ trụ", ""); };
@@ -254,6 +257,8 @@ function readHands(now) {
 /* ======================= DÂY ĐÀN ======================= */
 const strings = [];          // {a:{x,y}, b:{x,y}, f, name, deg, amp, hitAt, hitU, hue}
 let making = null;           // dây đang kéo bằng 2 tay
+let pending = null;          // 2 tay đã chụm sát nhau, đang "nạp" trước khi kéo
+const CHARGE_MS = 450;
 const len = s => Math.hypot(s.b.x - s.a.x, s.b.y - s.a.y);
 const hueOf = deg => (deg * 37 + 330) % 360;
 function pinchInfo(h) {
@@ -268,6 +273,12 @@ function updatePinch(now) {
     if (h.pinch && !was) onPinchStart(h, now);
     if (!h.pinch && was) release(h);
   });
+  // đang nạp: tay nhúc nhích nhiều / thả chụm → huỷ; giữ đủ lâu → bắt đầu kéo
+  if (pending) {
+    const P = pending, moved = Math.max(Math.hypot(P.ha.pp.x - P.a0.x, P.ha.pp.y - P.a0.y), Math.hypot(P.hb.pp.x - P.b0.x, P.hb.pp.y - P.b0.y));
+    if (!P.ha.on || !P.hb.on || !P.ha.pinch || !P.hb.pinch || moved > Math.max(30, Math.min(W, H) * .05)) pending = null;
+    else if (now - P.t0 > CHARGE_MS) { making = { ha: P.ha, hb: P.hb, a: { ...P.ha.pp }, b: { ...P.hb.pp }, amp: 0, hitAt: 0, hitU: .5, born: now }; pending = null; pluckTick(); }
+  }
   // kéo dây mới
   if (making) { making.a = { ...making.ha.pp }; making.b = { ...making.hb.pp }; Object.assign(making, noteFor(len(making))); making.hue = hueOf(making.deg); }
   hands.forEach(h => { if (h.grab && h.pinch) { const g = h.grab; g.s[g.end] = { ...h.pp }; Object.assign(g.s, noteFor(len(g.s))); g.s.hue = hueOf(g.s.deg); } });
@@ -275,11 +286,13 @@ function updatePinch(now) {
 function onPinchStart(h, now) {
   // chụm sát đầu dây → nắm đầu dây
   const R = Math.max(36, Math.min(W, H) * .06);
-  for (const s of strings) for (const end of ["a", "b"]) if (Math.hypot(s[end].x - h.pp.x, s[end].y - h.pp.y) < R) { h.grab = { s, end }; spark(h.pp.x, h.pp.y, `hsl(${s.hue} 100% 65%)`, 10); return; }
-  // tay kia cũng đang chụm (không nắm dây) → bắt đầu kéo dây mới
+  for (const s of strings) for (const end of ["a", "b"]) if (Math.hypot(s[end].x - h.pp.x, s[end].y - h.pp.y) < R) { h.grab = { s, end }; return; }
+  // tay kia cũng đang chụm, 2 điểm chụm SÁT NHAU → bắt đầu nạp; giữ yên đủ lâu mới được kéo dây
+  if (lock || making || pending) return;
   const o = hands.find(k => k !== h && k.on && k.pinch && !k.grab);
-  if (o && !making) { making = { ha: o, hb: h, a: { ...o.pp }, b: { ...h.pp }, amp: 0, hitAt: 0, hitU: .5, born: now }; Object.assign(making, noteFor(len(making))); making.hue = hueOf(making.deg); }
+  if (o && Math.hypot(o.pp.x - h.pp.x, o.pp.y - h.pp.y) < Math.max(90, Math.min(W, H) * .22)) pending = { ha: o, hb: h, t0: now, a0: { ...o.pp }, b0: { ...h.pp } };
 }
+function pluckTick() { if (!AC || muted) return; const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain(); o.frequency.value = 1400; g.gain.setValueAtTime(.08, t); g.gain.exponentialRampToValueAtTime(.0001, t + .08); o.connect(g); g.connect(out); o.start(t); o.stop(t + .1); }
 function release(h) {
   if (h.grab) {
     const s = h.grab.s, p = s[h.grab.end], m = 20;
@@ -291,7 +304,7 @@ function release(h) {
     if (len(s) > 70) {
       const ns = { a: s.a, b: s.b, ...noteFor(len(s)), amp: 1, hitAt: performance.now(), hitU: .5, born: performance.now() }; ns.hue = hueOf(ns.deg);
       strings.push(ns); if (strings.length > 10) strings.shift();
-      pluck(ns.f, .5); burstAlong(ns, 18); toast(`Dây ${ns.name}`, "Quẹt ngón tay qua dây để gảy", 1000);
+      pluck(ns.f, .5);
     }
   }
 }
@@ -327,17 +340,8 @@ const rnd = (a, b) => a + Math.random() * (b - a);
 function spark(px, py, col, n = 8) { for (let i = 0; i < n; i++) { const a = rnd(0, 6.283), v = rnd(2, 7); parts.push({ k: "spark", x: px, y: py, vx: Math.cos(a) * v, vy: Math.sin(a) * v, c: col, life: rnd(400, 800), born: performance.now() }); } }
 function burstAlong(s, n) { for (let i = 0; i < n; i++) { const u = Math.random(); spark(s.a.x + (s.b.x - s.a.x) * u, s.a.y + (s.b.y - s.a.y) * u, `hsl(${s.hue + rnd(-30, 30)} 100% 65%)`, 1); } }
 function onPluck(s, q, vel) {
-  const now = performance.now(), col = `hsl(${s.hue} 100% 62%)`;
-  flash = Math.max(flash, .12 + vel * .15); flashHue = s.hue; pulse = 1;
-  parts.push({ k: "ring", x: q.x, y: q.y, r: 6, c: col, life: 700, born: now, w: 6 + vel * 6 });
-  parts.push({ k: "ring", x: q.x, y: q.y, r: 2, c: "#fff", life: 450, born: now, w: 3 });
-  // tia lửa bắn theo hướng vuông góc dây
-  const dx = s.b.x - s.a.x, dy = s.b.y - s.a.y, L = Math.hypot(dx, dy), nx = -dy / L * (s.dir || 1), ny = dx / L * (s.dir || 1);
-  for (let i = 0; i < 14 + vel * 16; i++) { const v = rnd(3, 10) * (.5 + vel), sp = rnd(-.6, .6); parts.push({ k: "spark", x: q.x, y: q.y, vx: (nx + dx / L * sp) * v, vy: (ny + dy / L * sp) * v, c: `hsl(${s.hue + rnd(-40, 40)} 100% ${rnd(55, 75)}% )`, life: rnd(500, 1000), born: now }); }
-  parts.push({ k: "note", x: q.x, y: q.y, vx: rnd(-1, 1), vy: rnd(-2.5, -1.5), c: col, g: Math.random() < .5 ? "♪" : "♫", s: 26 + vel * 16, life: 1400, born: now });
-  parts.push({ k: "label", x: (s.a.x + s.b.x) / 2, y: (s.a.y + s.b.y) / 2 - 26, t: s.name, c: col, life: 800, born: now });
-  burstAlong(s, 6 + Math.round(vel * 8));
-  navigator.vibrate?.(8);
+  const now = performance.now(), col = `hsl(${s.hue} 95% 62%)`, n = vel > .6 ? 2 : 1;
+  for (let i = 0; i < n; i++) parts.push({ k: "note", x: q.x + rnd(-6, 6), y: q.y, vx: rnd(-1.2, 1.2), vy: rnd(-2.6, -1.6), c: col, g: Math.random() < .5 ? "♪" : "♫", s: 24 + vel * 14, life: 1300, born: now });
 }
 
 /* ======================= VẼ ======================= */
@@ -358,12 +362,11 @@ function drawBg(now) {
     const g = x.createLinearGradient(0, 0, W, H); g.addColorStop(0, "#130b2e"); g.addColorStop(1, "#04121f"); x.fillStyle = g; x.fillRect(0, 0, W, H);
     stars.forEach(st => { x.globalAlpha = .4 + .4 * Math.sin(now * .002 + st.p); x.fillStyle = "#fff"; x.beginPath(); x.arc(st.x, st.y, st.r, 0, 6.283); x.fill(); }); x.globalAlpha = 1;
   }
-  // cực quang màu – sáng lên mỗi lần gảy
-  pulse *= .95;
+  // nền màu dịu, chuyển động rất chậm
   x.save(); x.globalCompositeOperation = "screen";
   [[200, 0], [320, 2], [40, 4]].forEach(([hue, ph], i) => {
-    const cx = W * (.5 + Math.sin(now * .00025 + ph) * .4), cy = H * (.5 + Math.cos(now * .0003 + ph) * .35), r = Math.max(W, H) * (.45 + pulse * .1);
-    const gr = x.createRadialGradient(cx, cy, 0, cx, cy, r); gr.addColorStop(0, `hsla(${(hue + now * .01) % 360} 100% 55% / ${.18 + pulse * .12})`); gr.addColorStop(1, "hsla(0 0% 0% / 0)");
+    const cx = W * (.5 + Math.sin(now * .00025 + ph) * .4), cy = H * (.5 + Math.cos(now * .0003 + ph) * .35), r = Math.max(W, H) * .45;
+    const gr = x.createRadialGradient(cx, cy, 0, cx, cy, r); gr.addColorStop(0, `hsla(${hue} 90% 55% / .1)`); gr.addColorStop(1, "hsla(0 0% 0% / 0)");
     x.fillStyle = gr; x.fillRect(0, 0, W, H);
   });
   x.restore();
@@ -394,8 +397,8 @@ function drawString(s, now, preview) {
   for (let d = 24; d < L - 12; d += 24) { const t = (d / 48) % 1 === 0 ? 9 : 5, px = s.a.x + dx * d, py = s.a.y + dy * d; x.beginPath(); x.moveTo(px - dy * t, py + dx * t); x.lineTo(px + dy * t, py - dx * t); x.stroke(); }
   // quầng sáng nhiều lớp
   x.globalCompositeOperation = "lighter";
-  x.strokeStyle = g; x.globalAlpha = .12 + live * .25; x.lineWidth = 22 + live * 18; path(); x.stroke();
-  x.globalAlpha = .3 + live * .3; x.lineWidth = 9 + live * 6; path(); x.stroke();
+  x.strokeStyle = g; x.globalAlpha = .08 + live * .14; x.lineWidth = 16 + live * 8; path(); x.stroke();
+  x.globalAlpha = .45 + live * .2; x.lineWidth = 6 + live * 2; path(); x.stroke();
   x.globalCompositeOperation = "source-over"; x.globalAlpha = 1;
   x.strokeStyle = preview ? "rgba(255,255,255,.85)" : "#fff"; x.lineWidth = 2.5 + live * 1.5; if (preview) x.setLineDash([10, 8]); path(); x.stroke(); x.setLineDash([]);
   // đầu dây
@@ -413,20 +416,12 @@ function drawHand(h, now) {
   BONES.forEach((b, fi) => {
     const hue = fi === 5 ? 0 : FINGER_HUE[fi === 2 ? 2 : fi === 3 ? 3 : fi === 4 ? 4 : fi];
     x.strokeStyle = fi === 5 ? "rgba(255,255,255,.6)" : `hsl(${hue} 100% 60%)`;
-    x.globalAlpha = .35; x.lineWidth = 10; x.beginPath(); b.forEach((k, i) => i ? x.lineTo(P[k].x, P[k].y) : x.moveTo(P[k].x, P[k].y)); x.stroke();
+    x.globalAlpha = .18; x.lineWidth = 7; x.beginPath(); b.forEach((k, i) => i ? x.lineTo(P[k].x, P[k].y) : x.moveTo(P[k].x, P[k].y)); x.stroke();
     x.globalAlpha = 1; x.lineWidth = 3.5; x.stroke();
   });
   P.forEach((p, k) => { const tip = [4, 8, 12, 16, 20].includes(k); x.fillStyle = tip ? "#fff" : "rgba(255,255,255,.75)"; x.beginPath(); x.arc(p.x, p.y, tip ? 6 : 3.5, 0, 6.283); x.fill(); });
-  // vệt sáng đầu ngón
-  TIPS.forEach((k, i) => {
-    const T = h.trail[k]; T.push({ x: P[k].x, y: P[k].y }); if (T.length > 12) T.shift();
-    if (h.pinch) return;
-    x.globalCompositeOperation = "lighter";
-    for (let j = 1; j < T.length; j++) { x.globalAlpha = j / T.length * .6; x.strokeStyle = `hsl(${FINGER_HUE[i + 1] + now * .05} 100% 60%)`; x.lineWidth = j / T.length * 10; x.beginPath(); x.moveTo(T[j - 1].x, T[j - 1].y); x.lineTo(T[j].x, T[j].y); x.stroke(); }
-    x.globalCompositeOperation = "source-over"; x.globalAlpha = 1;
-  });
   // chỉ báo chụm
-  if (h.pp) { const r = h.pinch ? 16 + Math.sin(now * .02) * 3 : 10; x.strokeStyle = h.pinch ? "#F2B705" : "rgba(255,255,255,.7)"; x.lineWidth = h.pinch ? 4 : 2; x.beginPath(); x.arc(h.pp.x, h.pp.y, r, 0, 6.283); x.stroke(); }
+  if (h.pp && h.pinch && !lock) { x.strokeStyle = "rgba(242,183,5,.9)"; x.lineWidth = 3; x.beginPath(); x.arc(h.pp.x, h.pp.y, 13, 0, 6.283); x.stroke(); }
   x.restore();
 }
 function drawParts(now) {
@@ -449,12 +444,17 @@ function loop(now) {
   x.setTransform(DPR, 0, 0, DPR, 0, 0);
   drawBg(now);
   strings.forEach(s => drawString(s, now));
+  if (pending) {   // vòng nạp giữa 2 điểm chụm
+    const P = pending, c = { x: (P.ha.pp.x + P.hb.pp.x) / 2, y: (P.ha.pp.y + P.hb.pp.y) / 2 }, k = Math.min(1, (now - P.t0) / CHARGE_MS);
+    x.save(); x.lineCap = "round"; x.strokeStyle = "rgba(255,255,255,.25)"; x.lineWidth = 6; x.beginPath(); x.arc(c.x, c.y, 30, 0, 6.283); x.stroke();
+    x.strokeStyle = "#F2B705"; x.beginPath(); x.arc(c.x, c.y, 30, -Math.PI / 2, -Math.PI / 2 + k * 6.283); x.stroke();
+    x.fillStyle = "#fff"; x.font = '800 12px "Be Vietnam Pro", sans-serif'; x.textAlign = "center"; x.fillText("giữ yên…", c.x, c.y + 50); x.restore();
+  }
   if (making) { making.hitAt = now - 2000; making.amp = 0; drawString(making, now, true); }
   hands.forEach(h => h.on && drawHand(h, now));
   drawParts(now);
-  if (flash > .005) { x.fillStyle = `hsla(${flashHue} 100% 60% / ${flash})`; x.globalCompositeOperation = "lighter"; x.fillRect(0, 0, W, H); x.globalCompositeOperation = "source-over"; flash *= .85; }
   if (!hands.some(h => h.on) && !strings.length) { x.fillStyle = "rgba(255,255,255,.85)"; x.font = '700 15px "Be Vietnam Pro", sans-serif'; x.textAlign = "center"; x.fillText("Giơ hai bàn tay lên trước camera", W / 2, H * .5); }
-  else if (!strings.length && !making) { x.fillStyle = "rgba(255,255,255,.85)"; x.font = '700 15px "Be Vietnam Pro", sans-serif'; x.textAlign = "center"; x.fillText("🤏 Chụm cả 2 tay rồi kéo ra để căng dây", W / 2, H * .2); }
+  else if (!strings.length && !making) { x.fillStyle = "rgba(255,255,255,.85)"; x.font = '700 15px "Be Vietnam Pro", sans-serif'; x.textAlign = "center"; x.fillText(lock ? "🔒 Đang khoá kéo dây – bấm ✏️ để mở" : "🤏🤏 Chụm 2 tay sát nhau, giữ yên, rồi kéo ra", W / 2, H * .2); }
   if (rec) { const s = Math.floor((now - recStart) / 1000); $("tTx").textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`; }
 }
 requestAnimationFrame(loop);
@@ -500,7 +500,7 @@ function demoHands(now) {
   // 3 lần kéo dây: [bắt đầu, điểm chụm giữa, điểm cuối A, điểm cuối B]
   const pulls = [[1, [.5, .3], [.18, .22], [.84, .3]], [4, [.5, .5], [.22, .52], [.76, .46]], [7, [.5, .7], [.32, .74], [.68, .7]]];
   for (const [t0, c, A, B] of pulls) if (t >= t0 && t < t0 + 2.6) {
-    const k = (t - t0 - .5) / 1.4, pin = t > t0 + .4 && t < t0 + 2.0;
+    const k = (t - t0 - 1.0) / 1.2, pin = t > t0 + .3 && t < t0 + 2.4;   // chụm sát nhau → giữ yên ~0,7 s → kéo ra
     const ax = lerp(c[0] - .03, A[0], k), ay = lerp(c[1], A[1], k), bx = lerp(c[0] + .03, B[0], k), by = lerp(c[1], B[1], k);
     // đặt bàn tay sao cho điểm chụm (giữa ngón cái & trỏ) nằm đúng chỗ
     return [fakeHand(ax + .022, ay + .19, S, 1, pin), fakeHand(bx - .022, by + .19, S, -1, pin)];
