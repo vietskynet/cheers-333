@@ -273,7 +273,7 @@ const AIL = [
   { name: "Vừa", gap: [750, 1500], react: .6, err: .09, dmg: 1, dur: 240, skill: .15, move: .85 },
   { name: "Khó", gap: [420, 900], react: .9, err: .03, dmg: 1.15, dur: 200, skill: .35, move: 1.15 },
 ];
-const START_X = .31, MIN_D = .42, MAX_X = .95;
+const START_X = .31, MIN_D = .42, MAX_X = .8;
 
 /* ======================= MẠNG ======================= */
 // Ưu tiên WebRTC P2P (PeerJS): kênh "state" không gửi lại cho vị trí, kênh "event" chắc chắn cho đòn đánh.
@@ -490,7 +490,7 @@ function onMsg(m) {
     if (!net.host && typeof m.tm === "number") game.timer = m.tm;
     return;
   }
-  if (m.t === "sw") { op.twist = m.arm === "rw" ? 1 : -1; if (m.kind === "special") op.twist = 0; return; }
+  if (m.t === "sw") { op.viz = { arm: m.arm, t0: performance.now(), kind: m.kind }; op.twist = m.arm === "rw" ? 1 : -1; if (m.kind === "special") op.twist = 0; return; }
   if (m.t === "ping") return send({ t: "pong", ts: m.ts });
   if (m.t === "pong") { net.rtt = net.rtt ? net.rtt * .7 + (performance.now() - m.ts) * .3 : performance.now() - m.ts; $("ping").textContent = (net.mode === "relay" ? "RELAY " : net.mode === "p2p" ? "P2P " : "") + Math.round(net.rtt) + " ms"; return; }
   if (m.t === "sk") { skfx.push({ kind: m.kind, side: me.side ? 0 : 1, t0: performance.now(), delay: MOVES[m.kind].delay, tx: m.tx }); addText(`${MOVES[m.kind].ic} ${MOVES[m.kind].name}!`, originX(me.side ? 0 : 1), GY - S * 2, PAL.red, 26); return; }
@@ -560,7 +560,7 @@ let F1 = mkF(1.0, 6), F2 = mkF(1.6, 8);
 const filt = (FF, P, t) => { const Q = {}; KEYS.forEach(k => { const f = FF[k]; Q[k] = V3(f[0].f(P[k].L, t), f[1].f(P[k].F, t), f[2].f(P[k].U, t)); }); return Q; };
 let raw = null;
 const calib = { u: 0, f: 0, neutral: null };
-let lastVT = -1, lastP = null;
+let lastVT = -1, lastP = null, imgM = 0;
 function readPose(now) {
   if (!pose || vid.readyState < 2 || switching) return;
   if (vid.currentTime === lastVT) return;            // chỉ xử lý khung hình MỚI → vận tốc không bị nhảy
@@ -581,6 +581,17 @@ function readPose(now) {
     // điểm khuất (ra khỏi khung) → giữ vị trí cũ thay vì nhảy lung tung
     P[k] = (wl[i].visibility ?? 1) < .35 && lastP ? { ...lastP[k] } : V3(wl[i].x * s, -wl[i].z, -wl[i].y);
   });
+  /* Cánh tay bám đúng khung xương trên ảnh camera: lấy vị trí khuỷu/cổ tay (ngang, dọc) từ ảnh 2D – chính xác và ít trễ hơn –
+     đổi ra mét theo tỉ lệ vai; chiều sâu (đấm về phía camera) tính ở reconstruct từ độ "co ngắn" của cánh tay trên ảnh. */
+  if (raw && vid.videoWidth) {
+    const SW = { 7: 8, 8: 7, 11: 12, 12: 11, 13: 14, 14: 13, 15: 16, 16: 15, 23: 24, 24: 23 };
+    const I = k => { let i = KP[k]; if (SWAP) i = SW[i] ?? i; return { x: raw[i].x * vid.videoWidth * s, y: raw[i].y * vid.videoHeight, v: raw[i].visibility ?? 1 }; };
+    const a = I("ls"), b = I("rs"), swI = Math.hypot(a.x - b.x, a.y - b.y), swW = Math.hypot(P.ls.L - P.rs.L, P.ls.U - P.rs.U);
+    if (swI > 20 && swW > .08) {
+      const m = swW / swI; imgM = imgM ? imgM + (m - imgM) * .12 : m;
+      ["lw", "rw"].forEach(arm => { const S0 = I(ARM[arm].s), Sw = P[ARM[arm].s]; [ARM[arm].e, arm].forEach(k => { const q = I(k); if (q.v < .35) return; P[k].L = Sw.L + (q.x - S0.x) * imgM; P[k].U = Sw.U - (q.y - S0.y) * imgM; }); });
+    }
+  }
   lastP = P;
   ingest(applyChar(filt(F2, reconstruct(faceFront(filt(F1, P, now))), now)), now);
 }
@@ -590,8 +601,9 @@ function reconstruct(P) {
   const sw = len(sub(P.ls, P.rs)) || .35;
   ["lw", "rw"].forEach(a => {
     const S = P[ARM[a].s], E = P[ARM[a].e], W = P[a];
-    calib.u = Math.min(sw * 1.1, Math.max(sw * .75, calib.u * .9995, len(sub(E, S))));
-    calib.f = Math.min(sw * 1.05, Math.max(sw * .7, calib.f * .9995, len(sub(W, E))));
+    // chiều dài xương = hình chiếu dài nhất từng thấy trên ảnh (lúc tay dang ngang / buông thẳng)
+    calib.u = Math.min(sw * 1.1, Math.max(sw * .78, calib.u * .9995, Math.hypot(E.L - S.L, E.U - S.U)));
+    calib.f = Math.min(sw * 1.05, Math.max(sw * .72, calib.f * .9995, Math.hypot(W.L - E.L, W.U - E.U)));
     const fix = (A, B, L) => { const pr = Math.hypot(B.L - A.L, B.U - A.U), dz = B.F - A.F; if (dz < -.04) return B.F; return Math.max(B.F, A.F + Math.sqrt(Math.max(0, L * L - pr * pr))); };
     E.F = fix(S, E, calib.u); W.F = fix(E, W, calib.f);
   });
@@ -601,8 +613,8 @@ function reconstruct(P) {
 /* Người chơi đứng xoay ngang → tự xoay lại cho thẳng mặt về camera (quay quanh trục dọc theo góc lệch của hai vai) */
 let yawS = 0;
 function faceFront(P) {
-  const yaw = Math.atan2(P.ls.F - P.rs.F, P.ls.L - P.rs.L); yawS += (yaw - yawS) * .25;
-  const a = Math.abs(yawS) < .1 ? 0 : yawS - Math.sign(yawS) * .1; me.yaw = a;
+  const yaw = Math.atan2(P.ls.F - P.rs.F, P.ls.L - P.rs.L); yawS += (yaw - yawS) * .025;                       // trung bình ~1,5 giây
+  const a = Math.abs(yawS) < .3 ? 0 : yawS - Math.sign(yawS) * .3; me.yaw = a;
   if (a) { const c = Math.cos(a), s = Math.sin(a); KEYS.forEach(k => { const p = P[k], L = p.L * c + p.F * s, F = -p.L * s + p.F * c; p.L = L; p.F = F; }); }
   return P;
 }
@@ -717,7 +729,7 @@ function startSwing(kind, arm, now, sp = 0) {
   else { armCD[arm] = now + ARM_CD; const o = arm === "lw" ? "rw" : "lw"; armCD[o] = Math.max(armCD[o], now + 120); }
   hist.lw.length = hist.rw.length = 0;
   me.swing = { kind, arm, t0: now, path: [swingFist(me.pose, kind, arm)], done: false };
-  me.twist = kind === "special" ? 0 : arm === "rw" ? 1 : -1;
+  me.twist = kind === "special" ? 0 : arm === "rw" ? 1 : -1; me.viz = { arm, t0: now, kind };
   chipFlash(kind);
   if (!game.ai) send({ t: "sw", arm, kind }, false);
 }
@@ -856,22 +868,22 @@ function stepAI(now) {
 /* ======================= VẼ: XỨ VĂN PHÒNG PHẨM, 2 NHÂN VẬT ĐỦ ĐẦU MÌNH TAY CHÂN ======================= */
 const cv = $("arena"), x = cv.getContext("2d");
 let W = 0, H = 0, DPR = 1, S = 300, GY = 500, grain = null;
-const PHI = .42, CP = Math.cos(PHI), SP = Math.sin(PHI), LEG = .82;
+const PHI = .62, CP = Math.cos(PHI), SP = Math.sin(PHI), LEG = .82, FXC = CP * 1.65;   // kéo giãn trục trước–sau khi vẽ: hai người đứng tách nhau, cú đấm thẳng vươn dài rõ ràng
 function resize() {
   DPR = Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight;
   cv.width = W * DPR; cv.height = H * DPR;
-  S = Math.min(W * .96 / (2 * MAX_X * CP + 1), H * .6 / 2.1); GY = H * (W < H ? .72 : .8);      // GY = mặt đất
+  S = Math.min(W * .96 / (2 * MAX_X * FXC + 1), H * .6 / 2.1); GY = H * (W < H ? .72 : .8);      // GY = mặt đất
   const g = document.createElement("canvas"); g.width = g.height = 200; const gx = g.getContext("2d"), id = gx.createImageData(200, 200);
   for (let i = 0; i < id.data.length; i += 4) { const v = Math.random() * 255; id.data[i] = id.data[i + 1] = id.data[i + 2] = v; id.data[i + 3] = Math.random() * 22; }
   gx.putImageData(id, 0, 0); grain = x.createPattern(g, "repeat");
 }
 addEventListener("resize", resize);
 const FT = side => side === me.side ? me : op;
-const wx = X => W / 2 + X * CP * S;                                   // toạ độ thế giới (mét) → màn hình
+const wx = X => W / 2 + X * FXC * S;                                   // toạ độ thế giới (mét) → màn hình
 function originX(side) { return wx(FT(side).x); }
 function project(p, side) {
   const dir = side ? -1 : 1;
-  return { x: originX(side) + (p.F * dir * CP + p.L * SP) * S, y: GY - (p.U + LEG * sizeOf(FT(side))) * S, z: p.F * SP - p.L * dir * CP };
+  return { x: originX(side) + (p.F * dir * FXC + p.L * SP) * S, y: GY - (p.U + LEG * sizeOf(FT(side))) * S, z: p.F * SP - p.L * dir * CP };
 }
 function twistPose(P, tw, flinch) {     // xoay thân khi ra đòn (đấm tay phải → vai phải lao lên trước) + giật đầu khi trúng
   if (!tw && !flinch) return P;
@@ -932,6 +944,10 @@ function drawFighter(P0, side, f, st) {
   const armZ = a => (J[a].z + J[ARM[a].e].z) / 2, order = armZ("lw") < armZ("rw") ? ["lw", "rw"] : ["rw", "lw"];
   const drawArm = a => { const s = J[ARM[a].s], e = J[ARM[a].e], w = J[a]; seg(s, e, u * .085, dark(C.body)); seg(e, w, u * .07, dark(C.skin));
     const g = project(fistOf(P, a), side), gr = S * TUNE.gloveR * Math.max(.9, sz);
+    const T = (f.trail ||= { lw: [], rw: [] })[a]; T.push({ x: g.x - ox, y: g.y }); if (T.length > 7) T.shift();
+    const far = Math.hypot(T[T.length - 1].x - T[0].x, T[T.length - 1].y - T[0].y);
+    if (far > gr * 2.2) { x.lineCap = "round"; for (let j = 1; j < T.length; j++) { x.globalAlpha = j / T.length * .5; x.strokeStyle = C.glove; x.lineWidth = gr * 2 * j / T.length; x.beginPath(); x.moveTo(T[j - 1].x + ox, T[j - 1].y); x.lineTo(T[j].x + ox, T[j].y); x.stroke(); } x.globalAlpha = 1; }
+    if (f.viz && f.viz.arm === a && performance.now() - f.viz.t0 < 200) { x.strokeStyle = "#14161b"; x.lineWidth = 3; x.lineCap = "round"; for (let j = -1; j <= 1; j++) { x.beginPath(); x.moveTo(g.x - dir * gr * 1.6, g.y + j * gr * .8); x.lineTo(g.x - dir * gr * (3 + Math.abs(j)), g.y + j * gr * 1.1); x.stroke(); } }
     x.fillStyle = INK; x.beginPath(); x.arc(g.x, g.y, gr + 3, 0, 6.283); x.fill(); x.fillStyle = dark(C.glove); x.beginPath(); x.arc(g.x, g.y, gr, 0, 6.283); x.fill();
     x.fillStyle = "#ffffff77"; x.beginPath(); x.arc(g.x - gr * .3, g.y - gr * .3, gr * .28, 0, 6.283); x.fill();
     x.strokeStyle = "#fff"; x.lineWidth = 2; x.beginPath(); x.moveTo(w.x - gr * .5, w.y + gr * .1); x.lineTo(w.x + gr * .5, w.y + gr * .1); x.stroke();
@@ -969,6 +985,14 @@ function drawFighter(P0, side, f, st) {
   const tw = x.measureText(nm).width + 16; x.fillStyle = st.me ? "#14161b" : "#ffffffdd"; x.beginPath(); x.roundRect(hc.x - tw / 2, ty - 15, tw, 21, 10); x.fill(); x.fillStyle = st.me ? "#F2B705" : "#14161b"; x.fillText(nm, hc.x, ty);
   if (st.me) { const b = Math.sin(performance.now() * .008) * 4; x.fillStyle = "#F2B705"; x.strokeStyle = INK; x.lineWidth = 3; x.beginPath(); x.moveTo(hc.x - 11, ty - 36 + b); x.lineTo(hc.x + 11, ty - 36 + b); x.lineTo(hc.x, ty - 20 + b); x.closePath(); x.stroke(); x.fill(); x.font = `800 ${Math.max(11, Math.round(S * .07))}px "Be Vietnam Pro", sans-serif`; x.lineWidth = 4; x.strokeText("BẠN", hc.x, ty - 42 + b); x.fillText("BẠN", hc.x, ty - 42 + b); }
   x.restore();
+}
+/* Cú đấm thật chỉ duỗi hết tay trong 1–2 khung hình. Khi hiển thị, giữ cánh tay ở điểm vươn xa nhất ~0,26 giây */
+function holdPeak(f, P, now) {
+  const v = f.viz; if (!v || now - v.t0 > 260) { f.viz = null; return P; }
+  const a = v.arm, e = ARM[a].e, ext = len(sub(P[a], P[ARM[a].s]));
+  if (!v.best || ext > v.ext) { v.ext = ext; v.best = { e: { ...P[e] }, w: { ...P[a] } }; }
+  const k = now - v.t0 < 200 ? 1 : 1 - (now - v.t0 - 200) / 60, Q = { ...P };
+  Q[e] = lerp3(P[e], v.best.e, k); Q[a] = lerp3(P[a], v.best.w, k); return Q;
 }
 /* ---------- hiệu ứng 3 kỹ năng ---------- */
 function drawSkfx(now) {
@@ -1017,10 +1041,10 @@ function render(now) {
     KEYS.forEach(k => { const c = op.cur[k], t = tgt[k]; c.L += (t.L - c.L) * .6; c.F += (t.F - c.F) * .6; c.U += (t.U - c.U) * .6; });
   }
   me.twist *= .88; op.twist *= .88; me.flinch *= .88; op.flinch *= .88;
-  if (me.pose) { if (!me.disp) me.disp = clone(me.pose); KEYS.forEach(k => { const c = me.disp[k], t = me.pose[k]; c.L += (t.L - c.L) * .55; c.F += (t.F - c.F) * .55; c.U += (t.U - c.U) * .55; }); }
+  if (me.pose) { if (!me.disp) me.disp = clone(me.pose); KEYS.forEach(k => { const c = me.disp[k], t = me.pose[k]; c.L += (t.L - c.L) * .78; c.F += (t.F - c.F) * .78; c.U += (t.U - c.U) * .78; }); }
   const spinOf = side => { const e = skfx.find(e => e.kind === "spin" && e.side === side && now - e.t0 < e.delay + 150); return e ? (now - e.t0) / e.delay * 30 : null; };
-  const mine = me.pose ? { P: me.disp, side: me.side, f: me, st: { twist: spinOf(me.side) ?? me.twist, flinch: me.flinch, flash: me.flinch > .75, me: true } } : null;
-  const os = me.side ? 0 : 1, theirs = op.cur ? { P: op.cur, side: os, f: op, st: { twist: spinOf(os) ?? op.twist, flinch: op.flinch, flash: op.flinch > .75 } } : null;
+  const mine = me.pose ? { P: holdPeak(me, me.disp, now), side: me.side, f: me, st: { twist: spinOf(me.side) ?? me.twist, flinch: me.flinch, flash: me.flinch > .75, me: true } } : null;
+  const os = me.side ? 0 : 1, theirs = op.cur ? { P: holdPeak(op, op.cur, now), side: os, f: op, st: { twist: spinOf(os) ?? op.twist, flinch: op.flinch, flash: op.flinch > .75 } } : null;
   const list = [theirs, mine].filter(Boolean);
   if (Math.abs(op.twist) > Math.abs(me.twist)) list.reverse();          // ai đang ra đòn vẽ sau (đè lên)
   list.forEach(b => drawFighter(b.P, b.side, b.f, b.st));

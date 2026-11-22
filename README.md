@@ -157,3 +157,5 @@ netlify dev        # cần file .env chứa các biến ở trên
 - **3 kỹ năng bằng động tác:** 🖐 Chưởng (chập 2 tay đẩy tới, 40 mana, 16 máu, cầu năng lượng bay tới), 🌪 Bay xoáy (dang thẳng 2 tay giữ 0,38 s, 35 mana, 14 máu, lao sát đối thủ), ⚡ Sấm sét (2 tay qua đầu giữ 0,38 s, 50 mana, 22 máu, báo trước 0,75 s – rời khỏi chỗ đó > 20 cm là né). Kỹ năng bị đỡ còn 40%.
 - Sát thương: trúng đầu 100%, thân 65%, bị đỡ 15%.
 - **Đấu máy 3 cấp** (`AIL`: Dễ / Vừa / Khó): khác nhau về nhịp ra đòn, độ chính xác, phản xạ đỡ/né, sát thương, di chuyển và tần suất dùng kỹ năng.
+
+- (22/11, chỉnh độ khớp tay) Khuỷu/cổ tay lấy vị trí ngang–dọc từ **khung xương 2D trên ảnh camera** (đổi ra mét theo tỉ lệ vai), chiều sâu tính từ độ co ngắn của cánh tay; tự xoay thẳng chỉ sửa góc lệch kéo dài > 17° (không "xoay ngược" khi vai đưa ra lúc đấm); góc nhìn xoay 35° và trục trước–sau được kéo giãn ×1,65 khi vẽ; cú đấm được giữ hình ở điểm vươn xa nhất 0,26 s, có vệt găng và vạch gió.
