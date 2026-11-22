@@ -144,3 +144,16 @@ netlify dev        # cần file .env chứa các biến ở trên
 - Hiện đường truyền thật: P2P trực tiếp (LAN / Internet), P2P qua TURN, hay chuyển tiếp MQTT (đọc từ `getStats`).
 - Kiểm tra bằng mắt: nút "⚡ Chớp cả 2 máy"; đồng hồ mili-giây trên cả 2 màn hình (B hiện giờ-máy-A của hình đang vẽ → chụp chung 2 màn hình để thấy chênh lệch thật, gồm cả độ trễ màn hình); trên A có bóng trắng mờ = hình B đang thấy.
 - Không đo được: độ trễ cảm biến camera của A (thường 30–80 ms) và độ trễ màn hình. `#local` = test 2 cửa sổ cùng máy với nhân vật giả lập; `#sim` = máy A không dùng camera.
+
+### Cập nhật 22/11: `/combatNew/` thành AGENCY COMBAT
+
+- Tên game **AGENCY COMBAT**; sảnh và phòng chờ kiểu 8-bit (font Press Start 2P, viền khối, màu rực). Bối cảnh trận đấu: **xứ Văn Phòng Phẩm** (trang vở kẻ dòng, giấy nhớ, thước, bút chì – tẩy – kẹp giấy khổng lồ, tấm lót cắt giấy).
+- Luồng: tạo/vào phòng → đặt tên + chọn 1 trong 3 nhân vật → bật camera & sẵn sàng. Tên/nhân vật gửi kèm tin `ready`.
+- 3 nhân vật (`CHARS`): **Art Director** (sải tay ×1,18, cân bằng), **Account** (thân ×1,2, đòn ×1,2, tốc độ ×0,7), **Planner** (thân ×0,86, sải tay ×0,88, tốc độ ×1,45, đòn ×0,88). Tư thế người chơi được co giãn theo nhân vật trước khi tính va chạm.
+- Nhân vật luôn đủ đầu – mình – tay – chân: chân tự dựng và bước theo quãng đường di chuyển; có bảng tên, người chơi có mũi tên "BẠN" + vòng vàng dưới chân.
+- Người chơi đứng xoay ngang → `faceFront` tự xoay tư thế cho thẳng (theo góc lệch 2 vai). Lọc mượt luôn bật.
+- **Di chuyển:** nghiêng vai lệch khỏi hông > 4,5 cm → nhân vật đi về hướng đó (tốc độ theo nhân vật); khoảng cách 2 người 0,42 m – 1,9 m, phải áp sát mới đấm tới.
+- **Mana:** +3 mỗi cú vung, +8 khi trúng, +6 khi đỡ/né, +22 mỗi mét di chuyển, +1/giây.
+- **3 kỹ năng bằng động tác:** 🖐 Chưởng (chập 2 tay đẩy tới, 40 mana, 16 máu, cầu năng lượng bay tới), 🌪 Bay xoáy (dang thẳng 2 tay giữ 0,38 s, 35 mana, 14 máu, lao sát đối thủ), ⚡ Sấm sét (2 tay qua đầu giữ 0,38 s, 50 mana, 22 máu, báo trước 0,75 s – rời khỏi chỗ đó > 20 cm là né). Kỹ năng bị đỡ còn 40%.
+- Sát thương: trúng đầu 100%, thân 65%, bị đỡ 15%.
+- **Đấu máy 3 cấp** (`AIL`: Dễ / Vừa / Khó): khác nhau về nhịp ra đòn, độ chính xác, phản xạ đỡ/né, sát thương, di chuyển và tần suất dùng kỹ năng.
