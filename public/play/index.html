@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HandMagination · Play</title>
+<meta name="description" content="Kéo dây đàn bằng hai tay trước camera và gảy lên – quay video lại để chia sẻ.">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{--ink:#14161b;--mute:#6b7280}
+  html,body{height:100%;background:#0b0b14;color:#fff;font-family:"Be Vietnam Pro",system-ui,sans-serif;-webkit-tap-highlight-color:transparent;overflow:hidden}
+  .scr{display:none;position:fixed;inset:0}
+  .scr.on{display:block}
+  /* màn mở đầu */
+  #start{background:#fff;color:var(--ink);overflow:auto;padding:calc(env(safe-area-inset-top) + 16px) 22px calc(env(safe-area-inset-bottom) + 24px)}
+  #start.on{display:flex;flex-direction:column;align-items:center}
+  .brand{align-self:flex-start;font-size:15px;font-weight:600;color:var(--mute);display:flex;align-items:center;gap:8px;text-decoration:none}
+  .brand b{color:var(--ink);font-weight:800}
+  .brand .dot{width:10px;height:10px;border-radius:50%;background:#F2B705}
+  .tag{font-size:10px;font-weight:800;letter-spacing:1.5px;background:var(--ink);color:#fff;border-radius:99px;padding:3px 8px}
+  .hero{position:relative;width:260px;height:150px;margin:24px auto 6px}
+  .hero i{position:absolute;height:6px;border-radius:9px;transform-origin:left center}
+  .hero b{position:absolute;width:26px;height:26px;border-radius:50%;border:3px solid #14161b;background:#fff}
+  h1{font-size:40px;line-height:1.02;font-weight:800;letter-spacing:-1.5px;text-align:center;margin-top:10px}
+  h1 em{font-style:normal;background:linear-gradient(transparent 60%,#a3e63599 60%)}
+  .lead{color:var(--mute);font-size:15px;line-height:1.55;text-align:center;max-width:380px;margin:12px auto 20px}
+  .cta{width:100%;max-width:360px;border:0;border-radius:16px;padding:16px;font:inherit;font-weight:800;font-size:16px;background:var(--ink);color:#fff;cursor:pointer}
+  .ghost{background:none;border:0;color:var(--mute);font:inherit;font-size:14px;padding:12px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+  .err{color:#dc2626;font-size:13px;min-height:18px;margin-top:8px;text-align:center;max-width:360px}
+  .steps{width:100%;max-width:400px;display:grid;gap:8px;margin-top:12px;font-size:13px}
+  .steps div{background:#f6f4ef;border-radius:12px;padding:10px 12px;display:flex;gap:10px;align-items:center}
+  .steps span{font-size:22px}
+  .note{font-size:12px;color:var(--mute);text-align:center;max-width:360px;margin-top:12px;line-height:1.5}
+  /* sân khấu */
+  #cv{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .tl{position:absolute;left:12px;top:calc(env(safe-area-inset-top) + 10px);display:flex;gap:6px;align-items:center}
+  .pill{background:#0008;backdrop-filter:blur(8px);border-radius:99px;padding:7px 12px;font-size:12px;font-weight:800;border:0;color:#fff;font-family:inherit;cursor:pointer}
+  #timer{position:absolute;right:14px;top:calc(env(safe-area-inset-top) + 8px);font-size:30px;font-weight:700;letter-spacing:.5px;text-shadow:0 2px 8px #000a;display:flex;align-items:center;gap:8px}
+  #timer .dot{width:12px;height:12px;border-radius:50%;background:#ff3b30;display:none;animation:blink 1s infinite}
+  #timer.rec .dot{display:block}
+  @keyframes blink{50%{opacity:.2}}
+  .bar{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 14px);display:flex;align-items:center;justify-content:center;gap:12px;padding:0 12px}
+  .rb{width:48px;height:48px;border-radius:50%;border:0;background:#0009;backdrop-filter:blur(8px);color:#fff;font-size:20px;cursor:pointer;display:grid;place-items:center}
+  #bRec{width:70px;height:70px;border-radius:50%;border:4px solid #fff;background:transparent;display:grid;place-items:center;cursor:pointer}
+  #bRec i{width:52px;height:52px;border-radius:50%;background:#ff3b30;transition:all .2s}
+  #bRec.on i{width:28px;height:28px;border-radius:7px}
+  #help{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(92vw,380px);background:#0b0b14e6;backdrop-filter:blur(10px);border-radius:20px;padding:18px;font-size:14px;line-height:1.5;display:none;border:1px solid #ffffff22}
+  #help.on{display:block}
+  #help h3{font-size:18px;margin-bottom:8px}
+  #help div{display:flex;gap:10px;margin:8px 0;align-items:flex-start}
+  #help span{font-size:22px;line-height:1}
+  #help button{margin-top:10px;width:100%;border:0;border-radius:12px;padding:12px;font:inherit;font-weight:800;background:#fff;color:#14161b}
+  #toast{position:absolute;left:50%;top:18%;transform:translate(-50%,-50%) scale(.8);font-weight:800;font-size:20px;background:#0009;backdrop-filter:blur(8px);padding:10px 16px;border-radius:16px;opacity:0;pointer-events:none;transition:all .3s cubic-bezier(.2,1.4,.4,1);text-align:center;white-space:nowrap}
+  #toast.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  #toast small{display:block;font-size:12px;font-weight:600;opacity:.8}
+  #rev{position:absolute;inset:0;background:#000d;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px}
+  #rev.on{display:flex}
+  #rev video{max-width:100%;max-height:70vh;border-radius:16px;background:#000}
+  #rev .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+  #rev button,#rev a{border:0;border-radius:14px;padding:12px 18px;font:inherit;font-weight:800;background:#fff;color:#14161b;text-decoration:none;cursor:pointer}
+  #rev .info{font-size:12px;opacity:.7}
+</style>
+</head>
+<body>
+
+<section class="scr on" id="start">
+  <a class="brand" href="/"><span class="dot"></span><b>Hand</b>Magination <span class="tag">PLAY</span></a>
+  <div class="hero" aria-hidden="true">
+    <i style="left:20px;top:30px;width:230px;background:linear-gradient(90deg,#ff5733,#F2B705);transform:rotate(8deg)"></i>
+    <i style="left:20px;top:70px;width:220px;background:linear-gradient(90deg,#14a39a,#a3e635);transform:rotate(-6deg)"></i>
+    <i style="left:40px;top:110px;width:190px;background:linear-gradient(90deg,#2563eb,#ff7eb6);transform:rotate(4deg)"></i>
+    <b style="left:8px;top:18px"></b><b style="left:232px;top:52px"></b>
+  </div>
+  <h1>Kéo dây đàn<br>bằng <em>hai bàn tay</em>.</h1>
+  <p class="lead">Chụm ngón cái + ngón trỏ ở hai tay rồi kéo ra để căng một sợi dây. Quẹt ngón tay qua dây để gảy. Dây ngắn tiếng cao, dây dài tiếng trầm. Quay video lại để khoe.</p>
+  <button class="cta" id="bStart">Bật camera & chơi</button>
+  <div class="err" id="err"></div>
+  <button class="ghost" id="bDemo">Xem demo (không cần camera)</button>
+  <div class="steps">
+    <div><span>🤏🤏</span>Chụm cả 2 tay, kéo ra xa nhau rồi thả → có một dây đàn</div>
+    <div><span>☝️</span>Quẹt ngón tay cắt ngang dây → dây rung và vang tiếng</div>
+    <div><span>🤏</span>Chụm 1 tay vào đầu dây để kéo dây đi chỗ khác; kéo ra ngoài màn hình để xoá</div>
+    <div><span>⏺</span>Bấm nút đỏ để quay video (có cả tiếng đàn)</div>
+  </div>
+  <p class="note">Đặt điện thoại cố định, cách 50–80 cm, đủ sáng. Bật âm lượng, tắt chế độ im lặng.</p>
+</section>
+
+<section class="scr" id="stage">
+  <canvas id="cv"></canvas>
+  <div class="tl"><button class="pill" id="bInst">🎸 Guitar</button><button class="pill" id="bScale">🎼 Ngũ cung</button><button class="pill" id="bHelp">?</button></div>
+  <div id="timer"><span class="dot"></span><span id="tTx">0:00</span></div>
+  <div id="toast"></div>
+  <div class="bar">
+    <button class="rb" id="bFlip" title="Đổi camera">🔄</button>
+    <button class="rb" id="bClear" title="Xoá hết dây">🧹</button>
+    <button id="bRec" title="Quay video"><i></i></button>
+    <button class="rb" id="bBg" title="Nền camera / nền tối">🌌</button>
+    <button class="rb" id="bMute" title="Tắt / bật tiếng">🔊</button>
+  </div>
+  <div id="help">
+    <h3>Cách chơi</h3>
+    <div><span>🤏🤏</span><p>Chụm ngón cái + ngón trỏ ở <b>cả hai tay</b>, kéo ra xa nhau, thả tay → dây được căng cố định.</p></div>
+    <div><span>☝️</span><p>Quẹt <b>đầu ngón tay</b> cắt ngang qua dây để gảy. Quẹt càng nhanh tiếng càng to.</p></div>
+    <div><span>📏</span><p>Dây <b>ngắn</b> = nốt cao, dây <b>dài</b> = nốt trầm. Tên nốt hiện giữa dây.</p></div>
+    <div><span>🤏</span><p>Chụm 1 tay ngay đầu dây để <b>dời</b> đầu dây. Kéo ra ngoài màn hình để <b>xoá</b>.</p></div>
+    <div><span>🎸</span><p>Đổi tiếng đàn (Guitar / Đàn hạc / Synth) và thang âm ở góc trên.</p></div>
+    <button id="bHelpOk">Chơi thôi!</button>
+  </div>
+  <div id="rev">
+    <video id="revV" controls playsinline></video>
+    <div class="info" id="revInfo"></div>
+    <div class="row"><a id="revDl" download>⬇️ Lưu video</a><button id="revShare">📤 Chia sẻ</button><button id="revClose">Đóng</button></div>
+  </div>
+</section>
+
+<script type="module">
+import { FilesetResolver, HandLandmarker } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs";
+const $ = id => document.getElementById(id);
+const show = id => document.querySelectorAll(".scr").forEach(s => s.classList.toggle("on", s.id === id));
+let toastT; function toast(t, sub, ms = 1400) { $("toast").innerHTML = t + (sub ? `<small>${sub}</small>` : ""); $("toast").classList.add("on"); clearTimeout(toastT); toastT = setTimeout(() => $("toast").classList.remove("on"), ms); }
+
+/* ======================= ÂM THANH ======================= */
+let AC = null, out = null, speaker = null, recDest = null, verbIn = null, muted = false;
+const bufCache = new Map();
+function audio() {
+  if (!AC) {
+    AC = new (window.AudioContext || window.webkitAudioContext)();
+    out = AC.createGain(); out.gain.value = .9;
+    const comp = AC.createDynamicsCompressor(); comp.threshold.value = -14; comp.ratio.value = 4;
+    // vang (reverb) tự tạo
+    const conv = AC.createConvolver(), len = AC.sampleRate * 2.4, ir = AC.createBuffer(2, len, AC.sampleRate);
+    for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.6); }
+    conv.buffer = ir; verbIn = AC.createGain(); verbIn.gain.value = .32; verbIn.connect(conv); conv.connect(comp);
+    out.connect(comp); out.connect(verbIn);
+    speaker = AC.createGain(); comp.connect(speaker); speaker.connect(AC.destination);
+    try { recDest = AC.createMediaStreamDestination(); comp.connect(recDest); } catch {}
+  }
+  if (AC.state === "suspended") AC.resume();
+}
+/* Karplus–Strong: tiếng dây gảy thật */
+function ksBuffer(f, bright) {
+  const key = "ks" + f.toFixed(1) + bright; if (bufCache.has(key)) return bufCache.get(key);
+  const sr = AC.sampleRate, dur = 2.6, N = Math.max(2, Math.round(sr / f)), buf = AC.createBuffer(1, sr * dur, sr), d = buf.getChannelData(0);
+  const ring = new Float32Array(N); let lp = 0;
+  for (let i = 0; i < N; i++) { lp += ((Math.random() * 2 - 1) - lp) * bright; ring[i] = lp; }
+  const decay = .9965 + Math.min(.003, 200 / f / 1000);
+  let idx = 0;
+  for (let i = 0; i < d.length; i++) { const a = ring[idx], b = ring[(idx + 1) % N]; d[i] = a; ring[idx] = (a + b) * .5 * decay; idx = (idx + 1) % N; }
+  bufCache.set(key, buf); return buf;
+}
+const INST = [
+  { id: "guitar", name: "🎸 Guitar" },
+  { id: "harp", name: "🪕 Đàn hạc" },
+  { id: "synth", name: "🎹 Synth" },
+];
+let inst = 0;
+function pluck(f, vel) {
+  if (!AC || muted) return;
+  const t = AC.currentTime, g = AC.createGain(), v = Math.min(1, .25 + vel);
+  g.connect(out);
+  const I = INST[inst].id;
+  if (I === "guitar") {
+    const s = AC.createBufferSource(); s.buffer = ksBuffer(f, .55 + v * .35); g.gain.value = .9 * v; s.connect(g); s.start(t);
+  } else if (I === "harp") {
+    [[1, 1, 2.2], [2, .35, 1.4], [3, .12, .9], [4, .06, .6]].forEach(([m, a, dur]) => { const o = AC.createOscillator(), og = AC.createGain(); o.type = "sine"; o.frequency.value = f * m; og.gain.setValueAtTime(0, t); og.gain.linearRampToValueAtTime(a * .35 * v, t + .006); og.gain.exponentialRampToValueAtTime(.0001, t + dur); o.connect(og); og.connect(g); o.start(t); o.stop(t + dur + .05); });
+    g.gain.value = 1;
+  } else {
+    const o = AC.createOscillator(), o2 = AC.createOscillator(), lp = AC.createBiquadFilter();
+    o.type = "sawtooth"; o2.type = "square"; o.frequency.value = f; o2.frequency.value = f * 1.005;
+    lp.type = "lowpass"; lp.Q.value = 6; lp.frequency.setValueAtTime(400 + v * 5000, t); lp.frequency.exponentialRampToValueAtTime(300, t + .9);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.22 * v, t + .01); g.gain.exponentialRampToValueAtTime(.0001, t + 1.3);
+    o.connect(lp); o2.connect(lp); lp.connect(g); o.start(t); o2.start(t); o.stop(t + 1.4); o2.stop(t + 1.4);
+  }
+}
+/* thang âm: dây càng ngắn càng cao */
+const SCALES = [
+  { name: "🎼 Ngũ cung", steps: [0, 2, 4, 7, 9], names: ["Đô", "Rê", "Mi", "Sol", "La"] },
+  { name: "🎼 Đô trưởng", steps: [0, 2, 4, 5, 7, 9, 11], names: ["Đô", "Rê", "Mi", "Fa", "Sol", "La", "Si"] },
+  { name: "🎼 La thứ", steps: [9, 11, 12, 14, 16, 17, 19], names: ["La", "Si", "Đô", "Rê", "Mi", "Fa", "Sol"] },
+];
+let scale = 0;
+function noteFor(L) {
+  const S = SCALES[scale], n = S.steps.length, diag = Math.hypot(W, H);
+  const deg = Math.max(0, Math.min(n * 3 - 1, Math.round(Math.log2(diag * .85 / Math.max(40, L)) * n * 1.15)));
+  const oct = Math.floor(deg / n), st = S.steps[deg % n] + oct * 12;
+  return { f: 130.81 * Math.pow(2, st / 12), name: S.names[deg % n], deg, oct };
+}
+
+/* ======================= CAMERA & TAY ======================= */
+const vid = document.createElement("video"); vid.playsInline = true; vid.muted = true;
+let hl = null, vision = null, stream = null, facing = "user", demo = false, lastVT = -1;
+async function openCam() {
+  stream?.getTracks().forEach(t => t.stop());
+  stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30 } } });
+  vid.srcObject = stream; await vid.play(); lastVT = -1;
+}
+async function start() {
+  audio();
+  $("bStart").disabled = true; $("bStart").textContent = "Đang mở camera…"; $("err").textContent = "";
+  try {
+    vision = vision || await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm");
+    const o = d => ({ baseOptions: { modelAssetPath: "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task", delegate: d }, runningMode: "VIDEO", numHands: 2, minHandDetectionConfidence: .5, minHandPresenceConfidence: .5, minTrackingConfidence: .5 });
+    const [h] = await Promise.all([HandLandmarker.createFromOptions(vision, o("GPU")).catch(() => HandLandmarker.createFromOptions(vision, o("CPU"))), openCam()]);
+    hl = h; demo = false; go();
+  } catch (e) { $("bStart").disabled = false; $("bStart").textContent = "Bật camera & chơi"; $("err").textContent = "Không mở được camera: " + (e.message || e); }
+}
+function go() { show("stage"); resize(); $("help").classList.add("on"); }
+$("bStart").onclick = start;
+$("bDemo").onclick = () => { audio(); demo = true; go(); $("help").classList.remove("on"); };
+$("bHelp").onclick = () => $("help").classList.toggle("on");
+$("bHelpOk").onclick = () => { audio(); $("help").classList.remove("on"); };
+$("bFlip").onclick = async () => { if (demo) return; facing = facing === "user" ? "environment" : "user"; try { await openCam(); hands.forEach(h => h.F = null); } catch { facing = "user"; } };
+$("bInst").onclick = () => { audio(); inst = (inst + 1) % INST.length; $("bInst").textContent = INST[inst].name; toast(INST[inst].name, "Gảy thử một dây"); };
+$("bScale").onclick = () => { scale = (scale + 1) % SCALES.length; $("bScale").textContent = SCALES[scale].name; strings.forEach(s => Object.assign(s, noteFor(len(s)))); toast(SCALES[scale].name, ""); };
+$("bClear").onclick = () => { strings.length = 0; toast("🧹 Đã xoá hết dây", ""); };
+$("bMute").onclick = () => { audio(); muted = !muted; speaker.gain.value = muted ? 0 : 1; $("bMute").textContent = muted ? "🔇" : "🔊"; };
+let camBg = true; $("bBg").onclick = () => { camBg = !camBg; $("bBg").textContent = camBg ? "🌌" : "📷"; toast(camBg ? "Nền camera" : "Nền vũ trụ", ""); };
+
+/* lọc One-Euro cho từng điểm tay: đứng yên không rung, quẹt nhanh không trễ */
+class OneEuro {
+  constructor(mc, b, dc = 1) { this.mc = mc; this.b = b; this.dc = dc; this.x = null; this.dx = 0; this.t = 0; }
+  static a(c, dt) { const tau = 1 / (2 * Math.PI * c); return 1 / (1 + tau / dt); }
+  f(v, t) { if (this.x === null) { this.x = v; this.t = t; return v; } const dt = Math.max(1 / 120, (t - this.t) / 1000); this.t = t; const dx = (v - this.x) / dt; this.dx += (dx - this.dx) * OneEuro.a(this.dc, dt); this.x += (v - this.x) * OneEuro.a(this.mc + this.b * Math.abs(this.dx), dt); return this.x; }
+}
+const hands = [0, 1].map(() => ({ on: false, pts: null, prev: null, F: null, pinch: false, pp: null, lostAt: 0, id: null, trail: { 8: [], 12: [], 16: [], 20: [] } }));
+const TIPS = [8, 12, 16, 20];
+/* toạ độ ảnh (0..1) → màn hình, phủ kín (cover), lật gương với camera trước */
+function mapPt(p, vw, vh, mirror) { const s = Math.max(W / vw, H / vh), ox = (W - vw * s) / 2, oy = (H - vh * s) / 2; return { x: ox + (mirror ? 1 - p.x : p.x) * vw * s, y: oy + p.y * vh * s }; }
+function ingestHands(list, vw, vh, mirror, t) {
+  // ghép tay mới với tay cũ theo vị trí cổ tay gần nhất (ổn định thứ tự)
+  const mapped = list.map(lm => lm.map(p => mapPt(p, vw, vh, mirror)));
+  const used = new Set();
+  hands.forEach(h => { h.seen = false; });
+  mapped.forEach(P => {
+    let best = null, bd = 1e9;
+    hands.forEach((h, i) => { if (used.has(i)) return; const d = h.on && h.pts ? Math.hypot(h.pts[0].x - P[0].x, h.pts[0].y - P[0].y) : 5e8 + i; if (d < bd) { bd = d; best = i; } });
+    used.add(best); const h = hands[best];
+    if (!h.on || bd > Math.min(W, H) * .5) h.F = null;
+    if (!h.F) h.F = P.map(() => [new OneEuro(1.2, .03), new OneEuro(1.2, .03)]);
+    h.prev = h.pts; h.pts = P.map((p, k) => ({ x: h.F[k][0].f(p.x, t), y: h.F[k][1].f(p.y, t) }));
+    h.on = true; h.seen = true; h.lostAt = t;
+  });
+  hands.forEach(h => { if (!h.seen && h.on && t - h.lostAt > 250) { h.on = false; h.pts = h.prev = null; if (h.pinch) release(h); h.pinch = false; } });
+}
+function readHands(now) {
+  if (demo) { const L = demoHands(now); ingestHands(L, 1280, 720, false, now); return; }
+  if (!hl || vid.readyState < 2 || vid.currentTime === lastVT) return;
+  lastVT = vid.currentTime;
+  const r = hl.detectForVideo(vid, now);
+  ingestHands(r.landmarks || [], vid.videoWidth, vid.videoHeight, facing === "user", now);
+}
+
+/* ======================= DÂY ĐÀN ======================= */
+const strings = [];          // {a:{x,y}, b:{x,y}, f, name, deg, amp, hitAt, hitU, hue}
+let making = null;           // dây đang kéo bằng 2 tay
+const len = s => Math.hypot(s.b.x - s.a.x, s.b.y - s.a.y);
+const hueOf = deg => (deg * 37 + 330) % 360;
+function pinchInfo(h) {
+  const P = h.pts, size = Math.hypot(P[0].x - P[9].x, P[0].y - P[9].y) || 1, d = Math.hypot(P[4].x - P[8].x, P[4].y - P[8].y) / size;
+  return { d, at: { x: (P[4].x + P[8].x) / 2, y: (P[4].y + P[8].y) / 2 }, size };
+}
+function updatePinch(now) {
+  hands.forEach(h => {
+    if (!h.on) return;
+    const pi = pinchInfo(h); h.pp = pi.at; h.size = pi.size;
+    const was = h.pinch; h.pinch = was ? pi.d < .5 : pi.d < .3;          // có ngưỡng trễ → không nhấp nháy
+    if (h.pinch && !was) onPinchStart(h, now);
+    if (!h.pinch && was) release(h);
+  });
+  // kéo dây mới
+  if (making) { making.a = { ...making.ha.pp }; making.b = { ...making.hb.pp }; Object.assign(making, noteFor(len(making))); making.hue = hueOf(making.deg); }
+  hands.forEach(h => { if (h.grab && h.pinch) { const g = h.grab; g.s[g.end] = { ...h.pp }; Object.assign(g.s, noteFor(len(g.s))); g.s.hue = hueOf(g.s.deg); } });
+}
+function onPinchStart(h, now) {
+  // chụm sát đầu dây → nắm đầu dây
+  const R = Math.max(36, Math.min(W, H) * .06);
+  for (const s of strings) for (const end of ["a", "b"]) if (Math.hypot(s[end].x - h.pp.x, s[end].y - h.pp.y) < R) { h.grab = { s, end }; spark(h.pp.x, h.pp.y, `hsl(${s.hue} 100% 65%)`, 10); return; }
+  // tay kia cũng đang chụm (không nắm dây) → bắt đầu kéo dây mới
+  const o = hands.find(k => k !== h && k.on && k.pinch && !k.grab);
+  if (o && !making) { making = { ha: o, hb: h, a: { ...o.pp }, b: { ...h.pp }, amp: 0, hitAt: 0, hitU: .5, born: now }; Object.assign(making, noteFor(len(making))); making.hue = hueOf(making.deg); }
+}
+function release(h) {
+  if (h.grab) {
+    const s = h.grab.s, p = s[h.grab.end], m = 20;
+    if (p.x < -m || p.y < -m || p.x > W + m || p.y > H + m || len(s) < 40) { strings.splice(strings.indexOf(s), 1); toast("Đã xoá dây", ""); }
+    h.grab = null; return;
+  }
+  if (making && (making.ha === h || making.hb === h)) {
+    const s = making; making = null;
+    if (len(s) > 70) {
+      const ns = { a: s.a, b: s.b, ...noteFor(len(s)), amp: 1, hitAt: performance.now(), hitU: .5, born: performance.now() }; ns.hue = hueOf(ns.deg);
+      strings.push(ns); if (strings.length > 10) strings.shift();
+      pluck(ns.f, .5); burstAlong(ns, 18); toast(`Dây ${ns.name}`, "Quẹt ngón tay qua dây để gảy", 1000);
+    }
+  }
+}
+/* gảy: đầu ngón tay cắt ngang dây giữa 2 khung hình */
+const lastPluck = new Map();
+function strum(now) {
+  hands.forEach((h, hi) => {
+    if (!h.on || !h.prev || h.pinch || h.grab) return;
+    TIPS.forEach(k => {
+      const p0 = h.prev[k], p1 = h.pts[k], mv = Math.hypot(p1.x - p0.x, p1.y - p0.y);
+      if (mv < 2 || mv > Math.min(W, H) * .4) return;
+      strings.forEach((s, si) => {
+        const dx = s.b.x - s.a.x, dy = s.b.y - s.a.y, L = Math.hypot(dx, dy);
+        const side = p => ((p.x - s.a.x) * dy - (p.y - s.a.y) * dx) / L;
+        const s0 = side(p0), s1 = side(p1);
+        if (Math.sign(s0) === Math.sign(s1) || s0 === 0) return;
+        const r = s0 / (s0 - s1), q = { x: p0.x + (p1.x - p0.x) * r, y: p0.y + (p1.y - p0.y) * r };
+        const u = ((q.x - s.a.x) * dx + (q.y - s.a.y) * dy) / (L * L);
+        if (u < .03 || u > .97) return;
+        const key = hi + ":" + si; if (now - (lastPluck.get(key) || 0) < 110) return;   // cả bàn tay quẹt qua = 1 lần gảy lastPluck.set(key, now);
+        const vel = Math.min(1, mv / (Math.min(W, H) * .06));
+        s.amp = Math.min(1.6, .5 + vel); s.hitAt = now; s.hitU = u; s.dir = Math.sign(s1);
+        pluck(s.f, vel); onPluck(s, q, vel);
+      });
+    });
+  });
+}
+
+/* ======================= HIỆU ỨNG ======================= */
+const parts = [];
+let flash = 0, flashHue = 0, pulse = 0;
+const rnd = (a, b) => a + Math.random() * (b - a);
+function spark(px, py, col, n = 8) { for (let i = 0; i < n; i++) { const a = rnd(0, 6.283), v = rnd(2, 7); parts.push({ k: "spark", x: px, y: py, vx: Math.cos(a) * v, vy: Math.sin(a) * v, c: col, life: rnd(400, 800), born: performance.now() }); } }
+function burstAlong(s, n) { for (let i = 0; i < n; i++) { const u = Math.random(); spark(s.a.x + (s.b.x - s.a.x) * u, s.a.y + (s.b.y - s.a.y) * u, `hsl(${s.hue + rnd(-30, 30)} 100% 65%)`, 1); } }
+function onPluck(s, q, vel) {
+  const now = performance.now(), col = `hsl(${s.hue} 100% 62%)`;
+  flash = Math.max(flash, .12 + vel * .15); flashHue = s.hue; pulse = 1;
+  parts.push({ k: "ring", x: q.x, y: q.y, r: 6, c: col, life: 700, born: now, w: 6 + vel * 6 });
+  parts.push({ k: "ring", x: q.x, y: q.y, r: 2, c: "#fff", life: 450, born: now, w: 3 });
+  // tia lửa bắn theo hướng vuông góc dây
+  const dx = s.b.x - s.a.x, dy = s.b.y - s.a.y, L = Math.hypot(dx, dy), nx = -dy / L * (s.dir || 1), ny = dx / L * (s.dir || 1);
+  for (let i = 0; i < 14 + vel * 16; i++) { const v = rnd(3, 10) * (.5 + vel), sp = rnd(-.6, .6); parts.push({ k: "spark", x: q.x, y: q.y, vx: (nx + dx / L * sp) * v, vy: (ny + dy / L * sp) * v, c: `hsl(${s.hue + rnd(-40, 40)} 100% ${rnd(55, 75)}% )`, life: rnd(500, 1000), born: now }); }
+  parts.push({ k: "note", x: q.x, y: q.y, vx: rnd(-1, 1), vy: rnd(-2.5, -1.5), c: col, g: Math.random() < .5 ? "♪" : "♫", s: 26 + vel * 16, life: 1400, born: now });
+  parts.push({ k: "label", x: (s.a.x + s.b.x) / 2, y: (s.a.y + s.b.y) / 2 - 26, t: s.name, c: col, life: 800, born: now });
+  burstAlong(s, 6 + Math.round(vel * 8));
+  navigator.vibrate?.(8);
+}
+
+/* ======================= VẼ ======================= */
+const cv = $("cv"), x = cv.getContext("2d");
+let W = 0, H = 0, DPR = 1, stars = [];
+function resize() {
+  W = innerWidth; H = innerHeight; DPR = Math.min(2, devicePixelRatio || 1, 1920 / Math.max(W, H));
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+  stars = Array.from({ length: 90 }, () => ({ x: Math.random() * W, y: Math.random() * H, r: rnd(.5, 1.8), p: rnd(0, 6) }));
+}
+addEventListener("resize", resize);
+function drawBg(now) {
+  if (camBg && !demo && vid.readyState >= 2) {
+    const s = Math.max(W / vid.videoWidth, H / vid.videoHeight), w = vid.videoWidth * s, h = vid.videoHeight * s;
+    x.save(); if (facing === "user") { x.translate(W, 0); x.scale(-1, 1); } x.drawImage(vid, (W - w) / 2, (H - h) / 2, w, h); x.restore();
+    x.fillStyle = "rgba(10,8,30,.38)"; x.fillRect(0, 0, W, H);
+  } else {
+    const g = x.createLinearGradient(0, 0, W, H); g.addColorStop(0, "#130b2e"); g.addColorStop(1, "#04121f"); x.fillStyle = g; x.fillRect(0, 0, W, H);
+    stars.forEach(st => { x.globalAlpha = .4 + .4 * Math.sin(now * .002 + st.p); x.fillStyle = "#fff"; x.beginPath(); x.arc(st.x, st.y, st.r, 0, 6.283); x.fill(); }); x.globalAlpha = 1;
+  }
+  // cực quang màu – sáng lên mỗi lần gảy
+  pulse *= .95;
+  x.save(); x.globalCompositeOperation = "screen";
+  [[200, 0], [320, 2], [40, 4]].forEach(([hue, ph], i) => {
+    const cx = W * (.5 + Math.sin(now * .00025 + ph) * .4), cy = H * (.5 + Math.cos(now * .0003 + ph) * .35), r = Math.max(W, H) * (.45 + pulse * .1);
+    const gr = x.createRadialGradient(cx, cy, 0, cx, cy, r); gr.addColorStop(0, `hsla(${(hue + now * .01) % 360} 100% 55% / ${.18 + pulse * .12})`); gr.addColorStop(1, "hsla(0 0% 0% / 0)");
+    x.fillStyle = gr; x.fillRect(0, 0, W, H);
+  });
+  x.restore();
+}
+function strPts(s, now) {
+  const L = len(s), n = Math.max(12, Math.min(60, Math.round(L / 10))), age = (now - s.hitAt) / 1000;
+  const dx = s.b.x - s.a.x, dy = s.b.y - s.a.y, nx = -dy / (L || 1), ny = dx / (L || 1);
+  const A = s.amp * Math.exp(-age * 3.2) * Math.min(28, 8 + L * .03), w = 28 + (s.deg || 0) * 3, P = [];
+  for (let i = 0; i <= n; i++) {
+    const u = i / n;
+    // ngay lúc gảy: dây gập tại điểm gảy, sau đó rung theo hoạ âm
+    const pluckShape = u < s.hitU ? u / s.hitU : (1 - u) / (1 - s.hitU);
+    const k = Math.min(1, age * 14), shape = (1 - k) * pluckShape + k * Math.sin(Math.PI * u);
+    const off = A * shape * Math.cos(age * w) * (s.dir || 1) + A * .25 * Math.sin(2 * Math.PI * u) * Math.sin(age * w * 2.1);
+    P.push({ x: s.a.x + dx * u + nx * off, y: s.a.y + dy * u + ny * off });
+  }
+  return P;
+}
+function drawString(s, now, preview) {
+  const P = strPts(s, now), live = Math.exp(-(now - s.hitAt) / 600), hue = s.hue;
+  const g = x.createLinearGradient(s.a.x, s.a.y, s.b.x, s.b.y);
+  g.addColorStop(0, `hsl(${hue} 100% 62%)`); g.addColorStop(.5, `hsl(${hue + 50} 100% 70%)`); g.addColorStop(1, `hsl(${hue + 100} 100% 62%)`);
+  const path = () => { x.beginPath(); P.forEach((p, i) => i ? x.lineTo(p.x, p.y) : x.moveTo(p.x, p.y)); };
+  x.save(); x.lineCap = x.lineJoin = "round";
+  // vạch thước (như dây đàn có phím)
+  const L = len(s), dx = (s.b.x - s.a.x) / L, dy = (s.b.y - s.a.y) / L;
+  x.strokeStyle = "rgba(255,255,255,.35)"; x.lineWidth = 1.5;
+  for (let d = 24; d < L - 12; d += 24) { const t = (d / 48) % 1 === 0 ? 9 : 5, px = s.a.x + dx * d, py = s.a.y + dy * d; x.beginPath(); x.moveTo(px - dy * t, py + dx * t); x.lineTo(px + dy * t, py - dx * t); x.stroke(); }
+  // quầng sáng nhiều lớp
+  x.globalCompositeOperation = "lighter";
+  x.strokeStyle = g; x.globalAlpha = .12 + live * .25; x.lineWidth = 22 + live * 18; path(); x.stroke();
+  x.globalAlpha = .3 + live * .3; x.lineWidth = 9 + live * 6; path(); x.stroke();
+  x.globalCompositeOperation = "source-over"; x.globalAlpha = 1;
+  x.strokeStyle = preview ? "rgba(255,255,255,.85)" : "#fff"; x.lineWidth = 2.5 + live * 1.5; if (preview) x.setLineDash([10, 8]); path(); x.stroke(); x.setLineDash([]);
+  // đầu dây
+  [s.a, s.b].forEach(p => { x.fillStyle = "#fff"; x.beginPath(); x.arc(p.x, p.y, 9, 0, 6.283); x.fill(); x.strokeStyle = `hsl(${hue} 100% 60%)`; x.lineWidth = 4; x.stroke(); x.fillStyle = `hsl(${hue} 100% 60%)`; x.beginPath(); x.arc(p.x, p.y, 3.5, 0, 6.283); x.fill(); });
+  // tên nốt
+  const m = P[Math.floor(P.length / 2)];
+  x.font = '800 13px "Be Vietnam Pro", sans-serif'; x.textAlign = "center"; x.textBaseline = "middle";
+  const tw = x.measureText(s.name).width + 14; x.fillStyle = `hsla(${hue} 90% 50% / .85)`; x.beginPath(); x.roundRect(m.x - tw / 2, m.y - 30, tw, 20, 10); x.fill(); x.fillStyle = "#fff"; x.fillText(s.name, m.x, m.y - 20);
+  x.restore();
+}
+const FINGER_HUE = [0, 45, 140, 200, 290];   // ngón cái → út
+const BONES = [[0, 1, 2, 3, 4], [0, 5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16], [0, 17, 18, 19, 20], [5, 9, 13, 17]];
+function drawHand(h, now) {
+  const P = h.pts; x.save(); x.lineCap = x.lineJoin = "round";
+  BONES.forEach((b, fi) => {
+    const hue = fi === 5 ? 0 : FINGER_HUE[fi === 2 ? 2 : fi === 3 ? 3 : fi === 4 ? 4 : fi];
+    x.strokeStyle = fi === 5 ? "rgba(255,255,255,.6)" : `hsl(${hue} 100% 60%)`;
+    x.globalAlpha = .35; x.lineWidth = 10; x.beginPath(); b.forEach((k, i) => i ? x.lineTo(P[k].x, P[k].y) : x.moveTo(P[k].x, P[k].y)); x.stroke();
+    x.globalAlpha = 1; x.lineWidth = 3.5; x.stroke();
+  });
+  P.forEach((p, k) => { const tip = [4, 8, 12, 16, 20].includes(k); x.fillStyle = tip ? "#fff" : "rgba(255,255,255,.75)"; x.beginPath(); x.arc(p.x, p.y, tip ? 6 : 3.5, 0, 6.283); x.fill(); });
+  // vệt sáng đầu ngón
+  TIPS.forEach((k, i) => {
+    const T = h.trail[k]; T.push({ x: P[k].x, y: P[k].y }); if (T.length > 12) T.shift();
+    if (h.pinch) return;
+    x.globalCompositeOperation = "lighter";
+    for (let j = 1; j < T.length; j++) { x.globalAlpha = j / T.length * .6; x.strokeStyle = `hsl(${FINGER_HUE[i + 1] + now * .05} 100% 60%)`; x.lineWidth = j / T.length * 10; x.beginPath(); x.moveTo(T[j - 1].x, T[j - 1].y); x.lineTo(T[j].x, T[j].y); x.stroke(); }
+    x.globalCompositeOperation = "source-over"; x.globalAlpha = 1;
+  });
+  // chỉ báo chụm
+  if (h.pp) { const r = h.pinch ? 16 + Math.sin(now * .02) * 3 : 10; x.strokeStyle = h.pinch ? "#F2B705" : "rgba(255,255,255,.7)"; x.lineWidth = h.pinch ? 4 : 2; x.beginPath(); x.arc(h.pp.x, h.pp.y, r, 0, 6.283); x.stroke(); }
+  x.restore();
+}
+function drawParts(now) {
+  x.save();
+  for (let i = parts.length - 1; i >= 0; i--) {
+    const p = parts[i], age = now - p.born, a = 1 - age / p.life;
+    if (a <= 0) { parts.splice(i, 1); continue; }
+    if (p.k === "spark") { p.x += p.vx; p.y += p.vy; p.vx *= .94; p.vy = p.vy * .94 + .15; x.globalCompositeOperation = "lighter"; x.globalAlpha = a; x.strokeStyle = p.c; x.lineWidth = 3; x.lineCap = "round"; x.beginPath(); x.moveTo(p.x, p.y); x.lineTo(p.x - p.vx * 2.5, p.y - p.vy * 2.5); x.stroke(); }
+    else if (p.k === "ring") { p.r += 5; x.globalCompositeOperation = "lighter"; x.globalAlpha = a; x.strokeStyle = p.c; x.lineWidth = p.w * a + 1; x.beginPath(); x.arc(p.x, p.y, p.r, 0, 6.283); x.stroke(); }
+    else if (p.k === "note") { p.x += p.vx + Math.sin(age * .006) * .8; p.y += p.vy; x.globalCompositeOperation = "source-over"; x.globalAlpha = Math.min(1, a * 1.5); x.fillStyle = p.c; x.font = `800 ${p.s}px system-ui, sans-serif`; x.textAlign = "center"; x.fillText(p.g, p.x, p.y); }
+    else if (p.k === "label") { x.globalCompositeOperation = "source-over"; x.globalAlpha = a; x.fillStyle = "#fff"; x.font = `800 ${22 + (1 - a) * 10}px "Be Vietnam Pro", sans-serif`; x.textAlign = "center"; x.fillText(p.t, p.x, p.y - (1 - a) * 30); }
+  }
+  x.restore();
+  if (parts.length > 700) parts.splice(0, parts.length - 700);
+}
+function loop(now) {
+  requestAnimationFrame(loop);
+  if (!$("stage").classList.contains("on")) return;
+  readHands(now); updatePinch(now); strum(now);
+  x.setTransform(DPR, 0, 0, DPR, 0, 0);
+  drawBg(now);
+  strings.forEach(s => drawString(s, now));
+  if (making) { making.hitAt = now - 2000; making.amp = 0; drawString(making, now, true); }
+  hands.forEach(h => h.on && drawHand(h, now));
+  drawParts(now);
+  if (flash > .005) { x.fillStyle = `hsla(${flashHue} 100% 60% / ${flash})`; x.globalCompositeOperation = "lighter"; x.fillRect(0, 0, W, H); x.globalCompositeOperation = "source-over"; flash *= .85; }
+  if (!hands.some(h => h.on) && !strings.length) { x.fillStyle = "rgba(255,255,255,.85)"; x.font = '700 15px "Be Vietnam Pro", sans-serif'; x.textAlign = "center"; x.fillText("Giơ hai bàn tay lên trước camera", W / 2, H * .5); }
+  else if (!strings.length && !making) { x.fillStyle = "rgba(255,255,255,.85)"; x.font = '700 15px "Be Vietnam Pro", sans-serif'; x.textAlign = "center"; x.fillText("🤏 Chụm cả 2 tay rồi kéo ra để căng dây", W / 2, H * .2); }
+  if (rec) { const s = Math.floor((now - recStart) / 1000); $("tTx").textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`; }
+}
+requestAnimationFrame(loop);
+
+/* ======================= QUAY VIDEO (hình + tiếng đàn) ======================= */
+let rec = null, recStart = 0, chunks = [], recUrl = null, recFile = null;
+function pickMime() { const c = ["video/mp4;codecs=avc1,mp4a.40.2", "video/mp4", "video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"]; return c.find(m => window.MediaRecorder?.isTypeSupported?.(m)) || ""; }
+$("bRec").onclick = () => { audio(); rec ? stopRec() : startRec(); };
+function startRec() {
+  if (!window.MediaRecorder || !cv.captureStream) return toast("Máy này chưa hỗ trợ quay", "Thử Chrome / Safari mới hơn");
+  const st = cv.captureStream(30), tracks = [...st.getVideoTracks()];
+  if (recDest) tracks.push(...recDest.stream.getAudioTracks());
+  const mime = pickMime();
+  try { rec = new MediaRecorder(new MediaStream(tracks), mime ? { mimeType: mime, videoBitsPerSecond: 6e6 } : {}); }
+  catch (e) { rec = null; return toast("Không quay được", String(e.message || e)); }
+  chunks = []; rec.ondataavailable = e => e.data.size && chunks.push(e.data);
+  rec.onstop = showReview; rec.start(500); recStart = performance.now();
+  $("bRec").classList.add("on"); $("timer").classList.add("rec"); toast("⏺ Đang quay", "Bấm lại để dừng");
+}
+function stopRec() { const r = rec; rec = null; r.stop(); $("bRec").classList.remove("on"); $("timer").classList.remove("rec"); }
+function showReview() {
+  const type = chunks[0]?.type || pickMime() || "video/webm", ext = type.includes("mp4") ? "mp4" : "webm";
+  const blob = new Blob(chunks, { type }); if (recUrl) URL.revokeObjectURL(recUrl);
+  recUrl = URL.createObjectURL(blob); recFile = new File([blob], `handmagination-play-${Date.now()}.${ext}`, { type });
+  $("revV").src = recUrl; $("revDl").href = recUrl; $("revDl").download = recFile.name;
+  $("revInfo").textContent = `${ext.toUpperCase()} · ${(blob.size / 1048576).toFixed(1)} MB`;
+  $("rev").classList.add("on");
+}
+$("revShare").onclick = async () => { if (navigator.canShare?.({ files: [recFile] })) { try { await navigator.share({ files: [recFile], title: "HandMagination Play" }); } catch {} } else toast("Máy chưa hỗ trợ chia sẻ trực tiếp", "Bấm Lưu video rồi chia sẻ"); };
+$("revClose").onclick = () => { $("rev").classList.remove("on"); $("revV").pause(); };
+
+/* ======================= DEMO: hai bàn tay ảo căng dây & gảy ======================= */
+const HAND = [[0, 0], [-.35, -.15], [-.6, -.35], [-.8, -.55], [-.95, -.75], [-.3, -.9], [-.35, -1.3], [-.38, -1.55], [-.4, -1.8], [0, -1], [0, -1.45], [0, -1.72], [0, -1.98], [.25, -.95], [.28, -1.35], [.3, -1.6], [.32, -1.82], [.45, -.82], [.52, -1.12], [.56, -1.32], [.6, -1.5]];
+function fakeHand(cx, cy, s, flip, pinch) {   // toạ độ chuẩn hoá ảnh 1280×720
+  const P = HAND.map(([hx, hy]) => ({ x: cx + hx * s * flip * .5625, y: cy + hy * s }));
+  if (pinch) { P[4] = { x: P[8].x + .004, y: P[8].y + .01 }; P[3] = { x: (P[2].x + P[4].x) / 2, y: (P[2].y + P[4].y) / 2 }; }
+  return P;
+}
+function demoHands(now) {
+  const t = (now / 1000) % 22, lerp = (a, b, k) => a + (b - a) * Math.max(0, Math.min(1, k));
+  if (t < .05 && strings.length) strings.length = 0;
+  const S = .11;
+  // 3 lần kéo dây: [bắt đầu, điểm chụm giữa, điểm cuối A, điểm cuối B]
+  const pulls = [[1, [.5, .3], [.18, .22], [.84, .3]], [4, [.5, .5], [.22, .52], [.76, .46]], [7, [.5, .7], [.32, .74], [.68, .7]]];
+  for (const [t0, c, A, B] of pulls) if (t >= t0 && t < t0 + 2.6) {
+    const k = (t - t0 - .5) / 1.4, pin = t > t0 + .4 && t < t0 + 2.0;
+    const ax = lerp(c[0] - .03, A[0], k), ay = lerp(c[1], A[1], k), bx = lerp(c[0] + .03, B[0], k), by = lerp(c[1], B[1], k);
+    // đặt bàn tay sao cho điểm chụm (giữa ngón cái & trỏ) nằm đúng chỗ
+    return [fakeHand(ax + .022, ay + .19, S, 1, pin), fakeHand(bx - .022, by + .19, S, -1, pin)];
+  }
+  if (t >= 10) {   // quẹt ngón trỏ lên xuống qua các dây
+    const k = (t - 10) * 1.3, y1 = .5 + Math.sin(k * Math.PI) * .32, y2 = .5 + Math.sin(k * Math.PI + 1.3) * .3;
+    return [fakeHand(.36, y1 + .2, S, 1, false), fakeHand(.6, y2 + .2, S, -1, false)];
+  }
+  return [fakeHand(.3, .95, S, 1, false), fakeHand(.7, .95, S, -1, false)];
+}
+window.__play = { strings, hands, parts, get making() { return making; } };
+</script>
+</body>
+</html>

@@ -104,3 +104,14 @@ netlify dev        # cần file .env chứa các biến ở trên
 - 7 combo: 🙌 Nở rộ (2 tay qua đầu), 🦋 Cánh bướm (dang tay vỗ 2 lần), 🌀 Vòng xoáy (quay tay tròn), 🌈 Cầu vồng (vung tay qua đầu sang bên kia – chờ 0,45 s để phân biệt với vòng xoáy), 🦘 Bật nhảy, 💃 Lắc lư (lắc hông trái–phải), 🙏 Hoa sen (chắp tay trước ngực 1 s).
 - 🎵 **Nốt nhạc Jingle Bells** (bật mặc định, nút 🎵 để tắt): 51 nốt điệp khúc rơi theo nhịp 84 BPM trên 5 làn Đô–Mi–Sol–Fa–Rê (Mi và Fa ở hai bên người, Sol trên đầu). Bàn tay chạm nốt → chuông tổng hợp Web Audio (5 hoạ âm + lục lạc) + vòng sáng, sao lấp lánh, hoa bung, chữ tên nốt. Đếm nốt chạm, combo, hết bài tổng kết rồi chơi lại sau 5 giây. Demo tự chơi hết bài.
 - Nút: 📸 lưu/chia sẻ ảnh, 🔄 camera trước/sau (vẽ người khác), 👁 camera nhỏ, 🧹 xoá hoa. Chế độ demo có vũ công ảo diễn đủ 7 combo.
+
+## App `/play/` – đàn dây ảo bằng tay
+
+`public/play/index.html` – MediaPipe HandLandmarker (2 tay, lọc One-Euro).
+
+- Chụm ngón cái + trỏ ở 2 tay rồi kéo ra → căng 1 dây (tối đa 10); chụm 1 tay vào đầu dây để dời; kéo ra ngoài màn hình để xoá.
+- Quẹt đầu ngón tay cắt ngang dây → gảy (1 lần/bàn tay/dây mỗi 110 ms); tốc độ quẹt = độ to. Dây ngắn = nốt cao (thang Ngũ cung / Đô trưởng / La thứ, 3 quãng tám).
+- Tiếng: Guitar (Karplus–Strong), Đàn hạc (hoạ âm sine), Synth (saw + lọc); có reverb tự tạo.
+- Hiệu ứng: dây gradient cầu vồng phát sáng, rung theo điểm gảy rồi theo hoạ âm, vạch phím; tia lửa vuông góc dây, vòng sóng, nốt ♪ bay, tên nốt, chớp màu toàn màn hình, cực quang nền sáng theo nhịp; khung xương tay neon theo màu ngón + vệt sáng đầu ngón; nền camera hoặc nền vũ trụ.
+- Quay video: MediaRecorder ghép `canvas.captureStream(30)` + âm thanh Web Audio (MP4 trên Safari/iOS, WebM trên Chrome/Android) → xem lại, lưu, chia sẻ.
+- Demo: hai tay ảo tự kéo 3 dây và gảy.
