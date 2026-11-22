@@ -178,14 +178,14 @@
   <button class="cta" id="bTrain" style="background:#14a39a;margin-top:6px">🥋 Phòng tập chiêu thức</button>
   <button class="ghost" id="bSolo">🤖 Đấu với máy (3 cấp độ)</button>
   <div class="moves">
-    <div><b>🕹 Tay TRÁI = di chuyển</b><span>nghiêng bàn tay sang bên nào, chạy về bên đó; hất lên để nhảy</span></div>
+    <div><b>🕹 Tay TRÁI = di chuyển</b><span>nghiêng bàn tay sang bên nào, chạy về bên đó; giơ ☝️ để nhảy</span></div>
     <div><b>✊ Tay TRÁI nắm = đỡ</b><span>đỡ được thì chỉ mất 1/4 máu</span></div>
-    <div><b>👊 Đấm / ⤴️ Móc lên</b><span>tay PHẢI nắm, hất nhanh (hất lên = móc)</span></div>
-    <div><b>🌪 Bay xoáy · 25</b><span>tay PHẢI ✌️ rồi vung nhanh</span></div>
-    <div><b>🖐 Chưởng · 30</b><span>tay PHẢI xoè ✋ rồi đẩy nhanh</span></div>
-    <div><b>⚡ Sấm sét · 50</b><span>tay PHẢI chỉ ☝️ giữ nửa giây</span></div>
-    <div><b>💥 Tuyệt chiêu · 100</b><span>mana đầy rồi ☝️ giữ nửa giây</span></div>
-    <div><b>⌨️ Bàn phím</b><span>A D W S · J U K L I</span></div>
+    <div><b>✊ Đấm</b><span>tay PHẢI nắm lại (giữ = đấm liên tục)</span></div>
+    <div><b>⤴️ Móc lên</b><span>tay PHẢI nắm và giơ cao</span></div>
+    <div><b>✌️ Bay xoáy · 25</b><span>tay PHẢI giơ 2 ngón</span></div>
+    <div><b>🤟 Chưởng · 30</b><span>tay PHẢI giơ 3 ngón (hoặc 👌)</span></div>
+    <div><b>☝️ Sấm sét · 50</b><span>tay PHẢI giơ 1 ngón; mana 100 = tuyệt chiêu</span></div>
+    <div><b>✋ Nghỉ</b><span>tay PHẢI xoè 5 ngón = không đánh</span></div>
   </div>
   <p class="note">Đặt máy cách 50–80 cm sao cho camera thấy rõ cả hai bàn tay. Tay trái ở nửa trái khung hình, tay phải ở nửa phải. Chơi trên laptop hoặc xoay ngang điện thoại sẽ dễ nhìn hơn.</p>
 </section>
@@ -417,12 +417,12 @@ const CH = [
   { id: "media", name: "Media", ic: "📡", hp: 100, spd: 1, pow: .95, size: 1, steal: .3, col: ["#0ea5e9", "#f43f5e", "#f6d7b0"], pas: "Hút máu 30% sát thương gây ra", ult: "homing", ultName: "VIRAL" },
 ];
 const MV = {
-  punch: { name: "ĐẤM", ic: "👊", dmg: 5, range: 1.25, lock: 200, cd: 300, hitAt: 80, kb: 3, how: "Tay PHẢI nắm lại rồi hất nhanh một cái" },
-  upper: { name: "MÓC LÊN", ic: "⤴️", dmg: 8, range: 1.15, lock: 300, cd: 520, hitAt: 110, kb: 2, launch: 6, how: "Tay PHẢI nắm lại rồi hất nhanh LÊN TRÊN" },
-  spin: { name: "BAY XOÁY", ic: "🌪", dmg: 10, cost: 25, range: 1.3, lock: 380, cd: 750, kb: 6, how: "Tay PHẢI giơ 2 ngón ✌️ rồi vung nhanh → lao xoáy tới 3,5 m" },
-  blast: { name: "CHƯỞNG", ic: "🖐", dmg: 12, cost: 30, lock: 260, cd: 650, kb: 4, how: "Tay PHẢI xoè 5 ngón ✋ rồi đẩy nhanh → bắn cầu năng lượng" },
-  thunder: { name: "SẤM SÉT", ic: "⚡", dmg: 18, cost: 50, lock: 420, cd: 1200, kb: 2, delay: 700, how: "Tay PHẢI chỉ 1 ngón ☝️ giữ nửa giây → sét đánh chỗ đối thủ đang đứng" },
-  ult: { name: "TUYỆT CHIÊU", ic: "💥", cost: 100, lock: 600, cd: 1500, how: "Mana đầy 100: tay PHẢI chỉ 1 ngón ☝️ giữ nửa giây → tuyệt chiêu riêng của nhân vật" },
+  punch: { name: "ĐẤM", ic: "👊", dmg: 5, range: 1.25, lock: 200, cd: 300, hitAt: 80, kb: 3, how: "Tay PHẢI nắm lại ✊ là đấm. Giữ nắm thì đấm liên tục" },
+  upper: { name: "MÓC LÊN", ic: "⤴️", dmg: 8, range: 1.15, lock: 300, cd: 520, hitAt: 110, kb: 2, launch: 6, how: "Tay PHẢI nắm ✊ và giơ CAO (nửa trên khung hình)" },
+  spin: { name: "BAY XOÁY", ic: "🌪", dmg: 10, cost: 25, range: 1.3, lock: 380, cd: 750, kb: 6, how: "Tay PHẢI giơ 2 ngón ✌️ → lao xoáy tới 3,5 m" },
+  blast: { name: "CHƯỞNG", ic: "🖐", dmg: 12, cost: 30, lock: 260, cd: 650, kb: 4, how: "Tay PHẢI giơ 3 ngón 🤟 (hoặc 👌) → bắn cầu năng lượng" },
+  thunder: { name: "SẤM SÉT", ic: "⚡", dmg: 18, cost: 50, lock: 420, cd: 1200, kb: 2, delay: 700, how: "Tay PHẢI giơ 1 ngón ☝️ → sét đánh chỗ đối thủ đang đứng" },
+  ult: { name: "TUYỆT CHIÊU", ic: "💥", cost: 100, lock: 600, cd: 1500, how: "Mana đầy 100: tay PHẢI giơ 1 ngón ☝️ → tuyệt chiêu riêng của nhân vật" },
 };
 const AIL = [
   { name: "Dễ", think: [900, 1600], react: .2, skill: .15, move: .6, dmg: .7 },
@@ -495,14 +495,19 @@ const mkHand = () => ({ on: false, P: null, c: null, size: .1, pose: "", poses: 
 const HANDS = { L: mkHand(), R: mkHand() };
 const IN = { mx: 0, jump: false, guard: false, act: null };      // lệnh điều khiển của khung hình hiện tại
 const KEY = {};
-const POSE_IC = { fist: "✊", open: "✋", vee: "✌️", point: "☝️", other: "🤚" };
-function handPose(P) {
-  const d = (a, b) => Math.hypot(P[a].x - P[b].x, P[a].y - P[b].y), ext = [[8, 6], [12, 10], [16, 14], [20, 18]].map(([t, p]) => d(t, 0) > d(p, 0) * 1.12), n = ext.filter(Boolean).length;
-  return n === 0 ? "fist" : ext[0] && !ext[1] && !ext[2] && !ext[3] ? "point" : ext[0] && ext[1] && !ext[2] && !ext[3] ? "vee" : n >= 3 ? "open" : "other";
+const POSE_IC = { fist: "✊", open: "✋", vee: "✌️", point: "☝️", three: "🤟", other: "🤚" };
+const REPEAT = { punch: 420, upper: 600, spin: 900, blast: 800, thunder: 1500, ult: 1500 }, HIGH_Y = .38;
+function handPose(P, H) {
+  const d = (a, b) => Math.hypot(P[a].x - P[b].x, P[a].y - P[b].y); H.ext ||= [false, false, false, false];
+  // ngón duỗi khi đầu ngón xa cổ tay hơn hẳn khớp giữa; có ngưỡng trễ để không nhấp nháy
+  [[8, 6], [12, 10], [16, 14], [20, 18]].forEach(([t, pp], i) => { const r = d(t, 0) / (d(pp, 0) || 1); if (r > 1.16) H.ext[i] = true; else if (r < 1.02) H.ext[i] = false; });
+  const e = H.ext, n = e.filter(Boolean).length;
+  return n === 0 ? "fist" : n === 4 ? "open" : n === 1 && e[0] ? "point" : n === 2 && e[0] && e[1] ? "vee" : n === 3 || (n === 2 && e[0] && e[3]) ? "three" : "other";
 }
 function readHands(now) {
-  if (!hl || vid.readyState < 2 || vid.currentTime === lastVT) return; lastVT = vid.currentTime;
-  const r = hl.detectForVideo(vid, now), asp = vid.videoWidth / vid.videoHeight;
+  const fake = window.__fakeHands;                       // chỉ dùng khi kiểm thử tự động
+  if (!fake) { if (!hl || vid.readyState < 2 || vid.currentTime === lastVT) return; lastVT = vid.currentTime; }
+  const r = fake ? { landmarks: fake() } : hl.detectForVideo(vid, now), asp = fake ? 4 / 3 : vid.videoWidth / vid.videoHeight;
   // hiển thị như gương; x nhân tỉ lệ khung hình để đơn vị ngang = dọc
   let list = (r.landmarks || []).map(lm => lm.map(p => ({ x: (MIRROR ? 1 - p.x : p.x) * asp, y: p.y }))).map(P => ({ P, cx: (P[0].x + P[5].x + P[9].x + P[13].x + P[17].x) / 5 / asp }));
   // tay nào ở nửa TRÁI màn hình là tay trái (di chuyển), nửa PHẢI là tay phải (ra đòn)
@@ -514,7 +519,7 @@ function readHands(now) {
     const P = h.P, c = { x: H.fx.f((P[0].x + P[5].x + P[9].x + P[13].x + P[17].x) / 5, now), y: H.fy.f((P[0].y + P[5].y + P[9].y + P[13].y + P[17].y) / 5, now) };
     H.size += (Math.max(.03, Math.hypot(P[0].x - P[9].x, P[0].y - P[9].y)) - H.size) * .3;
     H.on = true; H.lost = now; H.P = P; H.c = c; H.asp = asp; H.seenN++;
-    H.poses.push(handPose(P)); if (H.poses.length > 5) H.poses.shift();
+    H.poses.push(handPose(P, H)); if (H.poses.length > 4) H.poses.shift();
     const cnt = {}; H.poses.forEach(p => cnt[p] = (cnt[p] || 0) + 1); H.pose = Object.entries(cnt).sort((a, b) => b[1] - a[1])[0][0];
     H.hist.push({ t: now, x: c.x, y: c.y, s: H.size }); while (H.hist.length && now - H.hist[0].t > 130) H.hist.shift();
   });
@@ -529,18 +534,20 @@ function readHands(now) {
     // nhảy = hất cả bàn tay lên thật nhanh
     if (Lh.hist.length > 2) { const h0 = Lh.hist[0], h1 = Lh.hist[Lh.hist.length - 1], dt = Math.max(.03, (h1.t - h0.t) / 1000), vy = (h1.y - h0.y) / dt / Lh.size; Lh.vy = vy; if (vy < -3.6 && (h0.y - h1.y) / Lh.size > .7 && now > (Lh.jcd || 0)) { IN.jump = true; Lh.jcd = now + 550; Lh.jumpAt = now; } }
   }
-  // ---- TAY PHẢI: thế tay + cú hất nhanh = ra đòn ----
+  // ---- TAY PHẢI: chỉ cần giơ đúng thế tay là ra đòn (giữ nguyên thế tay thì tự đánh lặp lại) ----
   const Rh = HANDS.R;
-  if (Rh.on && Rh.hist.length > 2) {
-    const a = Rh.hist[0], b = Rh.hist[Rh.hist.length - 1], dt = Math.max(.03, (b.t - a.t) / 1000), vx = (b.x - a.x) / dt / Rh.size, vy = (b.y - a.y) / dt / Rh.size, sp = Math.hypot(vx, vy), trav = Math.hypot(b.x - a.x, b.y - a.y) / Rh.size, grow = b.s / a.s - 1;
-    Rh.sp = sp;
-    if (Rh.pose === "point" && sp < 3.5) { if (!Rh.pointAt) Rh.pointAt = now; if (!Rh.pointFired && now - Rh.pointAt > 420) { Rh.pointFired = true; Rh.fireAt = now; IN.act = me.en >= 100 ? "ult" : "thunder"; } }
-    else if (Rh.pose !== "point") { Rh.pointAt = 0; Rh.pointFired = false; }
-    if (now > Rh.cd && ((sp > 4.2 && trav > .75) || grow > .2) && Rh.pose !== "point" && Rh.pose !== "other") {
-      Rh.cd = now + 330; Rh.hist.length = 0; Rh.fireAt = now;
-      IN.act = Rh.pose === "vee" ? "spin" : Rh.pose === "open" ? "blast" : (vy < -3.2 && -vy > Math.abs(vx) * 1.1 ? "upper" : "punch");
+  if (Rh.on) {
+    const p = Rh.pose, hi = Rh.c.y < HIGH_Y; Rh.hi = hi;
+    const want = p === "fist" ? (hi ? "upper" : "punch") : p === "vee" ? "spin" : p === "three" ? "blast" : p === "point" ? (me.en >= 100 ? "ult" : "thunder") : null;
+    Rh.want = want;
+    if (!want) Rh.last = null;
+    else {
+      if (Rh.last !== want) { Rh.last = want; Rh.nextAt = now + (want === "thunder" || want === "ult" ? 250 : 0); Rh.repT = now; }
+      if (now >= Rh.nextAt) { IN.act = want; Rh.fireAt = now; Rh.repT = now; Rh.nextAt = now + REPEAT[want]; }
     }
-  }
+  } else Rh.last = null;
+  // tay trái giơ 1 hoặc 2 ngón cũng là nhảy (dễ hơn hất tay)
+  if (Lh.on) { const jp = Lh.pose === "point" || Lh.pose === "vee"; if (jp && !Lh.jp && now > (Lh.jcd || 0)) { IN.jump = true; Lh.jcd = now + 450; Lh.jumpAt = now; } Lh.jp = jp; }
 }
 addEventListener("keydown", e => { if (e.repeat) return; KEY[e.code] = 1; const m = { KeyW: "jump", KeyJ: "punch", KeyU: "upper", KeyK: "spin", KeyL: "blast", KeyI: me.en >= 100 ? "ult" : "thunder" }[e.code]; if (m === "jump") IN.jump = true; else if (m) IN.act = m; });
 addEventListener("keyup", e => { KEY[e.code] = 0; });
@@ -595,7 +602,7 @@ function applyHit(t, h, ax) {
   else { t.state = "hurt"; t.stT = now; t.lock = now + 280; t.vx = dir * h.kb; if (h.launch) t.vy = h.launch; t.hurt = 1; t.dash = null; boom(t.x, t.y + 1.2, "#ff5733", h.k === "ult" ? 30 : 14); game.shake = Math.max(game.shake, h.k === "ult" ? 18 : 7); }
   addText(blocked ? `ĐỠ -${dmg}` : (h.crit ? "CHÍ MẠNG " : "") + `-${dmg}`, t.x, t.y + 2.3 * C(t).size, blocked ? "#5ad1ff" : h.crit ? "#F2B705" : "#ff5733", h.crit ? 30 : 24);
   if (t === me) { if (!blocked) { $("hurt").classList.add("on"); setTimeout(() => $("hurt").classList.remove("on"), 120); navigator.vibrate?.(35); } trainEv({ type: "def", r: blocked ? "block" : "hit" }); }
-  if (game.train) { if (t === op) setTimeout(() => { op.hp = C(op).hp; }, 900); else t.hp = C(t).hp; }
+  if (game.train) { if (t === op) { t.vx = 0; t.vy = 0; setTimeout(() => { op.hp = C(op).hp; }, 900); } else t.hp = C(t).hp; }      // bao cát đứng yên, không bị đẩy lùi
   else if (t.hp <= 0) { t.ko = true; t.state = "ko"; t.stT = now; if (t === me) { if (!game.ai) send({ t: "ko" }); endRound(false); } else if (game.ai) setTimeout(() => endRound(true), 500); }
   return { r: blocked ? "block" : "hit", dmg };
 }
@@ -778,6 +785,7 @@ function drawCam(now) {
   const c = $("camCv"), g = c.getContext("2d"), w = c.width, h = c.height; g.fillStyle = "#111"; g.fillRect(0, 0, w, h);
   if (vid.readyState >= 2) { const s = Math.max(w / vid.videoWidth, h / vid.videoHeight); g.save(); if (MIRROR) { g.translate(w, 0); g.scale(-1, 1); } g.globalAlpha = .75; g.drawImage(vid, (w - vid.videoWidth * s) / 2, (h - vid.videoHeight * s) / 2, vid.videoWidth * s, vid.videoHeight * s); g.restore(); }
   g.strokeStyle = "#ffffff55"; g.setLineDash([5, 5]); g.beginPath(); g.moveTo(w / 2, 0); g.lineTo(w / 2, h); g.stroke(); g.setLineDash([]);
+  g.strokeStyle = "#fdba7488"; g.beginPath(); g.moveTo(SWAP ? 0 : w / 2, h * HIGH_Y); g.lineTo(SWAP ? w / 2 : w, h * HIGH_Y); g.stroke();
   g.font = "800 11px Be Vietnam Pro, sans-serif"; g.textAlign = "center"; g.fillStyle = "#5eead4"; g.fillText(SWAP ? "ĐÁNH" : "DI CHUYỂN", w * .25, 14); g.fillStyle = "#fdba74"; g.fillText(SWAP ? "DI CHUYỂN" : "ĐÁNH", w * .75, 14);
   const asp = HANDS.L.asp || HANDS.R.asp || 4 / 3, vw = vid.videoWidth || 640, vh = vid.videoHeight || 480, s = Math.max(w / vw, h / vh), ox = (w - vw * s) / 2, oy = (h - vh * s) / 2, T = p => ({ x: ox + p.x / asp * vw * s, y: oy + p.y * vh * s });
   [["L", "#5eead4"], ["R", "#fdba74"]].forEach(([k, col]) => { const H = HANDS[k]; if (!H.on) return; g.strokeStyle = col; g.lineWidth = 3; g.lineCap = "round"; BONES.forEach(b => { g.beginPath(); b.forEach((i, j) => { const p = T(H.P[i]); j ? g.lineTo(p.x, p.y) : g.moveTo(p.x, p.y); }); g.stroke(); });
@@ -805,13 +813,12 @@ function drawHandPanels(now) {
       const r = ps * .44, a = Hd.ang || 0, gy = y0 + ps * .93; x.lineWidth = 6;
       [[-1.2, -.3, IN.mx < -.1], [-.3, .3, !IN.guard && Math.abs(IN.mx) <= .1], [.3, 1.2, IN.mx > .1]].forEach(([a0, a1, on]) => { x.strokeStyle = on ? "#a3e635" : "#ffffff40"; x.beginPath(); x.arc(cx, gy, r, -Math.PI / 2 + a0, -Math.PI / 2 + a1); x.stroke(); });
       x.strokeStyle = "#fff"; x.lineWidth = 4; x.beginPath(); x.moveTo(cx, gy); x.lineTo(cx + Math.sin(clamp(a, -1.2, 1.2)) * r, gy - Math.cos(clamp(a, -1.2, 1.2)) * r); x.stroke();
-      label = IN.guard ? "✊ ĐỠ" : now - (Hd.jumpAt || 0) < 400 ? "⬆ NHẢY" : IN.mx > .1 ? (IN.mx > .85 ? "→→ CHẠY NHANH" : "→ CHẠY PHẢI") : IN.mx < -.1 ? (IN.mx < -.85 ? "←← CHẠY NHANH" : "← CHẠY TRÁI") : "✋ ĐỨNG YÊN";
+      label = now - (Hd.jumpAt || 0) < 400 ? "⬆ NHẢY" : IN.guard ? "✊ ĐỠ" : IN.mx > .1 ? (IN.mx > .85 ? "→→ CHẠY NHANH" : "→ CHẠY PHẢI") : IN.mx < -.1 ? (IN.mx < -.85 ? "←← CHẠY NHANH" : "← CHẠY TRÁI") : "✋ ĐỨNG YÊN";
     } else {
-      const nm = { fist: "✊ hất = ĐẤM", vee: "✌️ vung = XOÁY", open: "✋ đẩy = CHƯỞNG", point: me.en >= 100 ? "☝️ giữ = TUYỆT CHIÊU" : "☝️ giữ = SẤM", other: "🤚 chưa rõ thế tay" }[Hd.pose] || "";
+      const nm = { fist: Hd.hi ? "✊ cao = MÓC LÊN" : "✊ = ĐẤM", vee: "✌️ = BAY XOÁY", three: "🤟 = CHƯỞNG", point: me.en >= 100 ? "☝️ = TUYỆT CHIÊU" : "☝️ = SẤM SÉT", open: "✋ nghỉ", other: "🤚 chưa rõ thế tay" }[Hd.pose] || "";
       label = fired ? "💥 RA ĐÒN!" : nm;
-      // thanh tốc độ hất tay (vạch trắng = ngưỡng ra đòn) hoặc vòng nạp khi giữ ☝️
-      if (Hd.pose === "point" && Hd.pointAt && !Hd.pointFired) { x.strokeStyle = "#F2B705"; x.lineWidth = 6; x.beginPath(); x.arc(cx, cy, ps * .4, -Math.PI / 2, -Math.PI / 2 + Math.min(1, (now - Hd.pointAt) / 420) * 6.283); x.stroke(); }
-      else { const bw = ps - 24, v = Math.min(1, (Hd.sp || 0) / 7); x.fillStyle = "#ffffff30"; x.fillRect(x0 + 12, y0 + 20, bw, 5); x.fillStyle = v > .6 ? "#a3e635" : "#fdba74"; x.fillRect(x0 + 12, y0 + 20, bw * v, 5); x.fillStyle = "#fff"; x.fillRect(x0 + 12 + bw * .6, y0 + 17, 2, 11); }
+      // thanh chờ: đầy là đòn kế tiếp tự ra (khi vẫn giữ thế tay)
+      if (Hd.want && Hd.last) { const bw = ps - 24, v = clamp((now - Hd.repT) / Math.max(1, Hd.nextAt - Hd.repT), 0, 1); x.fillStyle = "#ffffff30"; x.fillRect(x0 + 12, y0 + 20, bw, 5); x.fillStyle = "#a3e635"; x.fillRect(x0 + 12, y0 + 20, bw * v, 5); }
     }
     x.font = `800 ${Math.max(11, Math.round(ps * .085))}px "Be Vietnam Pro", sans-serif`; x.textAlign = "center"; x.lineJoin = "round"; x.strokeStyle = "#0b0b0e"; x.lineWidth = 4; x.strokeText(label, cx, y0 + ps - 8); x.fillStyle = fired ? "#14161b" : "#fff"; x.fillText(label, cx, y0 + ps - 8);
     x.restore();
@@ -840,14 +847,14 @@ function render(now) {
 const DR = [
   { t: "Dựng thẳng bàn tay <b>TRÁI</b> rồi <b>nghiêng sang PHẢI</b> (như gạt cần) → chạy sang phải", ok: () => me.mxIn > .5 && me.vx > 1, hold: 500 },
   { t: "<b>Nghiêng</b> bàn tay <b>TRÁI sang TRÁI</b> → chạy sang trái. Dựng thẳng lại = đứng yên", ok: () => me.mxIn < -.5 && me.vx < -1, hold: 500 },
-  { t: "Hất tay <b>TRÁI</b> <b>LÊN</b> nhanh → nhảy", ev: e => e.type === "jump" },
+  { t: "Tay <b>TRÁI</b> giơ <b>1 ngón ☝️</b> (hoặc hất tay lên nhanh) → nhảy", ev: e => e.type === "jump" },
   { t: "Tay <b>TRÁI</b> <b>nắm lại ✊</b> → đỡ đòn (giữ 1 giây)", ok: () => me.guard, hold: 1000 },
-  { t: "Tay <b>PHẢI</b> nắm ✊ rồi <b>hất nhanh</b> → ĐẤM trúng bao cát", ev: e => e.type === "res" && e.k === "punch", near: 1 },
-  { t: "Tay <b>PHẢI</b> nắm ✊ hất nhanh <b>LÊN TRÊN</b> → MÓC LÊN", ev: e => e.type === "res" && e.k === "upper", near: 1 },
-  { t: "Tay <b>PHẢI</b> giơ <b>2 ngón ✌️</b> rồi vung nhanh → BAY XOÁY", ev: e => e.type === "act" && e.k === "spin" },
-  { t: "Tay <b>PHẢI</b> <b>xoè ✋</b> rồi đẩy nhanh → CHƯỞNG", ev: e => e.type === "act" && e.k === "blast" },
-  { t: "Tay <b>PHẢI</b> <b>chỉ 1 ngón ☝️</b>, giữ nửa giây → SẤM SÉT", ev: e => e.type === "act" && e.k === "thunder", en: 60 },
-  { t: "Mana đầy rồi! <b>☝️ giữ nửa giây</b> lần nữa → TUYỆT CHIÊU", ev: e => e.type === "act" && e.k === "ult", en: 100 },
+  { t: "Lại gần bao cát. Tay <b>PHẢI</b> xoè ✋ rồi <b>nắm lại ✊</b> → ĐẤM", ev: e => e.type === "res" && e.k === "punch", near: 1 },
+  { t: "Tay <b>PHẢI</b> nắm ✊ và <b>giơ cao</b> lên nửa trên khung hình → MÓC LÊN", ev: e => e.type === "res" && e.k === "upper", near: 1 },
+  { t: "Tay <b>PHẢI</b> giơ <b>2 ngón ✌️</b> → BAY XOÁY", ev: e => e.type === "act" && e.k === "spin" },
+  { t: "Tay <b>PHẢI</b> giơ <b>3 ngón 🤟</b> (hoặc 👌) → CHƯỞNG", ev: e => e.type === "act" && e.k === "blast" },
+  { t: "Tay <b>PHẢI</b> giơ <b>1 ngón ☝️</b> → SẤM SÉT", ev: e => e.type === "act" && e.k === "thunder", en: 60 },
+  { t: "Mana đầy rồi! Giơ <b>☝️</b> lần nữa → TUYỆT CHIÊU", ev: e => e.type === "act" && e.k === "ult", en: 100 },
   { t: "Bao cát sắp đấm – tay <b>TRÁI nắm ✊</b> để ĐỠ", ev: e => e.type === "def" && e.r === "block", atk: 1 },
 ];
 const tr = { i: 0, free: false, holdAt: 0, okAt: 0, n: 0, hit: 0 };
@@ -875,7 +882,7 @@ $("cFree").onclick = () => { tr.free = true; showDrill(); };
 
 /* ======================= HUD + VÒNG LẶP ======================= */
 const lagW = [100, 100];
-const GUIDE = [["mv", "🕹 Trái: đi/nhảy/đỡ", "Tay TRÁI dựng thẳng = đứng yên. Nghiêng bàn tay sang bên nào thì chạy về bên đó (nghiêng nhiều = chạy nhanh). Hất tay lên nhanh để nhảy, nắm lại ✊ để đỡ"], ["punch", "👊"], ["upper", "⤴️"], ["spin", "🌪 25"], ["blast", "🖐 30"], ["thunder", "⚡ 50"], ["ult", "💥 100"]];
+const GUIDE = [["mv", "🕹 Trái: đi/nhảy/đỡ", "Tay TRÁI dựng thẳng = đứng yên. Nghiêng bàn tay sang bên nào thì chạy về bên đó (nghiêng nhiều = chạy nhanh). Giơ 1 ngón ☝️ để nhảy, nắm lại ✊ để đỡ"], ["punch", "👊"], ["upper", "⤴️"], ["spin", "🌪 25"], ["blast", "🖐 30"], ["thunder", "⚡ 50"], ["ult", "💥 100"]];
 $("chips").innerHTML = GUIDE.map(g => `<button id="k-${g[0]}">${g[1]}</button>`).join("");
 GUIDE.forEach(g => $("k-" + g[0]).onclick = () => { const M = MV[g[0]]; toast(M ? `${M.ic} ${g[0] === "ult" ? C(me).ultName : M.name}` : "🕹 Tay trái", M ? M.how : g[2], 3200); });
 function chipFlash(id) { const el = $("k-" + id); if (!el) return; el.classList.add("hit"); setTimeout(() => el.classList.remove("hit"), 300); }
