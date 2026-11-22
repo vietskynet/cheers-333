@@ -434,8 +434,8 @@ const me = mkF(0), op = mkF(1);
 const game = { phase: "lobby", startAt: 0, timer: ROUND_SEC, ai: false, train: false, lvl: 1, hitId: 0, shake: 0, flash: 0, aiSetup: false };
 const proj = [], fx = [], texts = [], tele = [];
 let seen = new Set(), SWAP = false;
-/* MIRROR = có lật ngang ảnh camera hay không. Mặc định KHÔNG lật (theo phản hồi: bản lật làm ngược tay và ngược hướng); nút ⇋ để đổi, có ghi nhớ. */
-let MIRROR = (() => { try { return localStorage.getItem("hmac-mirror") === "1"; } catch { return false; } })();
+/* MIRROR = lật ngang ảnh camera như soi gương (mặc định BẬT: tay trái của bạn nằm bên trái màn hình, nghiêng sang phải là chạy sang phải). Nút ⇋ để đổi, có ghi nhớ. */
+let MIRROR = (() => { try { return localStorage.getItem("hmac-mirror2") !== "0"; } catch { return true; } })();
 const readyMsg = () => ({ t: "ready", name: me.name, ch: me.ch });
 const C = f => CH[f.ch || 0];
 
@@ -545,7 +545,7 @@ function readHands(now) {
 addEventListener("keydown", e => { if (e.repeat) return; KEY[e.code] = 1; const m = { KeyW: "jump", KeyJ: "punch", KeyU: "upper", KeyK: "spin", KeyL: "blast", KeyI: me.en >= 100 ? "ult" : "thunder" }[e.code]; if (m === "jump") IN.jump = true; else if (m) IN.act = m; });
 addEventListener("keyup", e => { KEY[e.code] = 0; });
 $("bSwap").onclick = () => { SWAP = !SWAP; toast(SWAP ? "Đã đảo: tay PHẢI di chuyển, tay TRÁI đánh" : "Tay TRÁI di chuyển, tay PHẢI đánh", ""); };
-$("bMirror").onclick = () => { MIRROR = !MIRROR; try { localStorage.setItem("hmac-mirror", MIRROR ? "1" : "0"); } catch {} Object.assign(HANDS.L, mkHand()); Object.assign(HANDS.R, mkHand()); toast("Đã lật ngang camera", "Tay trái và hướng chạy đổi bên. Bấm lần nữa để trả lại"); };
+$("bMirror").onclick = () => { MIRROR = !MIRROR; try { localStorage.setItem("hmac-mirror2", MIRROR ? "1" : "0"); } catch {} Object.assign(HANDS.L, mkHand()); Object.assign(HANDS.R, mkHand()); toast("Đã lật ngang camera", "Tay trái và hướng chạy đổi bên. Bấm lần nữa để trả lại"); };
 
 /* ======================= LUẬT ĐÁNH ======================= */
 const other = f => f === me ? op : me;
@@ -559,7 +559,7 @@ function doMove(f, k, now) {
   const melee = (kk, d, rng, extra = {}) => { const m = MV[kk] || MV.punch; if (Math.abs(tg.x - f.x) < rng * (ch.reach || 1) + .35 && (tg.x - f.x) * f.face > -.3 && Math.abs(tg.y - f.y) < 1.5) deliver(f, { k: kk, dmg: dmg(d), kb: m.kb || 3, launch: m.launch || 0, ...extra }); else if (f === me) trainEv({ type: "miss", k: kk }); };
   const shoot = (o = {}) => spawnProj(f, { x: f.x + f.face * .7, y: f.y + 1.05 * ch.size, vx: f.face * 12, vy: 0, r: .32, dmg: dmg(MV.blast.dmg * (ch.blastDmg || 1)), k: "blast", col: ch.col[1], ...o });
   const strike = (tx, d, delay, rad = 1) => { const e = { tx, delay, rad, col: ch.col[1] }; tele.push({ ...e, t0: now }); if (f === me && !game.ai) send({ t: "tl", e }); f.q.push({ t: now + delay, fn: () => { game.shake = 12; if (Math.abs(tg.x - tx) < rad) deliver(f, { k: "thunder", dmg: dmg(d), kb: 2, aoe: 1 }); else if (f === me) trainEv({ type: "miss", k: "thunder" }); } }); };
-  const dashTo = (dist, dur) => { const far = tg.x - f.x, to = Math.abs(far) < dist + .8 && far * f.face > 0 ? tg.x - f.face * .8 : f.x + f.face * dist; f.dash = { from: f.x, to: clamp(to, -ARENA, ARENA), t0: now, dur }; };
+  const dashTo = (dist, dur) => { const far = tg.x - f.x, to = Math.abs(far) < dist + .8 && far * f.face > 0 ? tg.x - f.face * .95 : f.x + f.face * dist; f.dash = { from: f.x, to: clamp(to, -ARENA, ARENA), t0: now, dur }; };
   if (k === "punch" || k === "upper") f.q.push({ t: now + M.hitAt, fn: () => melee(k, M.dmg, M.range) });
   else if (k === "spin") { dashTo(3.5, 320); f.q.push({ t: now + 250, fn: () => melee("spin", M.dmg, M.range) }); }
   else if (k === "blast") f.q.push({ t: now + 110, fn: () => shoot() });
@@ -615,7 +615,7 @@ function stepF(f, inp, dt, now) {
   if (inp.jump && !busy && !f.ko && (f.y < .05 || (ch.djump && !f.dj))) { if (f.y >= .05) f.dj = true; f.vy = JUMP * (ch.jump || 1); if (f === me) trainEv({ type: "jump" }); }
   f.vy -= GRAV * dt; f.y += f.vy * dt; if (f.y <= 0) { f.y = 0; f.vy = 0; f.dj = false; }
   const px = f.x; f.x = clamp(f.x + f.vx * dt, -ARENA, ARENA);
-  if (!f.dash && f.y < .6 && tg.y < .6 && Math.abs(tg.x - f.x) < .75 && !tg.ko) f.x = tg.x - sgn(tg.x - px || f.face) * .75;      // không đi xuyên qua nhau
+  if (!f.dash && f.y < .6 && tg.y < .6 && Math.abs(tg.x - f.x) < .9 && !tg.ko) f.x = tg.x - sgn(tg.x - px || f.face) * .9;      // không đi xuyên qua nhau
   f.walk += Math.abs(f.x - px);
   if (fight && f === me) me.en = Math.min(100, me.en + Math.abs(f.x - px) * 1.2);
   if (!busy && !f.dash && !f.ko) f.face = tg.x >= f.x ? 1 : -1;
@@ -666,7 +666,8 @@ const cv = $("arena"), x = cv.getContext("2d");
 let W = 0, H = 0, DPR = 1, PPM = 60, GY = 400, CX = 0, grain = null;
 function resize() { DPR = Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight; cv.width = W * DPR; cv.height = H * DPR; GY = H * (W < H ? .7 : .78); }
 addEventListener("resize", resize);
-const sx = X => W / 2 + (X - CX) * PPM, sy = Y => GY - Y * PPM;
+const VIS = 1.3;       // nhân vật và mọi thứ theo chiều cao được vẽ to hơn 30%
+const sx = X => W / 2 + (X - CX) * PPM, sy = Y => GY - Y * PPM * VIS;
 function boom(X, Y, c, n) { for (let i = 0; i < n; i++) { const a = rnd(0, 6.283), v = rnd(1, 7); fx.push({ x: X, y: Y, vx: Math.cos(a) * v, vy: Math.sin(a) * v + 1.5, c: i % 3 ? c : "#fff", r: rnd(.06, .18), life: rnd(.3, .6), t: .6 }); } }
 function addText(t, X, Y, c, s) { texts.push({ t, x: X, y: Y, c, s, life: 1 }); }
 function ultFx(f, u) { const ch = C(f); addText(`💥 ${ch.ultName}`, f.x, f.y + 2.9 * ch.size, ch.col[1], 34); boom(f.x, f.y + 1, ch.col[1], 40); game.shake = 16; game.flash = .5; }
@@ -708,7 +709,7 @@ function drawWorld(now) {
 }
 /* ---------- nhân vật ---------- */
 function drawF(f, now, isMe) {
-  const ch = C(f), u = PPM * ch.size, [cb, ct, sk] = ch.col, INK = "#0b0b0e", age = now - f.stT, st = f.state, px = sx(f.x), py = sy(f.y);
+  const ch = C(f), u = PPM * ch.size * VIS, [cb, ct, sk] = ch.col, INK = "#0b0b0e", age = now - f.stT, st = f.state, px = sx(f.x), py = sy(f.y);
   x.save();
   x.fillStyle = "#0008"; x.beginPath(); x.ellipse(px, GY + 3, u * .42 * (1 - Math.min(.5, f.y * .08)), u * .09, 0, 0, 6.283); x.fill();
   if (isMe) { x.strokeStyle = "#F2B705"; x.lineWidth = 4; x.setLineDash([10, 7]); x.lineDashOffset = -now * .03; x.beginPath(); x.ellipse(px, GY + 3, u * .55, u * .13, 0, 0, 6.283); x.stroke(); x.setLineDash([]); }
@@ -819,12 +820,12 @@ function drawHandPanels(now) {
 function render(now) {
   x.setTransform(DPR, 0, 0, DPR, 0, 0);
   // máy quay bám theo 2 người, tự thu phóng theo khoảng cách
-  const span = clamp(Math.abs(me.x - op.x) + 5, 7, 2 * ARENA + 2), tp = Math.min(W / span, (GY - 110) / 3), tc = clamp((me.x + op.x) / 2, -ARENA - 1 + W / 2 / tp, ARENA + 1 - W / 2 / tp);
+  const span = clamp(Math.abs(me.x - op.x) + 5, 7, 2 * ARENA + 2), tp = Math.min(W / span, (GY - 70) / 3.3), tc = clamp((me.x + op.x) / 2, -ARENA - 1 + W / 2 / tp, ARENA + 1 - W / 2 / tp);
   PPM += (tp - PPM) * .08; CX += ((isFinite(tc) ? tc : 0) - CX) * .1;
   const sh = game.shake > .5 ? (Math.random() - .5) * game.shake : 0; game.shake *= .87; x.translate(sh, sh * .6);
   drawWorld(now); drawTele(now);
   const fs = [op, me]; fs.forEach(f => drawF(f, now, f === me));
-  proj.forEach(p => { const X = sx(p.x), Y = sy(p.y), r = p.r * PPM; x.save(); x.globalCompositeOperation = "lighter"; const g = x.createRadialGradient(X, Y, 0, X, Y, r * 2); g.addColorStop(0, "#fff"); g.addColorStop(.4, p.col); g.addColorStop(1, "transparent"); x.fillStyle = g; x.beginPath(); x.arc(X, Y, r * 2, 0, 6.283); x.fill(); x.restore(); if (p.big) { x.fillStyle = "#14161b"; x.font = `800 ${r * .8}px "Be Vietnam Pro", sans-serif`; x.textAlign = "center"; x.fillText("IDEA", X, Y + r * .25); } });
+  proj.forEach(p => { const X = sx(p.x), Y = sy(p.y), r = p.r * PPM * VIS; x.save(); x.globalCompositeOperation = "lighter"; const g = x.createRadialGradient(X, Y, 0, X, Y, r * 2); g.addColorStop(0, "#fff"); g.addColorStop(.4, p.col); g.addColorStop(1, "transparent"); x.fillStyle = g; x.beginPath(); x.arc(X, Y, r * 2, 0, 6.283); x.fill(); x.restore(); if (p.big) { x.fillStyle = "#14161b"; x.font = `800 ${r * .8}px "Be Vietnam Pro", sans-serif`; x.textAlign = "center"; x.fillText("IDEA", X, Y + r * .25); } });
   x.save(); x.globalCompositeOperation = "lighter";
   for (let i = fx.length - 1; i >= 0; i--) { const p = fx[i]; p.life -= 1 / 60; if (p.life <= 0) { fx.splice(i, 1); continue; } p.x += p.vx / 60; p.y += p.vy / 60; if (!p.ember) p.vy -= 12 / 60; x.globalAlpha = Math.min(1, p.life / p.t * 1.5); x.fillStyle = p.c; x.beginPath(); x.arc(sx(p.x), sy(p.y), Math.max(1, p.r * PPM), 0, 6.283); x.fill(); }
   x.restore(); if (fx.length > 700) fx.splice(0, fx.length - 700);
