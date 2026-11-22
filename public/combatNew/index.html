@@ -820,7 +820,7 @@ function drawHandPanels(now) {
 function render(now) {
   x.setTransform(DPR, 0, 0, DPR, 0, 0);
   // máy quay bám theo 2 người, tự thu phóng theo khoảng cách
-  const span = clamp(Math.abs(me.x - op.x) + 5, 7, 2 * ARENA + 2), tp = Math.min(W / span, (GY - 70) / 3.3), tc = clamp((me.x + op.x) / 2, -ARENA - 1 + W / 2 / tp, ARENA + 1 - W / 2 / tp);
+  const span = clamp(Math.abs(me.x - op.x) + 5, 7, 2 * ARENA + 2), tp = Math.min(W / span, (GY - 70) / 3.6), tc = clamp((me.x + op.x) / 2, -ARENA - 1 + W / 2 / tp, ARENA + 1 - W / 2 / tp);
   PPM += (tp - PPM) * .08; CX += ((isFinite(tc) ? tc : 0) - CX) * .1;
   const sh = game.shake > .5 ? (Math.random() - .5) * game.shake : 0; game.shake *= .87; x.translate(sh, sh * .6);
   drawWorld(now); drawTele(now);
