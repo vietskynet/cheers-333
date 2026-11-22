@@ -115,3 +115,13 @@ netlify dev        # cần file .env chứa các biến ở trên
 - Hiệu ứng (đã tiết chế): dây gradient phát sáng nhẹ, rung theo điểm gảy rồi theo hoạ âm, vạch phím; chỉ khi gảy mới có 1–2 nốt ♪♫ bay ra; khung xương tay neon mảnh; nền camera hoặc nền vũ trụ, màu nền dịu.
 - Quay video: MediaRecorder ghép `canvas.captureStream(30)` + âm thanh Web Audio (MP4 trên Safari/iOS, WebM trên Chrome/Android) → xem lại, lưu, chia sẻ.
 - Demo: hai tay ảo tự kéo 3 dây và gảy.
+
+## Game `/pickleball/` – tập pickleball với máy bắn bóng
+
+`public/pickleball/index.html` – MediaPipe PoseLandmarker (full → lite), lọc One-Euro, hiển thị như gương.
+
+- Vợt ảo gắn vào tay cầm vợt (chọn tay phải/trái): cán ở cổ tay, hướng = 60% cẳng tay + 40% bàn tay; mặt vợt cách cổ tay 0,8 vai. Không nhận diện vợt thật.
+- Máy bắn 1 bóng/lần tới điểm đánh tính theo vị trí vai người chơi (thuận tay / trái tay); vòng báo co dần về cỡ bóng = lúc đánh. 5 bài: Hỗn hợp, Thuận tay, Trái tay, Dink, Volley nhanh.
+- Chạm = đường đi mặt vợt cắt bóng trong cửa sổ k 0,90–1,14. Tốc độ vung (vai/giây): < 1,2 rúc lưới, 1,2–8,5 vào sân (càng mạnh càng sâu), > 8,5 ra ngoài; Dink: > 3,5 là mạnh quá. Lệch nhịp → bóng lệch ngang, quá ±150 ms ra biên. (Mô hình đơn giản hoá, không phải vật lý thật.)
+- Siêu chiêu anime (+3 điểm, cần vung ≥ 4,5 vai/giây và lệch nhịp < 90 ms): 🔥 Hoả Long (bổ xuống), ⚡ Lôi Tốc (quét ngang), 🌪 Lốc Xoáy (hất lên). Hiệu ứng: băng tên chiêu chéo, vạch tốc độ manga, chớp màu, rung màn hình, vệt lửa / tia sét / xoáy, nổ khi bóng chạm sân. Vào sân thường +1; chuỗi ≥ 3 cộng thêm 1.
+- Demo: người ảo tự đánh đủ các kiểu.
