@@ -1,6 +1,6 @@
 # HandMagination
 
-**Link app:** https://cheerbeerapp.netlify.app/
+**Link app:** https://vmltestlab.netlify.app/
 
 Tạo dáng bằng bàn tay trước camera → app đồ lại hình bóng bàn tay → Claude tưởng tượng nó giống thứ gì và viết lời chúc → AI vẽ thành poster đồ hoạ hiện đại (từ khoá lời chúc to nhất, chữ rải rác).
 
