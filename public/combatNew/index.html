@@ -70,6 +70,24 @@
   #room .chr.on{border-color:#F2B705;box-shadow:5px 5px 0 #ff5733;background:#3a2670}
   #room .chr .st{color:#b9a8ff}#room .chr .st i{background:#14161b;border-radius:0}#room .chr .st i u{background:#a3e635;border-radius:0}
   #room #diffs button{border-radius:0;border:4px solid #4b3a8a;background:#2a1a55;color:#fff}#room #diffs button.on{background:#F2B705;color:#14161b;border-color:#14161b;box-shadow:4px 4px 0 #ff5733}
+  #hist{display:none;position:fixed;inset:0;z-index:50;background:#0d0820f2;overflow:auto;padding:calc(env(safe-area-inset-top) + 18px) 14px calc(env(safe-area-inset-bottom) + 20px);color:#fff}
+  #hist.on{display:block}
+  #hist .hw{max-width:460px;margin:0 auto}
+  #hist .ht{font-family:"Press Start 2P",monospace;font-size:12px;color:#F2B705;text-shadow:3px 3px 0 #14161b;margin-bottom:14px}
+  #hist .hs{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:10px}
+  #hist .hs div{background:#2a1a55;border:3px solid #4b3a8a;padding:8px 2px;text-align:center;font-size:10px;color:#b9a8ff}
+  #hist .hs b{display:block;font-size:20px;color:#fff}
+  #hist .hf,#hist .he,#hist .hn{font-size:12px;color:#cfc6f5;line-height:1.5;margin:8px 0}#hist .hf b{color:#F2B705}
+  #hist .hr{background:#1b1035;border:3px solid #4b3a8a;border-left-width:8px;padding:8px 10px;margin-bottom:8px}
+  #hist .hr.w{border-left-color:#a3e635}#hist .hr.l{border-left-color:#ff5733}#hist .hr.d{border-left-color:#9ca3af}
+  #hist .h1{display:flex;justify-content:space-between;gap:8px;font-size:10px;color:#b9a8ff}
+  #hist .h1 .rs{font-family:"Press Start 2P",monospace;font-size:9px;color:#fff}
+  #hist .hr.w .rs{color:#a3e635}#hist .hr.l .rs{color:#ff7a59}
+  #hist .h2{font-size:14px;margin:5px 0 3px}#hist .h2 i{font-style:normal;font-size:11px;color:#5ad1ff}
+  #hist .h3{font-size:11px;color:#cfc6f5}
+  #hist .hb{display:flex;gap:8px;margin-top:12px;position:sticky;bottom:0}
+  #hist .hb button{flex:1;border:4px solid #14161b;background:#F2B705;color:#14161b;padding:12px;font:inherit;font-weight:800;box-shadow:4px 4px 0 #ff5733;cursor:pointer}
+  #hist #bHistClear{background:#2a1a55;color:#fff;box-shadow:4px 4px 0 #14161b}
   .pick{width:100%;max-width:400px;margin:4px 0 14px;text-align:left}
   .pick .pt{font-size:10px;font-weight:800;letter-spacing:1.4px;color:var(--mute);margin:10px 0 6px}
   #inName{width:100%;border:2px solid #e5e7eb;border-radius:14px;padding:12px 14px;font:inherit;font-weight:800;font-size:16px}
@@ -177,6 +195,7 @@
   <div class="err" id="lobbyErr"></div>
   <button class="cta" id="bTrain" style="background:#14a39a;margin-top:6px">🥋 Phòng tập chiêu thức</button>
   <button class="ghost" id="bSolo">🤖 Đấu với máy (3 cấp độ)</button>
+  <button class="ghost" id="bHist">📜 Lịch sử lượt chơi</button>
   <div class="moves">
     <div><b>🕹 Tay TRÁI = di chuyển</b><span>nghiêng bàn tay sang bên nào, chạy về bên đó; giơ ☝️ để nhảy</span></div>
     <div><b>✊ Tay TRÁI nắm = đỡ</b><span>đỡ được thì chỉ mất 1/4 máu</span></div>
@@ -242,6 +261,7 @@
   <div id="endBox"><button id="bRematch">Đấu lại</button><button id="bExit" style="background:#fff;color:#14161b">Thoát</button></div>
 </section>
 
+<div id="hist"><div class="hw"><div class="ht">📜 LỊCH SỬ LƯỢT CHƠI</div><div id="histBody"></div><div class="hb"><button id="bHistClear">🗑 Xoá lịch sử</button><button id="bHistClose">Đóng</button></div><p class="hn">Lịch sử lưu trên chính máy và trình duyệt này (tối đa 100 trận gần nhất). Phòng tập không được tính.</p></div></div>
 <script src="./peerjs.min.js"></script>
 <script src="./mqtt.min.js"></script>
 <script type="module">
@@ -464,12 +484,13 @@ function startRound(delay) {
   [me, op].forEach(f => { const keep = { ch: f.ch, name: f.name, side: f.side }; Object.assign(f, mkF(f.side), keep); f.hp = C(f).hp; }); op.x0 = undefined; op.tx = op.x; op.ty = 0;
   if (!me.name) me.name = C(me).name; if (!op.name) op.name = C(op).name;
   seen = new Set(); proj.length = fx.length = texts.length = tele.length = 0; game.timer = ROUND_SEC;
+  game.stat = { hits: 0, dealt: 0, taken: 0, blocks: 0, skills: 0, ults: 0, combo: 0, t0: Date.now() };
   show("game"); resize(); $("endBox").classList.remove("on"); $("bannerTx").classList.remove("on");
   game.phase = "count"; game.startAt = performance.now() + delay; lastCount = -1;
   const nm = f => `${C(f).ic} ${f.name}` + (f === me ? " (BẠN)" : ""); $("n1").textContent = nm(me.side === 0 ? me : op); $("n2").textContent = nm(me.side === 1 ? me : op);
 }
 function endRound(win) {
-  if (game.phase === "end") return; game.phase = "end";
+  if (game.phase === "end") return; game.phase = "end"; saveMatch(win);
   banner(win === null ? "HOÀ" : win ? "THẮNG!" : "K.O.", win === null ? "Hết giờ" : win ? "Bạn hạ gục đối thủ" : "Bạn bị hạ gục", 0);
   $("endBox").classList.add("on"); me.ready = false; op.ready = false;
 }
@@ -561,7 +582,7 @@ function doMove(f, k, now) {
   const M = MV[k], ch = C(f), cost = costOf(f, k), tg = other(f);
   if (f.en < cost) { if (f === me && now - (me.warn || 0) > 1200) { me.warn = now; toast(`Chưa đủ mana cho ${M.name}`, `Cần ${cost}, đang có ${Math.round(f.en)}`); } return; }
   f.en -= cost; f.state = k; f.stT = now; f.lock = now + M.lock; f.cdU = now + M.cd * (ch.cd || 1); f.face = tg.x > f.x ? 1 : -1;
-  if (f === me) { trainEv({ type: "act", k }); chipFlash(k); }
+  if (f === me) { trainEv({ type: "act", k }); chipFlash(k); if (game.stat) { if (k === "ult") game.stat.ults++; else if (MV[k].cost) game.stat.skills++; } }
   const dmg = d => d * ch.pow * (f === op && game.ai ? AIL[game.lvl].dmg : 1);
   const melee = (kk, d, rng, extra = {}) => { const m = MV[kk] || MV.punch; if (Math.abs(tg.x - f.x) < rng * (ch.reach || 1) + .35 && (tg.x - f.x) * f.face > -.3 && Math.abs(tg.y - f.y) < 1.5) deliver(f, { k: kk, dmg: dmg(d), kb: m.kb || 3, launch: m.launch || 0, ...extra }); else if (f === me) trainEv({ type: "miss", k: kk }); };
   const shoot = (o = {}) => spawnProj(f, { x: f.x + f.face * .7, y: f.y + 1.05 * ch.size, vx: f.face * 12, vy: 0, r: .32, dmg: dmg(MV.blast.dmg * (ch.blastDmg || 1)), k: "blast", col: ch.col[1], ...o });
@@ -601,6 +622,7 @@ function applyHit(t, h, ax) {
   if (blocked) { t.vx = dir * h.kb * .35; t.en = Math.min(100, t.en + 5); boom(t.x + t.face * .4, t.y + 1.2, "#5ad1ff", 8); }
   else { t.state = "hurt"; t.stT = now; t.lock = now + 280; t.vx = dir * h.kb; if (h.launch) t.vy = h.launch; t.hurt = 1; t.dash = null; boom(t.x, t.y + 1.2, "#ff5733", h.k === "ult" ? 30 : 14); game.shake = Math.max(game.shake, h.k === "ult" ? 18 : 7); }
   addText(blocked ? `ĐỠ -${dmg}` : (h.crit ? "CHÍ MẠNG " : "") + `-${dmg}`, t.x, t.y + 2.3 * C(t).size, blocked ? "#5ad1ff" : h.crit ? "#F2B705" : "#ff5733", h.crit ? 30 : 24);
+  if (t === me && game.stat) { game.stat.taken += dmg; if (blocked) game.stat.blocks++; }
   if (t === me) { if (!blocked) { $("hurt").classList.add("on"); setTimeout(() => $("hurt").classList.remove("on"), 120); navigator.vibrate?.(35); } trainEv({ type: "def", r: blocked ? "block" : "hit" }); }
   if (game.train) { if (t === op) { t.vx = 0; t.vy = 0; setTimeout(() => { op.hp = C(op).hp; }, 900); } else t.hp = C(t).hp; }      // bao cát đứng yên, không bị đẩy lùi
   else if (t.hp <= 0) { t.ko = true; t.state = "ko"; t.stT = now; if (t === me) { if (!game.ai) send({ t: "ko" }); endRound(false); } else if (game.ai) setTimeout(() => endRound(true), 500); }
@@ -609,7 +631,7 @@ function applyHit(t, h, ax) {
 function afterHit(att, tg, h, res) {
   if (res.r === "none") return;
   if (res.r === "hit") { att.en = Math.min(100, att.en + 8); if (C(att).steal) heal(att, res.dmg * C(att).steal); }
-  if (att === me) { trainEv({ type: "res", r: res.r, k: h.k }); if (res.r === "hit") { const n = performance.now(); me.combo = n - (me.comboAt || 0) < 1500 ? (me.combo || 0) + 1 : 1; me.comboAt = n; } if (!game.ai && tg === op) { if (res.r === "hit") { boom(op.x, op.y + 1.2, "#ff5733", 14); game.shake = Math.max(game.shake, 6); } addText(res.r === "block" ? `BỊ ĐỠ -${res.dmg}` : `-${res.dmg}`, op.x, op.y + 2.3, res.r === "block" ? "#5ad1ff" : "#ff5733", 24); } }
+  if (att === me) { trainEv({ type: "res", r: res.r, k: h.k }); if (res.r === "hit") { const n = performance.now(); me.combo = n - (me.comboAt || 0) < 1500 ? (me.combo || 0) + 1 : 1; me.comboAt = n; if (game.stat) { game.stat.hits++; game.stat.combo = Math.max(game.stat.combo, me.combo); } } if (game.stat && res.r !== "none") game.stat.dealt += res.dmg; if (!game.ai && tg === op) { if (res.r === "hit") { boom(op.x, op.y + 1.2, "#ff5733", 14); game.shake = Math.max(game.shake, 6); } addText(res.r === "block" ? `BỊ ĐỠ -${res.dmg}` : `-${res.dmg}`, op.x, op.y + 2.3, res.r === "block" ? "#5ad1ff" : "#ff5733", 24); } }
 }
 function stepF(f, inp, dt, now) {
   const ch = C(f), tg = other(f);
@@ -903,7 +925,7 @@ function loop(now) {
   requestAnimationFrame(loop); const dt = Math.min(.05, (now - prev) / 1000); prev = now;
   if (game.phase === "lobby") return;
   readHands(now); drawCam(now);
-  if (game.phase === "count") { const left = Math.ceil((game.startAt - now) / 850); if (left !== lastCount) { lastCount = left; if (left > 0 && left <= 3) banner(String(left), left === 3 ? "Giơ 2 bàn tay lên trước camera" : "", 750); } if (now >= game.startAt) { game.phase = "fight"; banner("FIGHT!", "", 700); } }
+  if (game.phase === "count") { const left = Math.ceil((game.startAt - now) / 850); if (left !== lastCount) { lastCount = left; if (left > 0 && left <= 3) banner(String(left), left === 3 ? "Giơ 2 bàn tay lên trước camera" : "", 750); } if (now >= game.startAt) { game.phase = "fight"; banner("FIGHT!", "", 700); if (game.stat) game.stat.t0 = Date.now(); } }
   if (game.phase === "fight" && (net.host || game.ai) && !game.train) { game.timer = Math.max(0, game.timer - dt); if (game.timer <= 0) { const win = me.hp / C(me).hp > op.hp / C(op).hp ? me.side : me.hp / C(me).hp < op.hp / C(op).hp ? op.side : -1; if (!game.ai) send({ t: "timeup", win }); endRound(win === -1 ? null : win === me.side); } }
   // lệnh của mình: tay + bàn phím (A D đi, W nhảy, S đỡ, J U K L I ra đòn)
   const kx = (KEY.KeyD ? 1 : 0) - (KEY.KeyA ? 1 : 0), inp = { mx: kx || IN.mx, jump: IN.jump, guard: IN.guard || !!KEY.KeyS, act: IN.act }; IN.jump = false;
@@ -918,6 +940,33 @@ function loop(now) {
   render(now); hud(now);
 }
 requestAnimationFrame(loop);
+
+/* ======================= LỊCH SỬ LƯỢT CHƠI (lưu trên máy này) ======================= */
+const HKEY = "hmac-history";
+const loadHist = () => { try { return JSON.parse(localStorage.getItem(HKEY) || "[]"); } catch { return []; } };
+function saveMatch(win) {
+  if (game.train || !game.stat) return;
+  const st = game.stat, pct = f => Math.round(f.hp / C(f).hp * 100);
+  const rec = { t: Date.now(), mode: game.ai ? "ai" + game.lvl : "pvp", res: win === null ? "d" : win ? "w" : "l", dur: Math.round((Date.now() - st.t0) / 1000), me: { n: me.name, c: me.ch, hp: pct(me) }, op: { n: op.name, c: op.ch, hp: pct(op) }, hits: st.hits, dealt: Math.round(st.dealt), taken: Math.round(st.taken), blocks: st.blocks, skills: st.skills, ults: st.ults, combo: st.combo };
+  try { const H = loadHist(); H.unshift(rec); localStorage.setItem(HKEY, JSON.stringify(H.slice(0, 100))); } catch {}
+  game.stat = null;
+}
+function showHist() {
+  const H = loadHist(), w = H.filter(r => r.res === "w").length, l = H.filter(r => r.res === "l").length, d = H.length - w - l;
+  const use = {}; H.forEach(r => use[r.me.c] = (use[r.me.c] || 0) + 1); const fav = Object.entries(use).sort((a, b) => b[1] - a[1])[0];
+  const dt = t => { const D = new Date(t), p = n => String(n).padStart(2, "0"); return `${p(D.getDate())}/${p(D.getMonth() + 1)} ${p(D.getHours())}:${p(D.getMinutes())}`; };
+  const modeN = m => m === "pvp" ? "Đấu 2 máy" : "Đấu máy · " + AIL[+m.slice(2)].name;
+  $("histBody").innerHTML = !H.length ? `<p class="he">Chưa có trận nào. Đấu xong một trận (với máy hoặc với người) là trận đó được lưu ở đây.</p>` :
+    `<div class="hs"><div><b>${H.length}</b>trận</div><div><b style="color:#a3e635">${w}</b>thắng</div><div><b style="color:#ff7a59">${l}</b>thua</div><div><b>${d}</b>hoà</div><div><b>${Math.round(w / H.length * 100)}%</b>tỉ lệ thắng</div></div>` +
+    (fav ? `<p class="hf">Nhân vật dùng nhiều nhất: <b>${CH[fav[0]].ic} ${CH[fav[0]].name}</b> (${fav[1]} trận) · Combo dài nhất: <b>x${Math.max(...H.map(r => r.combo || 0))}</b></p>` : "") +
+    H.map(r => `<div class="hr ${r.res}"><div class="h1"><span class="rs">${r.res === "w" ? "THẮNG" : r.res === "l" ? "THUA" : "HOÀ"}</span><span>${dt(r.t)} · ${modeN(r.mode)} · ${r.dur}s</span></div>
+      <div class="h2">${CH[r.me.c].ic} <b>${r.me.n}</b> <i>${r.me.hp}%</i> &nbsp;vs&nbsp; ${CH[r.op.c].ic} ${r.op.n} <i>${r.op.hp}%</i></div>
+      <div class="h3">Trúng ${r.hits} đòn · gây ${r.dealt} · nhận ${r.taken} · đỡ ${r.blocks} · chiêu ${r.skills} · tuyệt chiêu ${r.ults} · combo x${r.combo}</div></div>`).join("");
+  $("hist").classList.add("on"); $("bHistClear").textContent = "🗑 Xoá lịch sử"; $("bHistClear").dataset.arm = ""; $("bHistClear").style.display = H.length ? "" : "none";
+}
+$("bHist").onclick = showHist;
+$("bHistClose").onclick = () => $("hist").classList.remove("on");
+$("bHistClear").onclick = e => { const b = e.currentTarget; if (!b.dataset.arm) { b.dataset.arm = "1"; b.textContent = "Bấm lần nữa để xoá hết"; return; } try { localStorage.removeItem(HKEY); } catch {} showHist(); };
 
 /* ======================= SẢNH: CHỌN NHÂN VẬT ======================= */
 $("bCreate").onclick = createRoom;
