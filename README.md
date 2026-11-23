@@ -178,3 +178,14 @@ netlify dev        # cần file .env chứa các biến ở trên
 - (22/11, 23h) **Ra đòn bằng thế tay, không cần hất:** tay phải chỉ cần giơ đúng thế tay là ra đòn, giữ nguyên thì tự đánh lặp lại (đấm 0,42 s, móc 0,6 s, chưởng 0,8 s, xoáy 0,9 s, sấm 1,5 s): ✊ = Đấm; ✊ giơ cao (nửa trên khung hình, trên vạch cam trong ô camera) = Móc lên; ✌️ = Bay xoáy; 3 ngón 🤟 / 👌 / 🤘 = Chưởng; ☝️ = Sấm sét (Tuyệt chiêu khi mana 100); ✋ xoè = nghỉ. Tay trái thêm cách nhảy: giơ ☝️ hoặc ✌️. Thế tay tính bằng đếm ngón duỗi, có ngưỡng trễ từng ngón (duỗi khi tỉ lệ > 1,16, co khi < 1,02) và lấy đa số 4 khung hình. Bao cát trong phòng tập không bị đẩy lùi. Có móc kiểm thử `window.__fakeHands` để bơm điểm tay giả qua đúng đường nhận diện.
 
 - (23/11) **Lịch sử lượt chơi** của AGENCY COMBAT: mỗi trận đấu máy hoặc đấu 2 máy kết thúc là được lưu vào `localStorage` (khoá `hmac-history`, tối đa 100 trận, chỉ trên máy/trình duyệt đó; phòng tập không tính). Mỗi trận ghi: thời điểm, chế độ, kết quả, thời lượng, tên + nhân vật + % máu còn lại của hai bên, số đòn trúng, sát thương gây ra / nhận vào, số lần đỡ, số chiêu, số tuyệt chiêu, combo dài nhất. Nút "📜 Lịch sử lượt chơi" ở sảnh: tổng trận, thắng/thua/hoà, tỉ lệ thắng, nhân vật dùng nhiều nhất, danh sách trận, nút xoá (bấm 2 lần).
+
+## Database (Netlify Database – Postgres) – từ 24/11/2026
+
+- `package.json` có gói `@netlify/database` → Netlify tự tạo database khi deploy và tự đặt biến `NETLIFY_DB_URL`. Cần gói Netlify tính theo credit; database đang chạy có tiêu credit.
+- Cấu trúc bảng nằm trong `netlify/database/migrations/*.sql`, Netlify tự chạy khi deploy. **Không sửa hay xoá file migration đã chạy** – muốn đổi thì thêm file mới (tên `<số thời gian>_<mô tả>.sql`). Migration lỗi thì deploy thất bại và bản cũ vẫn chạy.
+- `netlify/functions/ac.mjs` (Netlify Function, Node 22):
+  - `POST /api/ac/matches` – lưu 1 trận AGENCY COMBAT (kiểm tra và giới hạn mọi trường, tối đa 1 trận / 5 giây / người chơi).
+  - `GET /api/ac/matches?pid=…` – 100 trận gần nhất của một người chơi.
+  - `GET /api/ac/leaderboard` – 30 người thắng nhiều nhất.
+- Bảng `ac_matches`: mỗi dòng một trận của một người chơi (đấu 2 máy thì mỗi bên tự gửi dòng của mình). `player_id` là mã ngẫu nhiên sinh trên máy người chơi (`localStorage` khoá `hmac-pid`), không có đăng nhập nên kết quả gửi lên **không được xác thực** – đủ cho chơi vui nội bộ, chưa đủ cho giải có thưởng.
+- Game vẫn lưu song song trên máy (`hmac-history`) và tự dùng bản đó khi không gọi được máy chủ.

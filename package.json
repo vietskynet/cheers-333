@@ -1,0 +1,8 @@
+{
+  "name": "handmagination",
+  "private": true,
+  "description": "HandMagination – trang tĩnh trong public/, API trong netlify/edge-functions và netlify/functions",
+  "dependencies": {
+    "@netlify/database": "^2.0.3"
+  }
+}

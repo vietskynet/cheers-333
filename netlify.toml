@@ -1,6 +1,13 @@
 [build]
   publish = "public"
-  # Không cần bước build: trang tĩnh nằm trong public/, API nằm trong netlify/edge-functions/
+  # Không cần bước build: trang tĩnh nằm trong public/, API nằm trong netlify/edge-functions/ và netlify/functions/
+  # Có package.json (gói @netlify/database) nên Netlify tự cài gói và tự tạo database khi deploy.
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[functions]
+  node_bundler = "esbuild"
 
 [[headers]]
   for = "/*"

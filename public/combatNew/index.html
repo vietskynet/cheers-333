@@ -74,6 +74,7 @@
   #hist.on{display:block}
   #hist .hw{max-width:460px;margin:0 auto}
   #hist .ht{font-weight:800;font-size:18px;letter-spacing:1px;color:#F2B705;text-shadow:3px 3px 0 #14161b;margin-bottom:14px}
+  #hist .tabs{display:flex;gap:6px;margin-bottom:10px}#hist .tabs button{flex:1;border:3px solid #4b3a8a;background:#2a1a55;color:#fff;padding:9px;font:inherit;font-weight:800;font-size:13px;cursor:pointer}#hist .tabs button.on{background:#F2B705;color:#14161b;border-color:#14161b}
   #hist .hs{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:10px}
   #hist .hs div{background:#2a1a55;border:3px solid #4b3a8a;padding:8px 2px;text-align:center;font-size:10px;color:#b9a8ff}
   #hist .hs b{display:block;font-size:20px;color:#fff}
@@ -195,7 +196,7 @@
   <div class="err" id="lobbyErr"></div>
   <button class="cta" id="bTrain" style="background:#14a39a;margin-top:6px">🥋 Phòng tập chiêu thức</button>
   <button class="ghost" id="bSolo">🤖 Đấu với máy (3 cấp độ)</button>
-  <button class="ghost" id="bHist">📜 Lịch sử lượt chơi</button>
+  <button class="ghost" id="bHist">📜 Lịch sử & 🏆 bảng xếp hạng</button>
   <div class="moves">
     <div><b>🕹 Tay TRÁI = di chuyển</b><span>nghiêng bàn tay sang bên nào, chạy về bên đó; giơ ☝️ để nhảy</span></div>
     <div><b>✊ Tay TRÁI nắm = đỡ</b><span>đỡ được thì chỉ mất 1/4 máu</span></div>
@@ -261,7 +262,7 @@
   <div id="endBox"><button id="bRematch">Đấu lại</button><button id="bExit" style="background:#fff;color:#14161b">Thoát</button></div>
 </section>
 
-<div id="hist"><div class="hw"><div class="ht">📜 LỊCH SỬ LƯỢT CHƠI</div><div id="histBody"></div><div class="hb"><button id="bHistClear">🗑 Xoá lịch sử</button><button id="bHistClose">Đóng</button></div><p class="hn">Lịch sử lưu trên chính máy và trình duyệt này (tối đa 100 trận gần nhất). Phòng tập không được tính.</p></div></div>
+<div id="hist"><div class="hw"><div class="ht">📜 LỊCH SỬ LƯỢT CHƠI</div><div class="tabs"><button id="tabMe" class="on">Trận của tôi</button><button id="tabTop">🏆 Bảng xếp hạng</button></div><div id="histBody"></div><div class="hb"><button id="bHistClear">🗑 Xoá lịch sử</button><button id="bHistClose">Đóng</button></div><p class="hn">Mỗi trận được lưu cả trên máy này lẫn trên máy chủ. Phòng tập không được tính. Tên bạn đặt cho nhân vật sẽ hiện trên bảng xếp hạng chung.</p></div></div>
 <script src="./peerjs.min.js"></script>
 <script src="./mqtt.min.js"></script>
 <script type="module">
@@ -943,28 +944,49 @@ requestAnimationFrame(loop);
 
 /* ======================= LỊCH SỬ LƯỢT CHƠI (lưu trên máy này) ======================= */
 const HKEY = "hmac-history";
+// mã người chơi ngẫu nhiên (không phải thông tin cá nhân) để máy chủ gom các trận của cùng một máy
+const PID = (() => { try { let v = localStorage.getItem("hmac-pid"); if (!v) { v = (crypto.randomUUID?.() || "p" + Date.now().toString(36) + Math.random().toString(36).slice(2, 12)); localStorage.setItem("hmac-pid", v); } return v; } catch { return "p" + Date.now().toString(36) + Math.random().toString(36).slice(2, 12); } })();
 const loadHist = () => { try { return JSON.parse(localStorage.getItem(HKEY) || "[]"); } catch { return []; } };
 function saveMatch(win) {
   if (game.train || !game.stat) return;
   const st = game.stat, pct = f => Math.round(f.hp / C(f).hp * 100);
   const rec = { t: Date.now(), mode: game.ai ? "ai" + game.lvl : "pvp", res: win === null ? "d" : win ? "w" : "l", dur: Math.round((Date.now() - st.t0) / 1000), me: { n: me.name, c: me.ch, hp: pct(me) }, op: { n: op.name, c: op.ch, hp: pct(op) }, hits: st.hits, dealt: Math.round(st.dealt), taken: Math.round(st.taken), blocks: st.blocks, skills: st.skills, ults: st.ults, combo: st.combo };
   try { const H = loadHist(); H.unshift(rec); localStorage.setItem(HKEY, JSON.stringify(H.slice(0, 100))); } catch {}
+  // gửi lên database chung (Netlify Database); lỗi mạng thì bản lưu trên máy vẫn còn
+  fetch("/api/ac/matches", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ pid: PID, ...rec }), keepalive: true }).catch(() => {});
   game.stat = null;
 }
-function showHist() {
-  const H = loadHist(), w = H.filter(r => r.res === "w").length, l = H.filter(r => r.res === "l").length, d = H.length - w - l;
+let histTab = "me";
+const fromRow = r => ({ t: new Date(r.created_at).getTime(), mode: r.mode, res: r.result, dur: r.dur, me: { n: r.player_name, c: r.player_ch, hp: r.hp_me }, op: { n: r.opp_name, c: r.opp_ch, hp: r.hp_op }, hits: r.hits, dealt: r.dealt, taken: r.taken, blocks: r.blocks, skills: r.skills, ults: r.ults, combo: r.combo });
+function renderMine(H, src) {
+  const w = H.filter(r => r.res === "w").length, l = H.filter(r => r.res === "l").length, d = H.length - w - l;
   const use = {}; H.forEach(r => use[r.me.c] = (use[r.me.c] || 0) + 1); const fav = Object.entries(use).sort((a, b) => b[1] - a[1])[0];
   const dt = t => { const D = new Date(t), p = n => String(n).padStart(2, "0"); return `${p(D.getDate())}/${p(D.getMonth() + 1)} ${p(D.getHours())}:${p(D.getMinutes())}`; };
   const modeN = m => m === "pvp" ? "Đấu 2 máy" : "Đấu máy · " + AIL[+m.slice(2)].name;
-  $("histBody").innerHTML = !H.length ? `<p class="he">Chưa có trận nào. Đấu xong một trận (với máy hoặc với người) là trận đó được lưu ở đây.</p>` :
+  $("histBody").innerHTML = `<p class="hn">${src}</p>` + (!H.length ? `<p class="he">Chưa có trận nào. Đấu xong một trận (với máy hoặc với người) là trận đó được lưu ở đây.</p>` :
     `<div class="hs"><div><b>${H.length}</b>trận</div><div><b style="color:#a3e635">${w}</b>thắng</div><div><b style="color:#ff7a59">${l}</b>thua</div><div><b>${d}</b>hoà</div><div><b>${Math.round(w / H.length * 100)}%</b>tỉ lệ thắng</div></div>` +
     (fav ? `<p class="hf">Nhân vật dùng nhiều nhất: <b>${CH[fav[0]].ic} ${CH[fav[0]].name}</b> (${fav[1]} trận) · Combo dài nhất: <b>x${Math.max(...H.map(r => r.combo || 0))}</b></p>` : "") +
     H.map(r => `<div class="hr ${r.res}"><div class="h1"><span class="rs">${r.res === "w" ? "THẮNG" : r.res === "l" ? "THUA" : "HOÀ"}</span><span>${dt(r.t)} · ${modeN(r.mode)} · ${r.dur}s</span></div>
-      <div class="h2">${CH[r.me.c].ic} <b>${r.me.n}</b> <i>${r.me.hp}%</i> &nbsp;vs&nbsp; ${CH[r.op.c].ic} ${r.op.n} <i>${r.op.hp}%</i></div>
-      <div class="h3">Trúng ${r.hits} đòn · gây ${r.dealt} · nhận ${r.taken} · đỡ ${r.blocks} · chiêu ${r.skills} · tuyệt chiêu ${r.ults} · combo x${r.combo}</div></div>`).join("");
-  $("hist").classList.add("on"); $("bHistClear").textContent = "🗑 Xoá lịch sử"; $("bHistClear").dataset.arm = ""; $("bHistClear").style.display = H.length ? "" : "none";
+      <div class="h2">${CH[r.me.c].ic} <b>${esc(r.me.n)}</b> <i>${r.me.hp}%</i> &nbsp;vs&nbsp; ${CH[r.op.c].ic} ${esc(r.op.n)} <i>${r.op.hp}%</i></div>
+      <div class="h3">Trúng ${r.hits} đòn · gây ${r.dealt} · nhận ${r.taken} · đỡ ${r.blocks} · chiêu ${r.skills} · tuyệt chiêu ${r.ults} · combo x${r.combo}</div></div>`).join(""));
 }
-$("bHist").onclick = showHist;
+const esc = t => String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+async function showHist(tab) {
+  if (typeof tab === "string") histTab = tab;
+  $("hist").classList.add("on"); $("tabMe").classList.toggle("on", histTab === "me"); $("tabTop").classList.toggle("on", histTab === "top");
+  $("bHistClear").textContent = "🗑 Xoá lịch sử trên máy này"; $("bHistClear").dataset.arm = ""; $("bHistClear").style.display = histTab === "me" && loadHist().length ? "" : "none";
+  if (histTab === "me") {
+    renderMine(loadHist(), "Đang tải từ máy chủ…");
+    try { const r = await fetch("/api/ac/matches?pid=" + encodeURIComponent(PID)), j = await r.json(); if (!j.ok) throw new Error(j.error); if (histTab === "me") renderMine(j.rows.map(fromRow), "☁️ Lưu trên máy chủ – theo mã của máy này, tối đa 100 trận gần nhất."); }
+    catch { if (histTab === "me") renderMine(loadHist(), "📱 Chưa kết nối được máy chủ – đang hiện bản lưu trên máy này."); }
+  } else {
+    $("histBody").innerHTML = `<p class="hn">Đang tải bảng xếp hạng…</p>`;
+    try { const r = await fetch("/api/ac/leaderboard"), j = await r.json(); if (!j.ok) throw new Error(j.error); if (histTab !== "top") return;
+      $("histBody").innerHTML = !j.rows.length ? `<p class="he">Chưa ai có trận nào. Hãy là người đầu tiên!</p>` : `<p class="hn">Xếp theo số trận thắng (tính cả đấu máy và đấu người).</p>` + j.rows.map((r, i) => `<div class="hr ${r.player_id === PID ? "w" : "d"}"><div class="h2"><b>${i < 3 ? ["🥇", "🥈", "🥉"][i] : "#" + (i + 1)}</b> &nbsp;${CH[r.ch]?.ic || ""} <b>${esc(r.name)}</b>${r.player_id === PID ? " <i>(bạn)</i>" : ""}</div><div class="h3">Thắng <b>${r.wins}</b>/${r.games} trận (${Math.round(r.wins / r.games * 100)}%) · thắng máy Khó ${r.hard_wins} · combo dài nhất x${r.combo}</div></div>`).join(""); }
+    catch { if (histTab === "top") $("histBody").innerHTML = `<p class="he">Chưa tải được bảng xếp hạng. Database trên Netlify có thể chưa được bật – xem trang Deploys của Netlify.</p>`; }
+  }
+}
+$("bHist").onclick = () => showHist("me"); $("tabMe").onclick = () => showHist("me"); $("tabTop").onclick = () => showHist("top");
 $("bHistClose").onclick = () => $("hist").classList.remove("on");
 $("bHistClear").onclick = e => { const b = e.currentTarget; if (!b.dataset.arm) { b.dataset.arm = "1"; b.textContent = "Bấm lần nữa để xoá hết"; return; } try { localStorage.removeItem(HKEY); } catch {} showHist(); };
 
