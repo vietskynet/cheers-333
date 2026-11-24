@@ -1,4 +1,4 @@
-/* AGC COMBAT – game.js (toàn bộ game nằm trong file này)
+/* AGENCY COMBAT – game.js (toàn bộ game nằm trong file này)
    Phần 1: kết nối 2 máy (dùng chung với các game khác của HandMagination). Phần 2: game. */
 const $ = id => document.getElementById(id);
 const show = id => document.querySelectorAll(".scr").forEach(s => s.classList.toggle("on", s.id === id));
@@ -162,10 +162,10 @@ const rnd = (a, b) => a + Math.random() * (b - a), clamp = (v, a, b) => Math.max
    Nếu site chưa có file thì lấy tạm từ kho ảnh Higgsfield. */
 const CDN = "https://d2ol7oe51mr4n9.cloudfront.net/user_2vybgglAYZMtuRPV18Aqg7zS5iW/";
 function loadImg(local, cdn) { const im = new Image(); im.onerror = () => { if (!im._f) { im._f = 1; im.src = CDN + cdn; } }; im.onload = () => document.documentElement.style.setProperty(local === "./sprites.png" ? "--spr" : "--bg", `url("${im.src}")`); im.src = local; return im; }
-const SPR = loadImg("./sprites.png", "27cf4574-225b-4111-bf81-abb967d19041.png"), BG = loadImg("./bg.png", "073e9582-2bbe-44d6-98ac-5cf73662bbb0.png");
-const POST = new Image(); POST.onload = () => { document.documentElement.style.setProperty("--post", `url("${POST.src}")`); document.body.classList.add("hasPost"); }; POST.onerror = () => { if (!POST._f) { POST._f = 1; POST.src = CDN + "bc59901c-e648-49dc-ab0f-213e558c3e60.png"; } }; POST.src = "./posters.png";
+const SPR = loadImg("./sprites.png", "ed7afe2e-87e1-4b89-9a4e-86b0b4085351.png"), BG = loadImg("./bg.png", "073e9582-2bbe-44d6-98ac-5cf73662bbb0.png");
+const POST = new Image(); POST.onload = () => { document.documentElement.style.setProperty("--post", `url("${POST.src}")`); document.body.classList.add("hasPost"); }; POST.onerror = () => { if (!POST._f) { POST._f = 1; POST.src = CDN + "9305b57c-82a2-4938-ad3a-b647287f1407.png"; } }; POST.src = "./posters.png";
 const ok = im => im.complete && im.naturalWidth > 0;
-const IC = { phone: 0, mail: 1, folder: 2, chat: 3, car: 4, table: 5, coin: 6, cal: 7, bulb: 8, marker: 9, cat1: 10, cat2: 11, dumb: 12, frame: 13, easel: 14, wind: 15, splat: 16, brush: 17, scis: 18, cig: 19, smoke: 20, shrimp: 21, layers: 22, pen: 23, mag: 24, report: 25, funnel: 26, book: 27, trophy: 28, chart: 29, venn: 30, stamp: 31 };
+const IC = { phone: 0, mail: 1, folder: 2, chat: 3, car: 4, table: 5, coin: 6, cal: 7, bulb: 8, marker: 9, cat1: 10, cat2: 11, dumb: 12, frame: 13, easel: 14, wind: 15, splat: 16, brush: 17, scis: 18, cig: 19, smoke: 20, shrimp: 21, layers: 22, pen: 23, mag: 24, report: 25, funnel: 26, book: 27, trophy: 28, chart: 29, venn: 30, stamp: 31, paw: 32, wig: 33, buffet: 34, menu: 35, pho: 36, banhmi: 37, roll: 38, cake: 39, tea: 40, chicken: 41, redpen: 42, hand: 43, news: 44, sushi: 45, pizza: 46, quote: 47, mega: 48, vali: 49, plane: 50, ticket: 51, passport: 52, pencil: 53, ghost: 54, bat: 55, moon: 56, shand: 57, fire: 58, globe: 59, photo: 60, world: 61, shades: 62, scrib: 63 };
 /* Ba cấp máy */
 const LVL = [
   { n: "Thực tập sinh", hp: 100, spd: 34, dist: 170, rest: [2.4, 3.3], wind: .6, types: ["hi"], dmg: 8, bolt: 190, shield: .12, cast: 0, maxT: 0 },
@@ -227,7 +227,32 @@ const CH = [
       { n: "Bible Strategy", b: 36, d: "Cuốn kinh chiến lược giáng xuống trong ánh hào quang", mk: (c, D) => [{ wait: 1.0, dmg: D, fx: "drop", ic: IC.book, sc: 1.8, holy: 1, lb: "BIBLE STRATEGY", say: "AMEN!" }] },
       { n: "5 WIN Strategy", b: 18, m: 5, fixed: 1, d: "Năm con dấu WIN đóng liên tiếp, chốt bằng cúp vàng. Xuyên khiên", mk: (c, D) => [0, 1, 2, 3, 4].map(i => ({ wait: .35 + i * .3, dmg: D, pierce: 1, fx: "drop", ic: i < 4 ? IC.stamp : IC.trophy, sc: i < 4 ? .9 : 1.7, quick: 1, n: i, say: "WIN " + (i + 1) })) },
     ] },
+  { id: "ngan", name: "Phương Ngân", role: "Creative Copy-based", col: "#f472b6", tag: "Chơi chữ, set menu, mèo khổng lồ và mái tóc trùm",
+    F: { n: "Chữ cái", ic: -2 }, G: { n: "Bút đỏ", ic: IC.redpen }, th: { n: "Ngoặc kép rơi", ic: IC.quote },
+    sp: [
+      { n: "Giật Tít", b: 18, d: "Một dòng tít giật gân bay thẳng vào mặt, đối thủ đứng hình", mk: (c, D) => [{ p: 1, v: 320, ic: IC.news, sc: .75, wob: 1, dmg: D, col: "#f472b6", on: { stun: .9 }, say: "SỐC!" }] },
+      { n: "Chơi Chữ", b: 9, m: 4, d: "Chữ bay tứ tung rồi tự tìm tới đối thủ", mk: (c, D) => four({ ic: -3, dmg: D, col: "#f9a8d4" }, ["CHỮ", "NGHĨA", "VẦN", "ĐIỆU"]) },
+      { n: "Trà Sữa Giải Lao", b: 0, d: "Mưa trà sữa: xoá mọi đòn đang bay, hồi 15 HP", self: c => healClear(c, IC.tea) },
+      { n: "Mái Tóc Trùm", b: 25, d: "Trùm nguyên mái tóc lên đầu đối thủ: hoảng loạn, mất máu thêm khi thoát ra", mk: (c, D, K) => [{ wait: .25, dmg: D, on: { ctrl: ["hair", 2.6, 10 * K, "Á Á Á! TỐI QUÁ!"] } }] },
+      { n: "Bút Đỏ Sửa Bài", b: 13, m: 3, d: "Ba nét bút đỏ gạch chéo qua đối thủ", mk: (c, D) => [0, 1, 2].map(i => ({ wait: .15 + i * .2, dmg: D, fx: "slash", red: 1, n: i, say: ["SỬA LẦN 1", "SỬA LẦN 2", "SỬA LẦN 9"][i] })) },
+      { n: "Set Menu", b: 45, d: "Gọi một món, cả bàn buffet được mang ra; các món xoay quanh rồi lao vào đối thủ", mk: (c, D) => [{ wait: 1.2, dmg: D, fx: "orbit", say: "MỜI CẢ NHÀ!" }] },
+      { n: "Giơ Tay Ý Kiến", b: 36, d: "Giơ tay phát biểu, bão comment đổ xuống đè đối thủ", mk: (c, D) => [{ wait: 1.2, dmg: D, fx: "rain", ic: IC.chat, top: IC.hand, say: "EM CÓ Ý KIẾN!" }] },
+      { n: "Mèo Khổng Lồ", b: 90, fixed: 1, d: "Bàn chân mèo xám trắng mũm mĩm khổng lồ đập xuống. Xuyên khiên", mk: (c, D) => [{ wait: .8, dmg: D, pierce: 1, fx: "drop", ic: IC.paw, sc: 2.6, gnd: 1, on: { ctrl: ["flat", 1.8, 0, "BẸP!"] }, say: "MEOOO!" }] },
+    ] },
+  { id: "khoa", name: "Khoa Đặng", role: "Sr Art Director", col: "#8b5cf6", tag: "Bóng tối, nói nhiều, bịa chuyện, đi du lịch, vẽ chuyện",
+    F: { n: "Bla bla", ic: -4 }, G: { n: "Vali kéo", ic: IC.vali }, th: { n: "Quà lưu niệm rơi", ic: IC.globe },
+    sp: [
+      { n: "Nói Nhiều", b: 18, d: "Bắc loa nói không ngừng, đối thủ ù tai đứng hình", mk: (c, D) => [{ p: 1, v: 300, ic: IC.mega, sc: .8, wave: 1, dmg: D, col: "#c4b5fd", on: { stun: 1 }, say: "BLA BLA BLA!" }] },
+      { n: "Bịa Chuyện", b: 9, m: 4, d: "Bốn câu chuyện không có thật tự tìm tới đối thủ", mk: (c, D) => four({ ic: -3, bub: 1, dmg: D, col: "#c4b5fd" }, ["Hồi đó anh…", "Thiệt luôn!", "Tin anh đi", "100% real"]) },
+      { n: "Xin Nghỉ Đi Du Lịch", b: 0, d: "Vé máy bay rơi như mưa: xoá mọi đòn đang bay, hồi 15 HP", self: c => healClear(c, IC.ticket) },
+      { n: "Tắt Đèn", b: 25, d: "Cả văn phòng tối thui, đối thủ chỉ còn hai con mắt và đứng im", mk: (c, D) => [{ wait: .25, dmg: D, on: { ctrl: ["dark", 2.6, 0, "AI TẮT ĐÈN VẬY?"] } }] },
+      { n: "Vẽ Chuyện", b: 13, m: 3, d: "Vẽ thêm ba nét bút chì nguệch ngoạc lên người đối thủ", mk: (c, D) => [0, 1, 2].map(i => ({ wait: .15 + i * .2, dmg: D, fx: "slash", pcl: 1, n: i, say: ["VẼ THÊM!", "VẼ NỮA!", "VẼ HOÀI!"][i] })) },
+      { n: "Chuyến Bay Giá Rẻ", b: 45, d: "Máy bay giá rẻ lao xuyên qua đối thủ", mk: (c, D) => [{ wait: .55, dmg: D, fx: "dash", ic: IC.plane, sc: 1.7, col: "#c4b5fd", say: "DELAY 3 TIẾNG!" }] },
+      { n: "Kể Chuyện Ma", b: 36, d: "Trời tối sầm, ma và dơi bay ra từ câu chuyện", mk: (c, D) => [{ wait: 1.2, dmg: D, fx: "rain", ic: IC.ghost, ic2: IC.bat, top: IC.fire, say: "HÙUU!" }] },
+      { n: "Bóng Tối Nuốt Chửng", b: 90, fixed: 1, d: "Bàn tay bóng tối trồi lên từ sàn kéo đối thủ xuống. Xuyên khiên", mk: (c, D) => [{ wait: 1.0, dmg: D, pierce: 1, fx: "rise", ic: IC.shand, sc: 2.2, on: { ctrl: ["dark", 1.8, 0, "TỐI THUI!"] }, say: "ỰC!" }] },
+    ] },
 ];
+const PY = CH.length * CHH;   // đạo cụ nằm ngay dưới các hàng nhân vật
 CH.forEach(c => c.sp.forEach((s, i) => { s.k = KEYS[i]; s.t = TOF[i]; }));
 const me = { ready: false, name: "", ch: 0 }, readyMsg = () => ({ t: "ready", name: me.name, ch: me.ch });
 const G = { mode: "", lvl: 0, phase: "menu", round: 1, score: [0, 0], ME: 0, t: 0, stop: 0, shake: 0, flash: 0, ko: 0, cine: null, hits: 0, hitT: 0, keys: [], sound: true, names: ["", ""], chars: [0, 1], oppCh: 1 };
@@ -402,7 +427,7 @@ function stepAttacks(dt) {
     } else if (!a.done) {
       a.done = 1; a.hitAt = a.age; a.hx = a.cond ? a.tx : T.x;
       if (own(a.to)) { const res = resolve(a, T); if (res) { showRes(res, a); if (G.mode === "pvp") send({ t: "res", res, aid: a.id }); } }
-      if (a.fx === "world" || a.fx === "rain" || a.fx === "nobg" || (a.fx === "drop" && a.sc > 1.2)) { G.flash = Math.max(G.flash, .5); G.shake = Math.max(G.shake, 9); beep(70, .35, "sawtooth", .1, 35); }
+      if (a.fx === "world" || a.fx === "rain" || a.fx === "nobg" || a.fx === "orbit" || a.fx === "rise" || (a.fx === "drop" && a.sc > 1.2)) { G.flash = Math.max(G.flash, .5); G.shake = Math.max(G.shake, 9); beep(70, .35, "sawtooth", .1, 35); }
     } else if (a.age - a.hitAt > .6) ATK.splice(j, 1);
   }
 }
@@ -448,13 +473,13 @@ function spr(ci, f, px, bot, flip, o = {}) {
     tx.globalCompositeOperation = "source-over"; src = tmp; sx = 0; sy = 0;
   }
   x.save(); x.translate(px, bot); if (o.rot) { x.translate(0, -55); x.rotate(o.rot); x.translate(0, 55); }
-  x.scale(flip ? -1 : 1, o.vf ? -1 : 1); if (o.a != null) x.globalAlpha = o.a;
+  x.scale(flip ? -1 : 1, (o.vf ? -1 : 1) * (o.sy || 1)); if (o.a != null) x.globalAlpha = o.a;
   x.drawImage(src, sx, sy, CW, CHH, -95, o.vf ? 0 : -CHH, CW, CHH); x.restore();
 }
 /* vẽ một đạo cụ, tâm tại (cx, cy) */
 function prop(ic, cx, cy, sc = 1, flip = false, a = 1, rot = 0) {
   x.save(); x.translate(Math.round(cx), Math.round(cy)); if (rot) x.rotate(rot); x.scale(flip ? -sc : sc, sc); x.globalAlpha = a;
-  if (ok(SPR) && ic >= 0) x.drawImage(SPR, (ic % 16) * 96, 600 + Math.floor(ic / 16) * 72, 96, 72, -48, -36, 96, 72); else { x.fillStyle = "#fff"; x.fillRect(-10, -10, 20, 20); }
+  if (ok(SPR) && ic >= 0) x.drawImage(SPR, (ic % 16) * 96, PY + Math.floor(ic / 16) * 72, 96, 72, -48, -36, 96, 72); else { x.fillStyle = "#fff"; x.fillRect(-10, -10, 20, 20); }
   x.restore();
 }
 const FONT = n => `${n}px VT323, "Courier New", monospace`;
@@ -481,6 +506,8 @@ function drawFighter(p) {
     spr(ci, f, px - p.dir * 30, bot - 46 + Math.sin(t * 4) * 3, flip, { rot: p.dir * .3, tint });
   }
   else if (c.k === "shrimp") { spr(ci, f, px, bot + 14, flip, { rot: -p.dir * (.75 + Math.sin(t * 10) * .04), tint }); prop(IC.shrimp, px - p.dir * 6, FLOOR - 104 + Math.sin(t * 6) * 3, 1, p.dir < 0); }
+  else if (c.k === "flat") spr(ci, f, px, bot, flip, { sy: .22, tint });
+  else if (c.k === "hair") { const sx = Math.sin(t * 40) * 3; spr(ci, f, px + sx, bot, flip, { tint }); prop(IC.wig, px + sx, FLOOR - 108, 1.05); if (Math.floor(t * 4) % 2) text("!?", px + 26, FLOOR - 120, "#ffe14a", 18); }
   else if (c.k === "meet") { spr(ci, f, px, bot, flip, { tint }); prop(IC.table, px + p.dir * 14, FLOOR - 30, 1.5, p.dir < 0); text("z", px + 10, FLOOR - 96 - (t * 20 % 16), "#fff", 14); text("Z", px + 18, FLOOR - 108 - (t * 20 % 16), "#fff", 18); }
   else { spr(ci, f, px, bot, flip, { tint });
     if (c.k === "frame") { x.save(); const bx = px - 34, by = FLOOR - 132; ["rgba(255,77,61,.28)", "rgba(255,216,74,.28)", "rgba(96,165,250,.28)", "rgba(45,212,191,.28)"].forEach((cl, i) => { x.fillStyle = cl; x.fillRect(bx + (i % 2) * 34, by + (i >> 1) * 64, 34, 64); }); x.strokeStyle = "#fff"; x.lineWidth = 2; x.strokeRect(bx, by, 68, 128); x.beginPath(); x.moveTo(px, by); x.lineTo(px, by + 128); x.moveTo(bx, by + 64); x.lineTo(bx + 68, by + 64); x.stroke(); x.restore(); } }
@@ -496,7 +523,10 @@ function drawAttack(a) {
   const T = F[a.to], C = F[a.from], col = a.col || chOf(a.from).col, t = G.t;
   if (a.p) {
     if (a.age < a.wait) return; const X = a.x, Y = FLOOR - a.h, d = Math.sign(a.v);
-    if (a.ic >= 0) { x.save(); x.globalCompositeOperation = "lighter"; x.fillStyle = col; x.globalAlpha = .35; x.beginPath(); x.ellipse(X - d * 10, Y, 20 * (a.sc || .5) * 2, 7, 0, 0, 6.283); x.fill(); x.restore(); prop(a.ic, X, Y, a.sc || .5, d < 0, 1, a.wob ? Math.sin(a.age * 22) * .25 : 0); }
+    if (a.ic >= 0) { x.save(); x.globalCompositeOperation = "lighter"; x.fillStyle = col; x.globalAlpha = .35; x.beginPath(); x.ellipse(X - d * 10, Y, 20 * (a.sc || .5) * 2, 7, 0, 0, 6.283); x.fill(); x.restore(); prop(a.ic, X, Y, a.sc || .5, d < 0, 1, a.wob ? Math.sin(a.age * 22) * .25 : 0); if (a.wave) { x.strokeStyle = col; x.lineWidth = 2; for (let i = 1; i < 4; i++) { x.beginPath(); x.arc(X + d * 18, Y, 10 + i * 9 + (a.age * 40 % 9), -0.7 + (d < 0 ? Math.PI : 0), .7 + (d < 0 ? Math.PI : 0)); x.stroke(); } } }
+    else if (a.ic === -2) text("ABCĐÊÔƠƯ"[(+a.id.split(":")[1]) % 8], X, Y + 7, col, 22, "center");
+    else if (a.ic === -3) { if (a.bub) { x.font = FONT(15); const w = x.measureText(a.say).width + 10; x.fillStyle = "#000"; x.fillRect(X - w / 2 - 1, Y - 11, w + 2, 20); x.fillStyle = "#fff"; x.fillRect(X - w / 2, Y - 10, w, 18); x.textAlign = "center"; x.fillStyle = "#1f1147"; x.fillText(a.say, X, Y + 4); } else text(a.say, X, Y + 6, "#fff", 18, "center"); }
+    else if (a.ic === -4) text(["bla", "BLA", "bla~"][(+a.id.split(":")[1]) % 3], X, Y + 6, col, 18, "center");
     else if (a.ic === -1) { x.fillStyle = col; for (let i = 0; i < 3; i++) { x.fillRect(X - d * i * 11 - 3, Y - 3, 6, 6); x.fillStyle = "#fff"; } }
     else { x.save(); x.globalCompositeOperation = "lighter"; x.fillStyle = col; x.beginPath(); x.ellipse(X, Y, 20, 4, 0, 0, 6.283); x.fill(); x.fillStyle = "#fff"; x.beginPath(); x.ellipse(X + d * 4, Y, 9, 2, 0, 0, 6.283); x.fill(); x.restore(); }
     if (a.low) { x.fillStyle = col; for (let i = 0; i < 4; i++) x.fillRect(X - d * i * 8 - 2, FLOOR - 4 - ((t * 60 + i * 9) % 14), 4, 5); }
@@ -505,19 +535,24 @@ function drawAttack(a) {
   const k = clamp(a.age / Math.max(.01, a.wait), 0, 1), post = a.done ? a.age - a.hitAt : -1, TX = a.done ? a.hx : a.cond ? a.tx : T.x;
   x.save();
   if (a.fx === "drop") {
-    const top = FLOOR - 96 - 14 * (a.sc || 1), t0 = a.quick ? Math.max(0, a.wait - .32) : 0, kk = clamp((a.age - t0) / Math.max(.01, a.wait - t0), 0, 1), y = a.done ? top + Math.min(1, post * 6) * 26 : -70 + (top + 70) * kk * kk;
+    const top = a.gnd ? FLOOR - 36 * a.sc + 8 : FLOOR - 96 - 14 * (a.sc || 1), t0 = a.quick ? Math.max(0, a.wait - .32) : 0, kk = clamp((a.age - t0) / Math.max(.01, a.wait - t0), 0, 1), y = a.done ? top + Math.min(1, post * 6) * 26 : -70 + (top + 70) * kk * kk;
     if (a.cond && !a.done) { x.strokeStyle = col; x.lineWidth = 2; x.globalAlpha = .5 + .5 * Math.sin(t * 30); x.beginPath(); x.ellipse(TX, FLOOR, 30 * (1.4 - k * .4), 6, 0, 0, 6.283); x.stroke(); x.globalAlpha = 1; }
     x.fillStyle = "rgba(0,0,0,.35)"; x.beginPath(); x.ellipse(TX, FLOOR + 1, 10 + 22 * (a.sc || 1) * kk, 3 + 3 * kk, 0, 0, 6.283); x.fill();
     if (a.holy) { x.globalCompositeOperation = "lighter"; x.fillStyle = `rgba(255,236,150,${a.done ? Math.max(0, .5 - post) : .15 + .3 * k})`; x.beginPath(); x.moveTo(TX - 14, 0); x.lineTo(TX + 14, 0); x.lineTo(TX + 60, FLOOR); x.lineTo(TX - 60, FLOOR); x.fill(); x.globalCompositeOperation = "source-over"; }
     if (kk > 0) { prop(a.ic, TX + (a.n ? (a.n % 2 ? 12 : -12) : 0), y, a.sc || 1, false, a.done ? Math.max(0, 1 - post * 1.8) : 1, a.done ? 0 : Math.sin(a.age * 9) * .08); if (a.lb && (!a.done || post < .45)) text(a.lb, clamp(TX, 60, W - 60), y - 36 * (a.sc || 1) - 2, "#ffe14a", 16, "center"); }
   }
   else if (a.fx === "gantt") { const cs = ["#ff4d3d", "#ffb020", "#ff7ab6"], y = FLOOR - 128 + a.n * 22, w = 150, x0 = a.done ? TX - w / 2 : (a.dir > 0 ? -w : W) + (TX - w / 2 - (a.dir > 0 ? -w : W)) * k * k; x.globalAlpha = a.done ? Math.max(0, 1 - post * 2) : 1; x.fillStyle = "#000"; x.fillRect(x0 - 2, y - 2, w + 4, 16); x.fillStyle = cs[a.n]; x.fillRect(x0, y, w, 12); x.fillStyle = "rgba(255,255,255,.5)"; x.fillRect(x0, y, w * .45, 4); text(["BRIEF", "IDEA", "DEADLINE"][a.n], x0 + 6, y + 10, "#fff", 12); }
-  else if (a.fx === "rain") { x.fillStyle = `rgba(0,0,24,${a.done ? Math.max(0, .5 - post) : .5 * Math.min(1, k * 4)})`; x.fillRect(-10, -10, W + 20, H + 20); if (!a.done) for (let i = 0; i < 14; i++) prop(a.ic, (i * 97 + 30) % W, ((i * 53 + a.age * 300) % (FLOOR + 40)) - 20, .4, false, .9, i); else if (post < .4) { prop(a.ic, TX, FLOOR - 80, 1.6 - post, false, 1 - post * 2); x.globalCompositeOperation = "lighter"; bolt(TX, 0, TX, FLOOR, "#fff", 5); } }
+  else if (a.fx === "rain") { x.fillStyle = `rgba(0,0,24,${a.done ? Math.max(0, .5 - post) : .5 * Math.min(1, k * 4)})`; x.fillRect(-10, -10, W + 20, H + 20); if (a.top != null && !a.done) prop(a.top, a.cx, FLOOR - 150 + Math.sin(t * 12) * 3, .9); if (!a.done) for (let i = 0; i < 14; i++) prop(a.ic2 != null && i % 2 ? a.ic2 : a.ic, (i * 97 + 30) % W, ((i * 53 + a.age * 300) % (FLOOR + 40)) - 20, .4, false, .9, i); else if (post < .4) { prop(a.ic, TX, FLOOR - 80, 1.6 - post, false, 1 - post * 2); x.globalCompositeOperation = "lighter"; bolt(TX, 0, TX, FLOOR, "#fff", 5); } }
   else if (a.fx === "clones") { const ci = G.chars[a.from], span = (TX + a.dir * 90) - a.cx; for (let i = 0; i < 5; i++) { const kk = clamp(a.age / (a.wait + .35) * 1.5 - i * .1, 0, 1); if (kk > 0 && kk < 1) spr(ci, 2 + Math.floor(a.age * 10 + i) % 2, a.cx + span * kk, FLOOR, a.dir < 0, { a: .7, tint: "rgba(255,216,74,.4)" }); } }
   else if (a.fx === "dash") { const X = a.cx + (TX + a.dir * 80 - a.cx) * (a.done ? 1 : k * k), al = a.done ? Math.max(0, 1 - post * 3) : 1; x.globalCompositeOperation = "lighter"; x.strokeStyle = col; x.lineWidth = 6; x.globalAlpha = .5 * al; x.beginPath(); x.moveTo(a.cx, FLOOR - 70); x.lineTo(X, FLOOR - 70); x.stroke(); x.globalCompositeOperation = "source-over"; prop(a.ic, X, FLOOR - 74, a.sc || 1, a.dir < 0, al); }
   else if (a.fx === "ring") { const r = Math.min(a.age, a.wait + .4) * 340; x.globalAlpha = a.done ? Math.max(0, 1 - post * 2.5) : 1; if (a.ic != null) for (let i = 0; i < 12; i++) { const an = i / 12 * 6.283 + t; prop(a.ic, a.cx + Math.cos(an) * r, FLOOR - 16 + Math.sin(an) * r * .14 - Math.abs(Math.sin(t * 5 + i)) * 8, .7, false, x.globalAlpha); } else { x.globalCompositeOperation = "lighter"; x.strokeStyle = col; x.lineWidth = 6; x.beginPath(); x.ellipse(a.cx, FLOOR, r, r * .16, 0, 0, 6.283); x.stroke(); } }
+  else if (a.fx === "orbit") { const foods = [IC.pho, IC.banhmi, IC.roll, IC.cake, IC.sushi, IC.pizza, IC.chicken, IC.tea], R = a.done ? 70 * .3 * Math.max(0, 1 - post * 4) : 78 * (1 - k * .7), al = a.done ? Math.max(0, 1 - post * 3) : Math.min(1, k * 5);
+    prop(IC.menu, a.cx + a.dir * 30, FLOOR - 120 - Math.min(1, k * 4) * 14, .6, false, a.done ? al : 1); prop(IC.buffet, TX - a.dir * 78, FLOOR - 30, 1.25 * Math.min(1, k * 4), false, al);
+    foods.forEach((ic, i) => { const an = i / foods.length * 6.283 + a.age * (4 + k * 8); prop(ic, TX + Math.cos(an) * R * 1.25, FLOOR - 66 + Math.sin(an) * R * .75, .5, false, al, an); }); }
+  else if (a.fx === "rise") { const al = a.done ? Math.max(0, 1 - post * 2) : 1, kk = a.done ? 1 : k * k; x.fillStyle = `rgba(0,0,0,${(a.done ? .6 : .6 * k) * al})`; x.fillRect(-10, -10, W + 20, H + 20); x.fillStyle = `rgba(10,0,25,${al})`; x.beginPath(); x.ellipse(TX, FLOOR + 2, 20 + 60 * kk, 4 + 9 * kk, 0, 0, 6.283); x.fill();
+    x.save(); x.beginPath(); x.rect(0, 0, W, FLOOR + 6); x.clip(); prop(a.ic, TX, FLOOR + 80 - kk * (80 + 36 * a.sc - 8) + (a.done ? post * 120 : Math.sin(t * 30) * 2), a.sc, false, al); x.restore(); }
   else if (a.fx === "nobg") { x.strokeStyle = "#000"; x.lineWidth = 1; x.setLineDash([4, 4]); x.lineDashOffset = -t * 24; x.strokeRect(TX - 34.5, FLOOR - 134.5, 68, 136); x.setLineDash([]); if (!a.done || post < .5) { x.fillStyle = "#1f2937"; x.fillRect(W / 2 - 78, 62, 156, 18); text("REMOVE BACKGROUND " + Math.round(k * 100) + "%", W / 2, 76, "#fff", 14, "center"); } }
-  else if (a.fx === "slash" && post >= 0 && post < .28) { const o = (a.n - 1) * 16, x0 = TX - 40 + o, y0 = FLOOR - 126, x1 = TX + 40 + o, y1 = FLOOR - 14, cx1 = TX + 50 + o, cy1 = FLOOR - 120; x.strokeStyle = "#000"; x.lineWidth = 5; x.beginPath(); x.moveTo(x0, y0); x.quadraticCurveTo(cx1, cy1, x1, y1); x.stroke(); x.strokeStyle = "#fff"; x.lineWidth = 2; x.stroke(); if (a.pen) { x.strokeStyle = "#38bdf8"; x.lineWidth = 1; x.beginPath(); x.moveTo(x0, y0); x.lineTo(cx1, cy1); x.stroke(); [[x0, y0], [x1, y1], [cx1, cy1]].forEach(q => { x.fillStyle = "#fff"; x.fillRect(q[0] - 3, q[1] - 3, 6, 6); x.strokeRect(q[0] - 3.5, q[1] - 3.5, 7, 7); }); prop(IC.pen, x1 + 8, y1 - 6, .4); } }
+  else if (a.fx === "slash" && post >= 0 && post < .28) { const o = (a.n - 1) * 16, x0 = TX - 40 + o, y0 = FLOOR - 126, x1 = TX + 40 + o, y1 = FLOOR - 14, cx1 = TX + 50 + o, cy1 = FLOOR - 120; x.strokeStyle = "#000"; x.lineWidth = 5; x.beginPath(); x.moveTo(x0, y0); x.quadraticCurveTo(cx1, cy1, x1, y1); x.stroke(); x.strokeStyle = a.red ? "#ff3b30" : "#fff"; x.lineWidth = a.red ? 3 : 2; x.stroke(); if (a.red) prop(IC.redpen, x1 + 8, y1 - 8, .45); if (a.pcl) { x.strokeStyle = "#111"; x.lineWidth = 2; x.beginPath(); for (let i = 0; i <= 12; i++) x.lineTo(x0 + (x1 - x0) * i / 12 + Math.sin(i * 2.1 + a.n) * 12, y0 + (y1 - y0) * i / 12 + Math.cos(i * 1.7) * 8); x.stroke(); prop(IC.pencil, x1 + 8, y1 - 8, .5); } if (a.pen) { x.strokeStyle = "#38bdf8"; x.lineWidth = 1; x.beginPath(); x.moveTo(x0, y0); x.lineTo(cx1, cy1); x.stroke(); [[x0, y0], [x1, y1], [cx1, cy1]].forEach(q => { x.fillStyle = "#fff"; x.fillRect(q[0] - 3, q[1] - 3, 6, 6); x.strokeRect(q[0] - 3.5, q[1] - 3.5, 7, 7); }); prop(IC.pen, x1 + 8, y1 - 6, .4); } }
   x.restore();
 }
 function hud() {
@@ -551,6 +586,10 @@ function render() {
     else { x.save(); x.globalCompositeOperation = "lighter"; x.fillStyle = f.c;
       if (f.k === "spark") { x.globalAlpha = 1 - k; x.fillRect(Math.round(f.x), Math.round(f.y), 2, 2); } else x.fillRect(Math.round(f.x + (f.tx - f.x) * k), Math.round(f.y + (f.ty - f.y) * k), 2, 2);
       x.restore(); } });
+  const dk = F.find(p => p.ctrl && p.ctrl.k === "dark");
+  if (dk) { const o = F[1 - dk.i], al = Math.min(.93, dk.ctrl.t * 3); x.save(); x.fillStyle = `rgba(4,0,14,${al})`; x.beginPath(); x.rect(-20, -20, W + 40, H + 40); x.arc(o.x, FLOOR - 70, 46 + Math.sin(G.t * 5) * 3, 0, 6.283, true); x.fill("evenodd"); x.restore();
+    const ex = dk.x + dk.dir * 6, ey = FLOOR - 112, bl = Math.floor(G.t * 3) % 5 ? 4 : 1; x.fillStyle = "#fff"; x.fillRect(ex - 8, ey, 6, bl); x.fillRect(ex + 3, ey, 6, bl); x.fillStyle = "#000"; x.fillRect(ex - 6 + Math.round(Math.sin(G.t * 7) * 2), ey + 1, 2, 2); x.fillRect(ex + 5 + Math.round(Math.sin(G.t * 7) * 2), ey + 1, 2, 2);
+    if (dk.ctrl.lb) text(dk.ctrl.lb, clamp(dk.x, 70, W - 70), FLOOR - 142, "#fff", 14, "center"); text("?", dk.x + 22, FLOOR - 124 - (G.t * 16 % 10), "#ffe14a", 16, "center"); }
   if (wk > 0) { x.globalCompositeOperation = "difference"; x.fillStyle = `rgba(255,255,255,${wk})`; x.fillRect(-200, -200, W + 400, H + 400); x.globalCompositeOperation = "source-over"; }
   NUM.forEach(n => { x.globalAlpha = Math.min(1, (n.d - n.t) * 4); text(n.tx, n.x, n.y, n.c, 16 * n.big + (n.big > 1.5 ? 8 : 0), "center"); x.globalAlpha = 1; });
   x.setTransform(1, 0, 0, 1, 0, 0);
@@ -576,7 +615,7 @@ function onMsg(m) {
   if (m.t === "hello") { if (net.host) send({ t: "hello" }); onConnected(); return; }
   if (m.t === "ping") return send({ t: "pong", ts: m.ts });
   if (m.t === "pong") { const r = performance.now() - m.ts; net.rtt = net.rtt ? net.rtt * .7 + r * .3 : r; $("pingTx").textContent = (net.mode === "relay" ? "RELAY " : "P2P ") + Math.round(net.rtt) + " ms"; return; }
-  if (m.t === "ready") { G.oppReady = true; if (m.name) G.oppName = String(m.name).slice(0, 12); G.oppCh = clamp(m.ch | 0, 0, 3); (net.host ? $("p2St") : $("p1St")).textContent = "Sẵn sàng ✓ · " + CH[G.oppCh].name; return maybeStart(); }
+  if (m.t === "ready") { G.oppReady = true; if (m.name) G.oppName = String(m.name).slice(0, 12); G.oppCh = clamp(m.ch | 0, 0, CH.length - 1); (net.host ? $("p2St") : $("p1St")).textContent = "Sẵn sàng ✓ · " + CH[G.oppCh].name; return maybeStart(); }
   if (m.t === "go") return startMatch("pvp", 0, m.ch);
   const o = F[1 - G.ME]; if (!o || G.mode !== "pvp") return;
   if (m.t === "s") { o.x += (m.x - o.x) * .6; o.y = m.y; o.hp = m.hp; o.mp = m.mp; o.rf = m.f; o.shield = m.sh; o.big = m.bg; o.bigK = m.bk; o.smoke = m.sm; o.ride = m.rd; o.flyX = m.fx; o.fly = m.fx == null ? 0 : .1; o.inv = m.iv ? .1 : 0; o.crouch = !!m.cr; o.ctrl = m.c ? mkCtrl(m.c) : null; return; }
@@ -584,7 +623,14 @@ function onMsg(m) {
   if (m.t === "c") return doCast(1 - G.ME, m.s, false);
   if (m.t === "rf") { spawn(1 - G.ME, { p: 1, v: 360, dmg: 15, col: "#fff", sp: 1 }); return; }
   if (m.t === "res") { const j = ATK.findIndex(a => a.id === m.aid), a = j >= 0 ? ATK[j] : null; if (a && a.p) ATK.splice(j, 1); if (m.res.to === undefined) m.res.to = 1 - G.ME; showRes(m.res, a); return; }
+  if (m.t === "reset") { if (net.host) resetMatch(); return; }
   if (m.t === "round") { G.round = m.n; G.score = m.sc; return newRound(); }
+}
+function resetMatch() {                                   // đấu lại từ hiệp 1, tỉ số 0-0
+  if (G.mode === "ai") return startMatch("ai", G.lvl, G.chars);
+  if (G.mode !== "pvp") return;
+  if (!net.host) return send({ t: "reset" });
+  G.round = 1; G.score = [0, 0]; send({ t: "round", n: 1, sc: [0, 0] }); newRound();
 }
 function setReady() { me.ready = true; $("bReady").disabled = true; $("bReady").textContent = "Đã sẵn sàng – chờ đối thủ…"; (net.host ? $("p1St") : $("p2St")).textContent = "Sẵn sàng ✓ · " + CH[me.ch].name; send(readyMsg()); maybeStart(); }
 function maybeStart() { if (me.ready && G.oppReady && net.host) { const ch = [me.ch, G.oppCh]; send({ t: "go", ch }); startMatch("pvp", 0, ch); } }
@@ -595,7 +641,7 @@ function saveResult(win) { try { const k = "hmwiz-stats", s = JSON.parse(localSt
 function statLine() { try { const s = JSON.parse(localStorage.getItem("hmwiz-stats") || "{}"); const f = k => s[k] ? `${s[k].w} thắng / ${s[k].l} thua` : "chưa đấu"; return `LV1: ${f("lv1")} · LV2: ${f("lv2")} · LV3: ${f("lv3")} · Đấu người: ${f("pvp")}`; } catch { return ""; } }
 
 /* ======================= GIAO DIỆN ======================= */
-try { me.name = localStorage.getItem("hmwiz-name") || ""; me.ch = clamp(+localStorage.getItem("hmwiz-ch") || 0, 0, 3); } catch {}
+try { me.name = localStorage.getItem("hmwiz-name") || ""; me.ch = clamp(+localStorage.getItem("hmwiz-ch") || 0, 0, 5); } catch {}
 $("inName").value = me.name; $("inName").oninput = () => { me.name = $("inName").value.trim().slice(0, 12); try { localStorage.setItem("hmwiz-name", me.name); } catch {} };
 $("homeStats").textContent = statLine();
 const card = (c, i) => `<button class="chr" data-c="${i}" style="--c:${c.col}"><i style="background-position:-162px ${-(i * 150 + 20) * 2}px"></i><b>${c.name.split(" ")[0]}</b><em></em></button>`;
@@ -604,12 +650,12 @@ const pick = { a: -1, b: -1, lvl: 0 };
 $("pickGrid").innerHTML = CH.map(card).join("");
 function drawPick() {
   document.querySelectorAll("#pickGrid .chr").forEach((b, i) => { b.classList.toggle("p1", i === pick.a); b.classList.toggle("p2", i === pick.b); b.querySelector("em").textContent = (i === pick.a ? "BẠN" : "") + (i === pick.a && i === pick.b ? " + " : "") + (i === pick.b ? "MÁY" : ""); });
-  [["postA", pick.a], ["postB", pick.b]].forEach(([id, ci]) => { const el = $(id); el.classList.toggle("empty", ci < 0); el.style.setProperty("--c", ci < 0 ? "#555" : CH[ci].col); el.querySelector("i").style.backgroundPosition = ci < 0 ? "0 9999px" : `-40px ${-ci * 150}px`; el.querySelector("u").style.backgroundPosition = ci < 0 ? "0 9999px" : `${ci * 100 / 3}% 0`; el.querySelector("b").textContent = ci < 0 ? "?" : CH[ci].name.toUpperCase(); el.querySelector("small").textContent = ci < 0 ? "" : CH[ci].role; });
+  [["postA", pick.a], ["postB", pick.b]].forEach(([id, ci]) => { const el = $(id); el.classList.toggle("empty", ci < 0); el.style.setProperty("--c", ci < 0 ? "#555" : CH[ci].col); el.querySelector("i").style.backgroundPosition = ci < 0 ? "0 9999px" : `-40px ${-ci * 150}px`; el.querySelector("u").style.backgroundPosition = ci < 0 ? "0 9999px" : `${ci * 100 / (CH.length - 1)}% 0`; el.querySelector("b").textContent = ci < 0 ? "?" : CH[ci].name.toUpperCase(); el.querySelector("small").textContent = ci < 0 ? "" : CH[ci].role; });
   $("pickTip").textContent = pick.a < 0 ? "Chạm để chọn nhân vật của BẠN" : pick.b < 0 ? `Bạn là ${CH[pick.a].name}. Giờ chọn nhân vật cho MÁY` : `${CH[pick.a].name} đấu ${CH[pick.b].name}. Chạm nhân vật bất kỳ để chọn lại`;
   $("pickInfo").innerHTML = pick.a < 0 ? "" : `<b style="color:${CH[pick.a].col}">${CH[pick.a].name}</b> · ${CH[pick.a].tag}<br>F: ${CH[pick.a].F.n} · G: ${CH[pick.a].G.n} · Tối thượng: ${CH[pick.a].sp[7].n}`;
   $("bFight").disabled = pick.a < 0 || pick.b < 0; document.querySelectorAll("#lvPick button").forEach((b, i) => b.classList.toggle("on", i === pick.lvl));
 }
-document.querySelectorAll("#pickGrid .chr").forEach(b => b.onclick = () => { const i = +b.dataset.c; if (pick.a < 0 || pick.b >= 0) { pick.a = i; pick.b = -1; } else pick.b = i; drawPick(); });
+document.querySelectorAll("#pickGrid .chr").forEach(b => b.onclick = () => { const i = +b.dataset.c < 0 ? Math.floor(Math.random() * CH.length) : +b.dataset.c; if (pick.a < 0 || pick.b >= 0) { pick.a = i; pick.b = -1; } else pick.b = i; drawPick(); });
 $("lvPick").innerHTML = LVL.map((o, i) => `<button data-i="${i}"><b>LV${i + 1}</b> ${o.n}<small>${o.hp} HP</small></button>`).join("");
 document.querySelectorAll("#lvPick button").forEach(b => b.onclick = () => { pick.lvl = +b.dataset.i; drawPick(); });
 $("bAI").onclick = () => { pick.a = -1; pick.b = -1; drawPick(); show("pick"); };
@@ -624,6 +670,9 @@ drawRoomPick();
 $("bCreate").onclick = createRoom; $("bJoin").onclick = () => joinRoom($("inCode").value); $("inCode").onkeydown = e => { if (e.key === "Enter") joinRoom($("inCode").value); };
 $("bReady").onclick = setReady;
 document.querySelectorAll("[data-go]").forEach(b => b.onclick = () => { if (b.dataset.go === "home" && (G.mode === "pvp" || net.connected)) return location.reload(); show(b.dataset.go); if (b.dataset.go === "home") { G.mode = ""; F = []; $("homeStats").textContent = statLine(); } });
+$("bReset").onclick = resetMatch;
+// màn mở đầu: dải nhân vật chạy ngang
+$("roster").innerHTML = [0, 1].map(() => CH.map((c, i) => `<div class="rost" style="--c:${c.col}"><u style="background-position:${i * 100 / (CH.length - 1)}% 0"></u><i style="background-position:-40px ${-i * 150}px"></i><b>${c.name.toUpperCase()}</b><small>${c.role}</small></div>`).join("")).join("");
 $("bSound").onclick = () => { G.sound = !G.sound; $("bSound").textContent = G.sound ? "🔊 Âm thanh" : "🔇 Tắt tiếng"; };
 // nút cảm ứng: giữ được
 document.querySelectorAll("[data-k]").forEach(b => { const k = b.dataset.k, down = e => { e.preventDefault(); b.classList.add("on"); if (KEY[k] !== undefined) KEY[k] = 1; else press(k); }, up = e => { e.preventDefault(); b.classList.remove("on"); if (KEY[k] !== undefined) KEY[k] = 0; }; b.addEventListener("pointerdown", down); b.addEventListener("pointerup", up); b.addEventListener("pointercancel", up); b.addEventListener("pointerleave", up); b.addEventListener("contextmenu", e => e.preventDefault()); });

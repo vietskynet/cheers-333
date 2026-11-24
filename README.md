@@ -211,3 +211,11 @@ Game đối kháng phép thuật 16-bit, chơi bằng bàn phím hoặc nút c�
 - Hình vẽ bằng Higgsfield: `sprites.png` (4 nhân vật × 12 khung, ô 190×150, cộng 32 đạo cụ ô 96×72 từ y=600), `bg.png` (nền văn phòng 480×270), `posters.png` (4 poster 360×480 xếp ngang).
 - Ba file hình CHƯA nằm trong repo. `scripts/fetch-agc-assets.mjs` (lệnh build trong `netlify.toml`) tải chúng từ kho ảnh Higgsfield lúc deploy; nếu thiếu, game tự lấy thẳng từ kho đó. Nên tải ba file về và commit vào `public/agcCombat/` để không phụ thuộc kho ngoài.
 - Đã bỏ trang "Bảng thông số" và các tên phép của bản đầu.
+
+### Cập nhật 25/11 (lần 2): AGENCY COMBAT có 6 nhân vật, màn mở đầu arcade
+
+- Tên game: AGENCY COMBAT. Màn mở đầu có logo, dải poster nhân vật chạy ngang, rồi tới menu.
+- Thêm Phương Ngân (Creative Copy-based: Giật Tít, Chơi Chữ, Trà Sữa Giải Lao, Mái Tóc Trùm, Bút Đỏ Sửa Bài, Set Menu, Giơ Tay Ý Kiến, Mèo Khổng Lồ) và Khoa Đặng (Sr Art Director: Nói Nhiều, Bịa Chuyện, Xin Nghỉ Đi Du Lịch, Tắt Đèn, Vẽ Chuyện, Chuyến Bay Giá Rẻ, Kể Chuyện Ma, Bóng Tối Nuốt Chửng).
+- Nhân Ziku: skill BBBF đổi từ "Layer Đè" sang "Tách Nền".
+- Trong trận có nút "✕ Thoát" và "↻ Đấu lại" (đấu 2 người: chủ phòng đặt lại, khách gửi yêu cầu).
+- `sprites.png` giờ có 6 hàng nhân vật (đạo cụ bắt đầu từ y = 900, 4 hàng × 16 ô); `posters.png` có 6 poster. Thêm nhân vật: thêm một mục vào `CH`, một hàng vào `sprites.png`, một ô vào `posters.png`, và sửa `background-size` (600%) trong CSS.

@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>AGC COMBAT – Đấu trường ma pháp VML</title>
-<meta name="description" content="Game đối kháng 16-bit của agency: 4 nhân vật, mỗi người 8 skill, đấu với máy hoặc đấu 2 người qua mã phòng.">
+<title>AGENCY COMBAT</title>
+<meta name="description" content="Game đối kháng 16-bit của agency: 6 nhân vật, mỗi người 8 skill, đấu với máy hoặc đấu 2 người qua mã phòng.">
 <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
@@ -17,7 +17,7 @@
   h3{font-size:23px;font-weight:400;color:#7fd4ff;margin:16px 0 6px}
   h4{font-size:19px;font-weight:400;color:#ffd84a;margin:12px 0 5px}
   p,li{line-height:1.25;color:#cfc9e6}
-  .col{display:flex;flex-direction:column;gap:10px;max-width:380px;margin:18px auto 0}
+  .col{display:flex;flex-direction:column;gap:10px;max-width:380px;margin:14px auto 0}
   input{width:100%;background:#15132a;border:2px solid #3b3766;color:#fff;font:inherit;font-size:24px;padding:9px 12px;text-align:center}
   input::placeholder{color:#6b668f}
   .btn{display:block;width:100%;border:2px solid #000;background:#ffd84a;color:#14121f;font:inherit;font-size:26px;padding:10px;cursor:pointer;box-shadow:4px 4px 0 #a3261c;text-align:center;text-decoration:none}
@@ -56,6 +56,26 @@
   details{margin-top:12px;border:2px solid #3b3766;padding:6px 10px;background:#100e20}summary{cursor:pointer;color:#ffd84a;font-size:22px}
   table{width:100%;border-collapse:collapse;font-size:18px;margin-top:8px}th,td{border:1px solid #3b3766;padding:4px 6px;text-align:center}th{background:#15132a;color:#ffd84a;cursor:pointer;font-weight:400}td:first-child,th:first-child{text-align:left}
 
+  /* màn mở đầu kiểu arcade */
+  .hero{position:relative;overflow:hidden;border:3px solid #000;box-shadow:0 0 0 2px #ffd84a;padding:10px 0 8px;text-align:center;background:linear-gradient(#070616cc,#12103acc 55%,#070616),var(--bg) center/cover;image-rendering:pixelated}
+  .hero:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,#0000 0 2px,#0003 2px 3px);pointer-events:none;z-index:3}
+  .hero:after{content:"";position:absolute;left:50%;top:44%;width:520px;height:520px;margin:-260px;background:repeating-conic-gradient(#ffd84a22 0 8deg,#0000 8deg 16deg);animation:spin 18s linear infinite;pointer-events:none}
+  .hero>*{position:relative;z-index:2}
+  .coin{color:#7fd4ff;font-size:16px;letter-spacing:2px}
+  .hero h1{margin:4px 0 0;font-size:64px;line-height:.82;color:#ffd84a;text-shadow:3px 3px 0 #c81e1e,6px 6px 0 #000;transform:skewY(-4deg) rotate(-1deg);animation:pulse 1.2s ease-in-out infinite}
+  .hero h1 span{display:block}.hero h1 .l2{color:#fff;font-size:78px;text-shadow:3px 3px 0 #1d4ed8,6px 6px 0 #000}
+  .hero .sub{margin-top:12px;font-size:16px;color:#fff;letter-spacing:1px;text-shadow:1px 1px 0 #000}
+  .rwrap{overflow:hidden;margin:8px 0 6px;border-top:2px solid #000;border-bottom:2px solid #000;background:#0008}
+  #roster{display:flex;gap:6px;width:max-content;padding:5px 3px;animation:slide 16s linear infinite}
+  .rost{position:relative;width:96px;height:140px;overflow:hidden;background:var(--c);border:2px solid #000;flex:none}
+  .rost u{position:absolute;inset:0 0 28px 0;background:var(--post) no-repeat;background-size:600% 100%;display:none}
+  .rost i{position:absolute;left:50%;bottom:26px;width:110px;height:150px;margin-left:-55px;background:var(--spr) no-repeat;image-rendering:pixelated}
+  .hasPost .rost u{display:block}.hasPost .rost i{display:none}
+  .rost b{position:absolute;left:0;right:0;bottom:11px;background:#000;color:#ffd84a;font-weight:400;font-size:15px;line-height:1.05;white-space:nowrap}
+  .rost small{position:absolute;left:0;right:0;bottom:0;background:#000;color:#fff;font-size:11px;line-height:1;white-space:nowrap;padding-bottom:1px}
+  .blink{color:#fff;font-size:20px;animation:blink 1s steps(2) infinite;text-shadow:2px 2px 0 #000}
+  @keyframes slide{to{transform:translateX(-50%)}}@keyframes blink{50%{opacity:.15}}@keyframes spin{to{transform:rotate(360deg)}}@keyframes pulse{50%{transform:skewY(-4deg) rotate(-1deg) scale(1.04)}}
+  .topbar .exit{background:#a3261c;border-color:#000;color:#fff}.topbar #bReset{background:#1d4ed8;border-color:#000;color:#fff}
   /* chọn nhân vật */
   .sel{background:radial-gradient(circle at 50% 40%,#2a2f8f 0,#12103a 55%,#070616 100%);border:3px solid #000;box-shadow:0 0 0 2px #ffd84a;padding:8px 6px 10px;position:relative;overflow:hidden}
   .sel:before{content:"";position:absolute;inset:0;background:radial-gradient(#ffffff22 1.2px,transparent 1.6px) 0 0/9px 9px;pointer-events:none}
@@ -64,7 +84,7 @@
   .post{height:270px;position:relative;overflow:hidden;--c:#555}
   .post:before{content:"";position:absolute;left:-20%;right:-20%;top:18%;bottom:0;background:var(--c);opacity:.55;transform:skewY(-12deg);border-top:3px solid #000}
   .post i{position:absolute;left:50%;bottom:44px;width:110px;height:150px;margin-left:-55px;background:var(--spr) no-repeat;image-rendering:pixelated;transform:scale(1.55);transform-origin:50% 100%}
-  .post u{position:absolute;top:0;bottom:30px;left:50%;aspect-ratio:3/4;transform:translateX(-50%);background:var(--post) no-repeat;background-size:400% 100%;display:none}
+  .post u{position:absolute;top:0;bottom:30px;left:50%;aspect-ratio:3/4;transform:translateX(-50%);background:var(--post) no-repeat;background-size:600% 100%;display:none}
   .hasPost .post u{display:block}.hasPost .post i{display:none}
   .post.p2 i{transform:scale(-1.55,1.55)}.post.p2 u{transform:translateX(-50%) scaleX(-1)}
   .post span{position:absolute;top:2px;left:2px;background:#000;color:#fff;font-size:15px;padding:0 5px}.post.p2 span{left:auto;right:2px}
@@ -72,10 +92,11 @@
   .post small{position:absolute;left:0;right:0;bottom:0;text-align:center;font-size:13px;white-space:nowrap;color:#fff;text-shadow:1px 1px 0 #000}
   .post.empty b{color:#888}
   #pickGrid{display:grid;grid-template-columns:repeat(2,62px);gap:4px;background:#000;padding:4px;border:2px solid #c81e1e;align-self:center}
-  #roomGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0}
+  #roomGrid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin:8px 0}
   .chr{position:relative;border:2px solid #3b3766;background:#1b1a3a;padding:0 0 2px;cursor:pointer;font:inherit;color:#fff;overflow:hidden}
   .chr i{display:block;width:58px;height:58px;margin:0 auto;background:var(--spr) no-repeat;background-size:4560px auto;image-rendering:pixelated;background-color:var(--c)}
-  .chr b{display:block;font-weight:400;font-size:13px;line-height:1;white-space:nowrap;overflow:hidden}
+  .chr b{display:block;font-weight:400;font-size:12px;line-height:1;white-space:nowrap;overflow:hidden}
+  .chr.rnd i{background:#2a2550}.chr.rnd i:after{content:"?";display:block;text-align:center;font-style:normal;font-size:52px;line-height:58px;color:#ffd84a}
   .chr em{position:absolute;top:0;left:0;font-style:normal;font-size:13px;background:#ffd84a;color:#000;padding:0 3px;line-height:1.1}.chr em:empty{display:none}
   .chr.p1{border-color:#ffd84a;box-shadow:0 0 0 2px #ffd84a}.chr.p2{border-color:#ff3b30;box-shadow:0 0 0 2px #ff3b30}.chr.p2 em{background:#ff3b30;color:#fff}
   #lvPick{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:8px 0}#lvPick button.on{border-color:#ffd84a;background:#2a2550}
@@ -89,7 +110,13 @@
 
 <!-- ============ MỞ ĐẦU ============ -->
 <section class="scr on" id="home">
-  <h1>AGC COMBAT<small>ĐẤU TRƯỜNG MA PHÁP VML · 16-BIT</small></h1>
+  <div class="hero">
+    <div class="coin">★ VML VIETNAM PRESENTS ★</div>
+    <h1><span>AGENCY</span><span class="l2">COMBAT</span></h1>
+    <div class="sub">ĐẤU TRƯỜNG MA PHÁP VĂN PHÒNG · 16-BIT</div>
+    <div class="rwrap"><div id="roster"></div></div>
+    <div class="blink">▼ INSERT COIN · CHỌN CHẾ ĐỘ ▼</div>
+  </div>
   <div class="col">
     <input id="inName" maxlength="12" placeholder="Tên của bạn" autocomplete="off">
     <button class="btn" id="bAI">Đấu với máy</button>
@@ -134,7 +161,7 @@
 
 <!-- ============ TRẬN ĐẤU ============ -->
 <section class="scr" id="game">
-  <div class="topbar"><button data-go="home">← Thoát</button><button id="bSound">🔊 Âm thanh</button><button data-go="guide">Hướng dẫn</button><span id="pingTx"></span></div>
+  <div class="topbar"><button data-go="home" class="exit">✕ Thoát</button><button id="bReset">↻ Đấu lại</button><button id="bSound">🔊 Âm thanh</button><button data-go="guide">Hướng dẫn</button><span id="pingTx"></span></div>
   <div id="oppPick"></div>
   <canvas id="cv" width="480" height="270"></canvas>
   <div id="netBar"></div>
@@ -149,7 +176,7 @@
 <!-- ============ HƯỚNG DẪN ============ -->
 <section class="scr" id="guide">
   <h2>Hướng dẫn</h2>
-  <p>Chọn một trong bốn nhân vật của agency. Đánh cho đối thủ hết máu trước là thắng hiệp. Hết hiệp, cả hai đầy máu và đấu tiếp; tỉ số ghi ở giữa màn hình.</p>
+  <p>Chọn một trong sáu nhân vật của agency. Đánh cho đối thủ hết máu trước là thắng hiệp. Hết hiệp, cả hai đầy máu và đấu tiếp; tỉ số ghi ở giữa màn hình.</p>
   <h3>Điều khiển</h3>
   <div class="keys">
     <b>← →</b><span>Di chuyển. Luôn cách đối thủ ít nhất 100 px.</span>
@@ -163,7 +190,7 @@
   </div>
   <p style="margin-top:8px">Trên điện thoại có nút cảm ứng ngay dưới sân đấu. MP (thanh xanh) tự hồi 7 điểm mỗi giây.</p>
   <h3>Ra skill</h3>
-  <p>Bấm các phím liền nhau, mỗi phím cách phím trước dưới nửa giây. Tám skill của cả bốn nhân vật dùng chung tám chuỗi phím, nên học một lần là chơi được hết. Chuỗi càng dài, skill càng mạnh và càng tốn MP. Thiếu MP thì hiện "NO MP". Skill không né được bằng cúi hay nhảy; phải dùng khiên C hoặc phản đòn V.</p>
+  <p>Bấm các phím liền nhau, mỗi phím cách phím trước dưới nửa giây. Tám skill của mọi nhân vật dùng chung tám chuỗi phím, nên học một lần là chơi được hết. Chuỗi càng dài, skill càng mạnh và càng tốn MP. Thiếu MP thì hiện "NO MP". Skill không né được bằng cúi hay nhảy; phải dùng khiên C hoặc phản đòn V.</p>
   <h3>Đấu với máy</h3>
   <div class="keys">
     <b>LV1 Thực tập sinh</b><span>100 HP, chậm, chỉ ném đòn cao.</span>
@@ -171,7 +198,7 @@
     <b>LV3 Sếp tổng</b><span>210 HP, đánh dồn dập, thả đồ rơi từ trần (đi ra khỏi vòng báo), hay ra skill và dựng khiên.</span>
   </div>
   <p style="margin-top:8px">Đốm sáng trước mặt máy báo trước độ cao của đòn sắp ra. Skill của máy yếu hơn của bạn khoảng một nửa.</p>
-  <h3>Bốn nhân vật và bộ skill</h3>
+  <h3>Sáu nhân vật và bộ skill</h3>
   <div id="guideSpells"></div>
   <div class="col"><button class="btn" data-go="home">← Về màn hình chính</button></div>
 </section>
