@@ -189,3 +189,16 @@ netlify dev        # cần file .env chứa các biến ở trên
   - `GET /api/ac/leaderboard` – 30 người thắng nhiều nhất.
 - Bảng `ac_matches`: mỗi dòng một trận của một người chơi (đấu 2 máy thì mỗi bên tự gửi dòng của mình). `player_id` là mã ngẫu nhiên sinh trên máy người chơi (`localStorage` khoá `hmac-pid`), không có đăng nhập nên kết quả gửi lên **không được xác thực** – đủ cho chơi vui nội bộ, chưa đủ cho giải có thưởng.
 - Game vẫn lưu song song trên máy (`hmac-history`) và tự dùng bản đó khi không gọi được máy chủ.
+
+## Game `/agcCombat/` – Đấu trường phép thuật Arcade (24/11)
+
+Game đối kháng phép thuật 16-bit, chơi bằng bàn phím hoặc nút cảm ứng (không dùng camera). Làm theo brief "Đấu trường phép thuật Arcade".
+
+- File: `public/agcCombat/index.html` (giao diện), `game.js` (khối mạng dùng chung + toàn bộ game), `atlas.png` (nền sân và 4 nhân vật; toạ độ khung hình nằm trong hằng `ATLAS`), `peerjs.min.js`, `mqtt.min.js`.
+- Canvas logic 480×270, phóng to bằng CSS `image-rendering: pixelated`.
+- Màn hình mở đầu: ô đặt tên, "Đấu với máy" (LV1–3), "Tạo phòng đấu 2 người", ô mã + "Vào phòng", "Hướng dẫn", "Bảng thông số".
+- Phím: ← → đi, ↑ nhảy, ↓ cúi, F tia nhanh, G đòn nặng, C khiên, V phản đòn, B nạp MP. 18 phép combo nằm trong mảng `SP`, bậc phép trong `TIER`, ba đối thủ máy trong `OPP`.
+- Đấu 2 người: người vào phòng dùng lại bộ khung hình pháp sư, lật ngang và phủ tím. Mỗi máy tự quyết định đòn nào trúng nhân vật của mình rồi gửi kết quả (`res`) cho máy kia; chủ phòng quyết định sang hiệp mới. Khi đấu 2 người, đòn G chạy sát sàn (phải nhảy để né) để có đủ đòn cao và thấp.
+- Khác brief: thêm chế độ 2 người, trang hướng dẫn riêng, đặt tên; bảng thông số chuyển thành một trang riêng thay vì tab.
+- Thắng/thua lưu trên máy (`localStorage` khoá `hmwiz-stats`), chưa ghi vào database.
+- Test: `/agcCombat/#local` mở 2 cửa sổ cùng trình duyệt; `window.__wz` để soi trạng thái.

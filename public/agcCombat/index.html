@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Đấu trường phép thuật Arcade</title>
+<meta name="description" content="Game đối kháng phép thuật 16-bit: đấu với máy 3 cấp hoặc đấu 2 người qua mã phòng, 18 phép combo.">
+<link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{min-height:100%;background:#0b0a14;color:#e9e6f5;font-family:VT323,"Courier New",monospace;font-size:19px;-webkit-tap-highlight-color:transparent}
+  .scr{display:none;max-width:760px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 14px) 14px calc(env(safe-area-inset-bottom) + 24px)}
+  .scr.on{display:block}
+  h1{font-size:46px;line-height:.95;font-weight:400;text-align:center;color:#ffd84a;text-shadow:3px 3px 0 #a3261c;margin:26px 0 6px;letter-spacing:1px}
+  h1 small{display:block;font-size:20px;color:#7fd4ff;text-shadow:none;margin-top:8px}
+  h2{font-size:30px;font-weight:400;color:#ffd84a;margin:8px 0 10px}
+  h3{font-size:23px;font-weight:400;color:#7fd4ff;margin:16px 0 6px}
+  h4{font-size:19px;font-weight:400;color:#ffd84a;margin:12px 0 5px}
+  p,li{line-height:1.25;color:#cfc9e6}
+  .col{display:flex;flex-direction:column;gap:10px;max-width:380px;margin:18px auto 0}
+  input{width:100%;background:#15132a;border:2px solid #3b3766;color:#fff;font:inherit;font-size:24px;padding:9px 12px;text-align:center}
+  input::placeholder{color:#6b668f}
+  .btn{display:block;width:100%;border:2px solid #000;background:#ffd84a;color:#14121f;font:inherit;font-size:26px;padding:10px;cursor:pointer;box-shadow:4px 4px 0 #a3261c;text-align:center;text-decoration:none}
+  .btn:active{transform:translate(3px,3px);box-shadow:1px 1px 0 #a3261c}
+  .btn.b2{background:#7fd4ff;box-shadow:4px 4px 0 #1d4ed8}.btn.b3{background:#262347;color:#e9e6f5;box-shadow:4px 4px 0 #000}
+  .btn:disabled{opacity:.6}
+  .row{display:flex;gap:8px}.row input{letter-spacing:6px;text-transform:uppercase}.row .btn{width:auto;padding:10px 14px;white-space:nowrap}
+  .links{display:flex;gap:8px}.links .btn{font-size:21px}
+  #lvPick{display:none;flex-direction:column;gap:6px}#lvPick.on{display:flex}
+  #lvPick button,#oppPick button{border:2px solid #3b3766;background:#15132a;color:#fff;font:inherit;font-size:21px;padding:8px;cursor:pointer;text-align:left}
+  #lvPick button b{color:#ffd84a}#lvPick small,#oppPick small{display:block;color:#9a94c2;font-size:17px}
+  .err{color:#ff8a7a;min-height:22px;text-align:center}
+  .muted{color:#8c86b3;font-size:17px;text-align:center;margin-top:10px}
+  .bigcode{font-size:76px;letter-spacing:12px;text-align:center;color:#a3e635;text-shadow:4px 4px 0 #000;margin:6px 0}
+  .players{display:flex;gap:8px;margin:12px 0}.pl{flex:1;background:#15132a;border:2px solid #3b3766;padding:9px}.pl b{display:block;color:#ffd84a}.pl.ok{border-color:#a3e635}
+  .diag{font-size:16px;color:#8c86b3;background:#15132a;padding:8px;margin-top:8px;display:none;line-height:1.3}.diag.on{display:block}.diag b{color:#fff}
+  /* trận đấu */
+  #game{max-width:980px;padding-top:calc(env(safe-area-inset-top) + 6px)}
+  .topbar{display:flex;gap:6px;align-items:center;margin-bottom:6px;flex-wrap:wrap}
+  .topbar button,.topbar span{border:2px solid #3b3766;background:#15132a;color:#e9e6f5;font:inherit;font-size:18px;padding:4px 9px;cursor:pointer}
+  .topbar span{border:0;background:none;color:#8c86b3;margin-left:auto}
+  #oppPick{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:6px}#oppPick button{font-size:18px;padding:5px 7px}#oppPick button.on{border-color:#ffd84a;background:#2a2550}
+  #cv{display:block;width:100%;aspect-ratio:16/9;image-rendering:pixelated;image-rendering:crisp-edges;background:#000;border:2px solid #000;touch-action:none}
+  #netBar{display:none;background:#a3261c;color:#fff;text-align:center;padding:6px;margin-top:6px}
+  .pad{display:flex;justify-content:space-between;gap:10px;margin-top:10px;user-select:none;-webkit-user-select:none;touch-action:none}
+  .dpad{display:grid;grid-template-columns:repeat(3,54px);grid-template-rows:repeat(2,54px);gap:5px}
+  .acts{display:grid;grid-template-columns:repeat(3,54px);grid-template-rows:repeat(2,54px);gap:5px}
+  .pad button{border:2px solid #000;background:#262347;color:#fff;font:inherit;font-size:28px;box-shadow:3px 3px 0 #000;touch-action:none}
+  .pad button.on{background:#ffd84a;color:#000;transform:translate(2px,2px);box-shadow:1px 1px 0 #000}
+  .pad button small{display:block;font-size:13px;color:#9a94c2;line-height:.8}
+  .acts .f{background:#7a5c00}.acts .g{background:#7a3200}.acts .c{background:#0e4a70}.acts .v{background:#4a4a55}.acts .b{background:#1d2f8a}
+  .spg{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:6px}
+  .sp{border:2px solid #3b3766;background:#15132a;color:#e9e6f5;font:inherit;text-align:left;padding:6px 8px;cursor:pointer}
+  .sp:disabled{cursor:default;opacity:1}
+  .sp .ks{color:#7fd4ff;font-size:19px}.sp b{display:block;font-weight:400;font-size:22px;color:#fff}.sp small{display:block;font-size:16px;color:#9a94c2;line-height:1.1}
+  .sp.t2 b{color:#ffd84a}.sp.t3 b{color:#ff9d3c}.sp.t4{border-color:#39ff6a}.sp.t4 b{color:#39ff6a}
+  details{margin-top:12px;border:2px solid #3b3766;padding:6px 10px;background:#100e20}summary{cursor:pointer;color:#ffd84a;font-size:22px}
+  table{width:100%;border-collapse:collapse;font-size:18px;margin-top:8px}th,td{border:1px solid #3b3766;padding:4px 6px;text-align:center}th{background:#15132a;color:#ffd84a;cursor:pointer;font-weight:400}td:first-child,th:first-child{text-align:left}
+  .keys{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:baseline}.keys b{color:#ffd84a;font-weight:400;white-space:nowrap}
+  @media (min-width:800px){.pad{display:none}}
+  @media (max-width:420px){h1{font-size:38px}.dpad,.acts{grid-template-columns:repeat(3,50px);grid-template-rows:repeat(2,50px)}}
+</style>
+</head>
+<body>
+
+<!-- ============ MỞ ĐẦU ============ -->
+<section class="scr on" id="home">
+  <h1>ĐẤU TRƯỜNG<br>PHÉP THUẬT<small>ARCADE · 16-BIT</small></h1>
+  <div class="col">
+    <input id="inName" maxlength="12" placeholder="Tên pháp sư của bạn" autocomplete="off">
+    <button class="btn" id="bAI">Đấu với máy</button>
+    <div id="lvPick"></div>
+    <button class="btn b2" id="bCreate">Tạo phòng đấu 2 người</button>
+    <div class="row"><input id="inCode" maxlength="4" placeholder="MÃ" autocomplete="off" autocapitalize="characters"><button class="btn b2" id="bJoin">Vào phòng</button></div>
+    <div class="err" id="lobbyErr"></div>
+    <div class="links"><button class="btn b3" data-go="guide">Hướng dẫn</button><button class="btn b3" data-go="stats">Bảng thông số</button></div>
+    <a class="btn b3" href="/" style="font-size:19px">← HandMagination</a>
+  </div>
+  <p class="muted" id="homeStats"></p>
+</section>
+
+<!-- ============ PHÒNG CHỜ ============ -->
+<section class="scr" id="room">
+  <h2>Phòng đấu 2 người</h2>
+  <p>Gửi mã này cho đối thủ. Người kia mở cùng trang, nhập mã rồi bấm "Vào phòng".</p>
+  <div class="bigcode" id="codeBig">----</div>
+  <p class="err" id="roomStatus" style="color:#7fd4ff">Đang tạo phòng…</p>
+  <div class="players"><div class="pl" id="p1Card"><b>Pháp sư 1 (bên trái)</b><span id="p1St">Chủ phòng</span></div><div class="pl" id="p2Card"><b>Pháp sư 2 (bên phải)</b><span id="p2St">Đang chờ…</span></div></div>
+  <div class="col" style="margin-top:6px"><button class="btn" id="bReady">Sẵn sàng</button><button class="btn b3" data-go="home">← Rời phòng</button></div>
+  <div class="err" id="roomErr"></div>
+  <div class="diag" id="diag"></div>
+</section>
+
+<!-- ============ TRẬN ĐẤU ============ -->
+<section class="scr" id="game">
+  <div class="topbar"><button data-go="home">← Thoát</button><button id="bSound">🔊 Âm thanh</button><button data-go="guide">Hướng dẫn</button><span id="pingTx"></span></div>
+  <div id="oppPick"></div>
+  <canvas id="cv" width="480" height="270"></canvas>
+  <div id="netBar"></div>
+  <div class="pad">
+    <div class="dpad"><span></span><button data-k="u">↑<small>nhảy</small></button><span></span><button data-k="l">←</button><button data-k="d">↓<small>cúi</small></button><button data-k="r">→</button></div>
+    <div class="acts"><button class="f" data-k="F">F<small>tia</small></button><button class="g" data-k="G">G<small>nặng</small></button><button class="b" data-k="B">B<small>nạp</small></button><button class="c" data-k="C">C<small>khiên</small></button><button class="v" data-k="V">V<small>phản</small></button><span></span></div>
+  </div>
+  <details><summary>18 phép combo (chạm vào ô để ra phép)</summary><div id="spells"></div></details>
+  <div id="endBox" style="display:none"></div>
+</section>
+
+<!-- ============ HƯỚNG DẪN ============ -->
+<section class="scr" id="guide">
+  <h2>Hướng dẫn</h2>
+  <p>Bạn là pháp sư cầm đũa, đứng bên trái (người vào phòng đứng bên phải). Đánh cho đối thủ hết máu trước là thắng hiệp. Hết hiệp, cả hai đầy máu và đấu tiếp; tỉ số ghi ở giữa màn hình.</p>
+  <h3>Điều khiển</h3>
+  <div class="keys">
+    <b>← →</b><span>Di chuyển. Luôn cách đối thủ ít nhất 100 px.</span>
+    <b>↑</b><span>Nhảy: né sóng lửa chạy sát mặt sàn.</span>
+    <b>↓ (giữ)</b><span>Cúi: né tia bay ngang ngực.</span>
+    <b>F</b><span>Tia phép nhanh, 6 sát thương.</span>
+    <b>G</b><span>Đòn nặng, 13 sát thương. Khi đấu 2 người, đòn G chạy sát sàn nên phải nhảy mới né được.</span>
+    <b>C</b><span>Khiên Protego: chặn mọi đòn trong 0,85 giây.</span>
+    <b>V</b><span>Phản đòn: bị trúng trong 0,38 giây sau khi bấm thì bật ngược một tia 15 sát thương.</span>
+    <b>B</b><span>Nạp phép: đứng yên 0,65 giây, hồi MP rất nhanh.</span>
+  </div>
+  <p style="margin-top:8px">Trên điện thoại có nút cảm ứng ngay dưới sân đấu. MP (thanh xanh) tự hồi 7 điểm mỗi giây.</p>
+  <h3>Né đòn của máy</h3>
+  <div class="keys">
+    <b>Tia cao</b><span>Bay ngang ngực. Cúi ↓ để né.</span>
+    <b>Sóng thấp</b><span>Lửa chạy sát sàn. Nhảy ↑ để né.</span>
+    <b>Sét</b><span>Có vòng báo dưới chân trong 0,8 giây. Đi ra xa hơn 30 px.</span>
+  </div>
+  <p style="margin-top:8px">Đốm sáng trước mặt đối thủ báo trước độ cao của đòn sắp ra. Khiên C và phản đòn V chặn được cả ba loại.</p>
+  <h3>Combo phép</h3>
+  <p>Bấm các phím liền nhau, mỗi phím cách phím trước dưới nửa giây. Combo càng dài, phép càng mạnh và càng tốn MP. Các phím đầu của chuỗi vẫn ra đòn cơ bản. Thiếu MP thì hiện "NO MP". Hai phép Tối thượng xuyên qua khiên.</p>
+  <div id="guideSpells"></div>
+  <h3>Ba đối thủ máy</h3>
+  <div class="keys">
+    <b>LV1 Giáp sắt yểm bùa</b><span>100 HP, chậm, chỉ bắn tia cao, ít khi dựng khiên.</span>
+    <b>LV2 Đấu sĩ mặt nạ</b><span>150 HP, nhanh, có thêm sóng thấp.</span>
+    <b>LV3 Vua pháp sư</b><span>210 HP, đánh dồn dập, nửa số đòn là sét, hay dựng khiên (khiên của máy giảm 80% sát thương).</span>
+  </div>
+  <div class="col"><button class="btn" data-go="home">← Về màn hình chính</button></div>
+</section>
+
+<!-- ============ BẢNG THÔNG SỐ ============ -->
+<section class="scr" id="stats">
+  <h2>Bảng thông số 10 phù thuỷ</h2>
+  <p>Thang 0–100. Đây là ước lượng từ truyện, phim và tranh luận của người hâm mộ, không phải số liệu chính thức. Bấm vào tên cột để sắp xếp.</p>
+  <table id="wz"></table>
+  <p class="muted" style="text-align:left">Tổng lực = 30% Phép lực + 25% Đấu tay đôi + 15% Phòng vệ + 15% Đa dụng + 15% Tri thức. Hắc ám không cộng vào tổng.</p>
+  <div class="col"><button class="btn" data-go="home">← Về màn hình chính</button></div>
+</section>
+
+<script src="./peerjs.min.js"></script>
+<script src="./mqtt.min.js"></script>
+<script src="./game.js"></script>
+</body>
+</html>
