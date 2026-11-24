@@ -212,7 +212,7 @@ const CH = [
       { n: "Cắt Ghép Không Gian", b: 25, d: "Cắt đối thủ ra khỏi nền rồi dán lệch chỗ", mk: (c, D) => [{ wait: .25, dmg: D, on: { ctrl: ["cut", 2.5, 0, "CTRL+X · CTRL+V", IC.scis] } }] },
       { n: "Pen Tool", b: 13, m: 3, d: "Ba đường cong Bézier chém qua đối thủ", mk: (c, D) => [0, 1, 2].map(i => ({ wait: .15 + i * .2, dmg: D, fx: "slash", pen: 1, n: i })) },
       { n: "Xả Khói Tối Đa", b: 40, d: "Vòng khói thuốc lan từ chân ra hết sân", mk: (c, D, K, dist) => [{ wait: dist / 340, dmg: D, fx: "ring", col: "#b8c0c8", ic: IC.smoke, say: "KHỤ KHỤ!" }] },
-      { n: "Layer Đè", b: 36, d: "99 layer chưa đặt tên đè xuống đầu", mk: (c, D) => [{ wait: .9, dmg: D, fx: "drop", ic: IC.layers, sc: 1.7, lb: "LAYER 99 COPY", say: "FLATTEN!" }] },
+      { n: "Tách Nền", b: 36, d: "Xoá sạch nền văn phòng thành ô caro trong suốt, đối thủ lơ lửng giữa file PNG", mk: (c, D) => [{ wait: 1.0, dmg: D, fx: "nobg", say: "PNG!" }] },
       { n: "Cong Lưng Tôm", b: 90, fixed: 1, d: "Đối thủ còng lưng như tôm vì ngồi máy quá lâu. Xuyên khiên", mk: (c, D) => [{ wait: .75, dmg: D, pierce: 1, fx: "drop", ic: IC.shrimp, sc: 1.8, on: { ctrl: ["shrimp", 2.2, 0, "CONG LƯNG TÔM"] }, say: "RẮC!" }] },
     ] },
   { id: "hieu", name: "Hiếu Thứ 3", role: "Strategy", col: "#60a5fa", tag: "Framework, insight, research, 5 WIN",
@@ -402,7 +402,7 @@ function stepAttacks(dt) {
     } else if (!a.done) {
       a.done = 1; a.hitAt = a.age; a.hx = a.cond ? a.tx : T.x;
       if (own(a.to)) { const res = resolve(a, T); if (res) { showRes(res, a); if (G.mode === "pvp") send({ t: "res", res, aid: a.id }); } }
-      if (a.fx === "world" || a.fx === "rain" || (a.fx === "drop" && a.sc > 1.2)) { G.flash = Math.max(G.flash, .5); G.shake = Math.max(G.shake, 9); beep(70, .35, "sawtooth", .1, 35); }
+      if (a.fx === "world" || a.fx === "rain" || a.fx === "nobg" || (a.fx === "drop" && a.sc > 1.2)) { G.flash = Math.max(G.flash, .5); G.shake = Math.max(G.shake, 9); beep(70, .35, "sawtooth", .1, 35); }
     } else if (a.age - a.hitAt > .6) ATK.splice(j, 1);
   }
 }
@@ -516,6 +516,7 @@ function drawAttack(a) {
   else if (a.fx === "clones") { const ci = G.chars[a.from], span = (TX + a.dir * 90) - a.cx; for (let i = 0; i < 5; i++) { const kk = clamp(a.age / (a.wait + .35) * 1.5 - i * .1, 0, 1); if (kk > 0 && kk < 1) spr(ci, 2 + Math.floor(a.age * 10 + i) % 2, a.cx + span * kk, FLOOR, a.dir < 0, { a: .7, tint: "rgba(255,216,74,.4)" }); } }
   else if (a.fx === "dash") { const X = a.cx + (TX + a.dir * 80 - a.cx) * (a.done ? 1 : k * k), al = a.done ? Math.max(0, 1 - post * 3) : 1; x.globalCompositeOperation = "lighter"; x.strokeStyle = col; x.lineWidth = 6; x.globalAlpha = .5 * al; x.beginPath(); x.moveTo(a.cx, FLOOR - 70); x.lineTo(X, FLOOR - 70); x.stroke(); x.globalCompositeOperation = "source-over"; prop(a.ic, X, FLOOR - 74, a.sc || 1, a.dir < 0, al); }
   else if (a.fx === "ring") { const r = Math.min(a.age, a.wait + .4) * 340; x.globalAlpha = a.done ? Math.max(0, 1 - post * 2.5) : 1; if (a.ic != null) for (let i = 0; i < 12; i++) { const an = i / 12 * 6.283 + t; prop(a.ic, a.cx + Math.cos(an) * r, FLOOR - 16 + Math.sin(an) * r * .14 - Math.abs(Math.sin(t * 5 + i)) * 8, .7, false, x.globalAlpha); } else { x.globalCompositeOperation = "lighter"; x.strokeStyle = col; x.lineWidth = 6; x.beginPath(); x.ellipse(a.cx, FLOOR, r, r * .16, 0, 0, 6.283); x.stroke(); } }
+  else if (a.fx === "nobg") { x.strokeStyle = "#000"; x.lineWidth = 1; x.setLineDash([4, 4]); x.lineDashOffset = -t * 24; x.strokeRect(TX - 34.5, FLOOR - 134.5, 68, 136); x.setLineDash([]); if (!a.done || post < .5) { x.fillStyle = "#1f2937"; x.fillRect(W / 2 - 78, 62, 156, 18); text("REMOVE BACKGROUND " + Math.round(k * 100) + "%", W / 2, 76, "#fff", 14, "center"); } }
   else if (a.fx === "slash" && post >= 0 && post < .28) { const o = (a.n - 1) * 16, x0 = TX - 40 + o, y0 = FLOOR - 126, x1 = TX + 40 + o, y1 = FLOOR - 14, cx1 = TX + 50 + o, cy1 = FLOOR - 120; x.strokeStyle = "#000"; x.lineWidth = 5; x.beginPath(); x.moveTo(x0, y0); x.quadraticCurveTo(cx1, cy1, x1, y1); x.stroke(); x.strokeStyle = "#fff"; x.lineWidth = 2; x.stroke(); if (a.pen) { x.strokeStyle = "#38bdf8"; x.lineWidth = 1; x.beginPath(); x.moveTo(x0, y0); x.lineTo(cx1, cy1); x.stroke(); [[x0, y0], [x1, y1], [cx1, cy1]].forEach(q => { x.fillStyle = "#fff"; x.fillRect(q[0] - 3, q[1] - 3, 6, 6); x.strokeRect(q[0] - 3.5, q[1] - 3.5, 7, 7); }); prop(IC.pen, x1 + 8, y1 - 6, .4); } }
   x.restore();
 }
@@ -539,6 +540,8 @@ function render() {
   if (wk > 0) { x.translate(W / 2, H / 2); x.rotate(wk * Math.PI); x.scale(1 - wk * .35, 1 - wk * .35); x.translate(-W / 2, -H / 2); }
   if (ok(BG)) x.drawImage(BG, 0, 0, W, H); else { x.fillStyle = "#2b2f3a"; x.fillRect(0, 0, W, H); x.fillStyle = "#8a5a2b"; x.fillRect(0, 190, W, 80); }
   if (!F.length) return;
+  const nb = ATK.find(a => a.fx === "nobg");                       // "Tách nền": nền thành ô caro trong suốt, lan từ phía người ra chiêu
+  if (nb) { const k = nb.done ? 1 : clamp(nb.age / nb.wait * 1.4, 0, 1), al = nb.done ? Math.max(0, 1 - (nb.age - nb.hitAt) / .6) : 1, w = Math.ceil((W + 20) * k), x0 = nb.dir > 0 ? -10 : W + 10 - w; x.save(); x.globalAlpha = al; x.beginPath(); x.rect(x0, -10, w, H + 20); x.clip(); x.fillStyle = "#fff"; x.fillRect(-10, -10, W + 20, H + 20); x.fillStyle = "#cfcfcf"; for (let yy = 0; yy < H; yy += 12) for (let xx = (yy / 12 % 2) * 12; xx < W; xx += 24) x.fillRect(xx, yy, 12, 12); x.restore(); if (!nb.done) { x.fillStyle = "#38bdf8"; x.fillRect(nb.dir > 0 ? x0 + w - 2 : x0, 0, 2, H); } }
   if (G.cine) { const c = G.cine, k = c.t / c.d; x.fillStyle = `rgba(0,0,12,${.55 * Math.sin(Math.min(1, k * 1.2) * Math.PI)})`; x.fillRect(-10, -10, W + 20, H + 20); x.strokeStyle = "rgba(255,255,255,.35)"; x.lineWidth = 1; for (let i = 0; i < 22; i++) { const yy = (i * 53 + G.t * 900) % H, xx = (i * 131) % W; x.beginPath(); x.moveTo(xx, yy); x.lineTo(xx + 46, yy); x.stroke(); }
     const p = F[c.i]; if (Math.random() < .9) FX.push({ k: "mote", t: 0, d: .3, x: p.x + rnd(-60, 60), y: FLOOR - rnd(20, 150), tx: p.x + p.dir * 46, ty: FLOOR - HIGH, c: chOf(c.i).col }); }
   F.slice().sort((a, b) => (a.ko ? 0 : 1) - (b.ko ? 0 : 1)).forEach(drawFighter);
