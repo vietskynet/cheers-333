@@ -660,7 +660,7 @@ $("lvPick").innerHTML = LVL.map((o, i) => `<button data-i="${i}"><b>LV${i + 1}</
 document.querySelectorAll("#lvPick button").forEach(b => b.onclick = () => { pick.lvl = +b.dataset.i; drawPick(); });
 $("bAI").onclick = () => { pick.a = -1; pick.b = -1; drawPick(); show("pick"); };
 $("bFight").onclick = () => { me.ch = pick.a; try { localStorage.setItem("hmwiz-ch", me.ch); } catch {} startMatch("ai", pick.lvl, [pick.a, pick.b]); };
-$("oppPick").innerHTML = LVL.map((o, i) => `<button data-i="${i}">LV${i + 1} · ${o.n}</button>`).join("");
+$("oppPick").innerHTML = LVL.map((o, i) => `<button data-i="${i}">LV${i + 1}</button>`).join("");
 document.querySelectorAll("#oppPick button").forEach(b => b.onclick = () => startMatch("ai", +b.dataset.i, G.chars));
 /* chọn nhân vật trong phòng 2 người */
 $("roomGrid").innerHTML = CH.map(card).join("");
