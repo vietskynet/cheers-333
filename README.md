@@ -202,3 +202,12 @@ Game đối kháng phép thuật 16-bit, chơi bằng bàn phím hoặc nút c�
 - Khác brief: thêm chế độ 2 người, trang hướng dẫn riêng, đặt tên; bảng thông số chuyển thành một trang riêng thay vì tab.
 - Thắng/thua lưu trên máy (`localStorage` khoá `hmwiz-stats`), chưa ghi vào database.
 - Test: `/agcCombat/#local` mở 2 cửa sổ cùng trình duyệt; `window.__wz` để soi trạng thái.
+
+### Cập nhật 25/11: `/agcCombat/` thành AGC COMBAT – 4 nhân vật agency
+
+- Bốn nhân vật (`CH` trong `game.js`): Đức Phan (Business Director), Việt Đinh (Creative Director), Nhân Ziku (Head of Art), Hiếu Thứ 3 (Strategy). Mỗi người có đòn F/G riêng và 8 skill riêng; cả bốn dùng chung 8 chuỗi phím (`KEYS`).
+- Màn chọn nhân vật (`#pick`): lưới mặt ở giữa, poster P1 bên trái, CPU bên phải. Chạm lần 1 là người chơi, lần 2 là máy. Phòng 2 người chọn nhân vật trong phòng chờ.
+- Máy 3 cấp (`LVL`); LV2 và LV3 biết ra skill, sát thương skill của máy nhân 0,55.
+- Hình vẽ bằng Higgsfield: `sprites.png` (4 nhân vật × 12 khung, ô 190×150, cộng 32 đạo cụ ô 96×72 từ y=600), `bg.png` (nền văn phòng 480×270), `posters.png` (4 poster 360×480 xếp ngang).
+- Ba file hình CHƯA nằm trong repo. `scripts/fetch-agc-assets.mjs` (lệnh build trong `netlify.toml`) tải chúng từ kho ảnh Higgsfield lúc deploy; nếu thiếu, game tự lấy thẳng từ kho đó. Nên tải ba file về và commit vào `public/agcCombat/` để không phụ thuộc kho ngoài.
+- Đã bỏ trang "Bảng thông số" và các tên phép của bản đầu.

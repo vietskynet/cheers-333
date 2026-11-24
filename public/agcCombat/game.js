@@ -163,7 +163,7 @@ const rnd = (a, b) => a + Math.random() * (b - a), clamp = (v, a, b) => Math.max
 const CDN = "https://d2ol7oe51mr4n9.cloudfront.net/user_2vybgglAYZMtuRPV18Aqg7zS5iW/";
 function loadImg(local, cdn) { const im = new Image(); im.onerror = () => { if (!im._f) { im._f = 1; im.src = CDN + cdn; } }; im.onload = () => document.documentElement.style.setProperty(local === "./sprites.png" ? "--spr" : "--bg", `url("${im.src}")`); im.src = local; return im; }
 const SPR = loadImg("./sprites.png", "27cf4574-225b-4111-bf81-abb967d19041.png"), BG = loadImg("./bg.png", "073e9582-2bbe-44d6-98ac-5cf73662bbb0.png");
-const POST = new Image(); POST.onload = () => { document.documentElement.style.setProperty("--post", `url("${POST.src}")`); document.body.classList.add("hasPost"); }; POST.src = "./posters.png";
+const POST = new Image(); POST.onload = () => { document.documentElement.style.setProperty("--post", `url("${POST.src}")`); document.body.classList.add("hasPost"); }; POST.onerror = () => { if (!POST._f) { POST._f = 1; POST.src = CDN + "bc59901c-e648-49dc-ab0f-213e558c3e60.png"; } }; POST.src = "./posters.png";
 const ok = im => im.complete && im.naturalWidth > 0;
 const IC = { phone: 0, mail: 1, folder: 2, chat: 3, car: 4, table: 5, coin: 6, cal: 7, bulb: 8, marker: 9, cat1: 10, cat2: 11, dumb: 12, frame: 13, easel: 14, wind: 15, splat: 16, brush: 17, scis: 18, cig: 19, smoke: 20, shrimp: 21, layers: 22, pen: 23, mag: 24, report: 25, funnel: 26, book: 27, trophy: 28, chart: 29, venn: 30, stamp: 31 };
 /* Ba cấp máy */
