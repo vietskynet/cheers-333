@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Đấu trường phép thuật Arcade</title>
-<meta name="description" content="Game đối kháng phép thuật 16-bit: đấu với máy 3 cấp hoặc đấu 2 người qua mã phòng, 18 phép combo.">
+<title>AGC COMBAT – Đấu trường ma pháp VML</title>
+<meta name="description" content="Game đối kháng 16-bit của agency: 4 nhân vật, mỗi người 8 skill, đấu với máy hoặc đấu 2 người qua mã phòng.">
 <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{min-height:100%;background:#0b0a14;color:#e9e6f5;font-family:VT323,"Courier New",monospace;font-size:19px;-webkit-tap-highlight-color:transparent}
   .scr{display:none;max-width:760px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 14px) 14px calc(env(safe-area-inset-bottom) + 24px)}
   .scr.on{display:block}
-  h1{font-size:46px;line-height:.95;font-weight:400;text-align:center;color:#ffd84a;text-shadow:3px 3px 0 #a3261c;margin:26px 0 6px;letter-spacing:1px}
+  h1{font-size:60px;line-height:.95;font-weight:400;text-align:center;color:#ffd84a;text-shadow:3px 3px 0 #a3261c;margin:26px 0 6px;letter-spacing:1px}
   h1 small{display:block;font-size:20px;color:#7fd4ff;text-shadow:none;margin-top:8px}
   h2{font-size:30px;font-weight:400;color:#ffd84a;margin:8px 0 10px}
   h3{font-size:23px;font-weight:400;color:#7fd4ff;margin:16px 0 6px}
@@ -26,8 +26,7 @@
   .btn:disabled{opacity:.6}
   .row{display:flex;gap:8px}.row input{letter-spacing:6px;text-transform:uppercase}.row .btn{width:auto;padding:10px 14px;white-space:nowrap}
   .links{display:flex;gap:8px}.links .btn{font-size:21px}
-  #lvPick{display:none;flex-direction:column;gap:6px}#lvPick.on{display:flex}
-  #lvPick button,#oppPick button{border:2px solid #3b3766;background:#15132a;color:#fff;font:inherit;font-size:21px;padding:8px;cursor:pointer;text-align:left}
+  #lvPick button,#oppPick button{border:2px solid #3b3766;background:#15132a;color:#fff;font:inherit;font-size:19px;padding:6px;cursor:pointer;text-align:left}
   #lvPick button b{color:#ffd84a}#lvPick small,#oppPick small{display:block;color:#9a94c2;font-size:17px}
   .err{color:#ff8a7a;min-height:22px;text-align:center}
   .muted{color:#8c86b3;font-size:17px;text-align:center;margin-top:10px}
@@ -56,6 +55,31 @@
   .sp.t2 b{color:#ffd84a}.sp.t3 b{color:#ff9d3c}.sp.t4{border-color:#39ff6a}.sp.t4 b{color:#39ff6a}
   details{margin-top:12px;border:2px solid #3b3766;padding:6px 10px;background:#100e20}summary{cursor:pointer;color:#ffd84a;font-size:22px}
   table{width:100%;border-collapse:collapse;font-size:18px;margin-top:8px}th,td{border:1px solid #3b3766;padding:4px 6px;text-align:center}th{background:#15132a;color:#ffd84a;cursor:pointer;font-weight:400}td:first-child,th:first-child{text-align:left}
+
+  /* chọn nhân vật */
+  .sel{background:radial-gradient(circle at 50% 40%,#2a2f8f 0,#12103a 55%,#070616 100%);border:3px solid #000;box-shadow:0 0 0 2px #ffd84a;padding:8px 6px 10px;position:relative;overflow:hidden}
+  .sel:before{content:"";position:absolute;inset:0;background:radial-gradient(#ffffff22 1.2px,transparent 1.6px) 0 0/9px 9px;pointer-events:none}
+  .sel h2{text-align:center;color:#fff;text-shadow:3px 3px 0 #000;letter-spacing:2px;margin:2px 0 6px;position:relative}
+  .selrow{display:grid;grid-template-columns:1fr auto 1fr;gap:6px;align-items:end;position:relative}
+  .post{height:250px;position:relative;overflow:hidden;--c:#555}
+  .post:before{content:"";position:absolute;left:-20%;right:-20%;top:18%;bottom:0;background:var(--c);opacity:.55;transform:skewY(-12deg);border-top:3px solid #000}
+  .post i{position:absolute;left:50%;bottom:44px;width:110px;height:150px;margin-left:-55px;background:var(--spr) no-repeat;image-rendering:pixelated;transform:scale(1.55);transform-origin:50% 100%}
+  .post u{position:absolute;inset:0 0 34px 0;background:var(--post) no-repeat;background-size:400% 100%;display:none}
+  .hasPost .post u{display:block}.hasPost .post i{display:none}
+  .post.p2 i{transform:scale(-1.55,1.55)}.post.p2 u{transform:scaleX(-1)}
+  .post span{position:absolute;top:2px;left:2px;background:#000;color:#fff;font-size:15px;padding:0 5px}.post.p2 span{left:auto;right:2px}
+  .post b{position:absolute;left:0;right:0;bottom:14px;font-weight:400;font-size:20px;line-height:1;white-space:nowrap;text-align:center;color:#ffd84a;background:#000;border-top:3px solid var(--c);border-bottom:3px solid var(--c);transform:skewY(-4deg);padding:2px 0;text-shadow:2px 2px 0 #a3261c}
+  .post small{position:absolute;left:0;right:0;bottom:0;text-align:center;font-size:14px;color:#fff;text-shadow:1px 1px 0 #000}
+  .post.empty b{color:#888}
+  #pickGrid{display:grid;grid-template-columns:repeat(2,62px);gap:4px;background:#000;padding:4px;border:2px solid #c81e1e;align-self:center}
+  #roomGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0}
+  .chr{position:relative;border:2px solid #3b3766;background:#1b1a3a;padding:0 0 2px;cursor:pointer;font:inherit;color:#fff;overflow:hidden}
+  .chr i{display:block;width:58px;height:58px;margin:0 auto;background:var(--spr) no-repeat;background-size:4560px auto;image-rendering:pixelated;background-color:var(--c)}
+  .chr b{display:block;font-weight:400;font-size:13px;line-height:1;white-space:nowrap;overflow:hidden}
+  .chr em{position:absolute;top:0;left:0;font-style:normal;font-size:13px;background:#ffd84a;color:#000;padding:0 3px;line-height:1.1}.chr em:empty{display:none}
+  .chr.p1{border-color:#ffd84a;box-shadow:0 0 0 2px #ffd84a}.chr.p2{border-color:#ff3b30;box-shadow:0 0 0 2px #ff3b30}.chr.p2 em{background:#ff3b30;color:#fff}
+  #lvPick{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:8px 0}#lvPick button.on{border-color:#ffd84a;background:#2a2550}
+  #pickInfo{font-size:17px;color:#cfc9e6;min-height:44px;margin-top:6px}
   .keys{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:baseline}.keys b{color:#ffd84a;font-weight:400;white-space:nowrap}
   @media (min-width:800px){.pad{display:none}}
   @media (max-width:420px){h1{font-size:38px}.dpad,.acts{grid-template-columns:repeat(3,50px);grid-template-rows:repeat(2,50px)}}
@@ -65,18 +89,33 @@
 
 <!-- ============ MỞ ĐẦU ============ -->
 <section class="scr on" id="home">
-  <h1>ĐẤU TRƯỜNG<br>PHÉP THUẬT<small>ARCADE · 16-BIT</small></h1>
+  <h1>AGC COMBAT<small>ĐẤU TRƯỜNG MA PHÁP VML · 16-BIT</small></h1>
   <div class="col">
-    <input id="inName" maxlength="12" placeholder="Tên pháp sư của bạn" autocomplete="off">
+    <input id="inName" maxlength="12" placeholder="Tên của bạn" autocomplete="off">
     <button class="btn" id="bAI">Đấu với máy</button>
-    <div id="lvPick"></div>
     <button class="btn b2" id="bCreate">Tạo phòng đấu 2 người</button>
     <div class="row"><input id="inCode" maxlength="4" placeholder="MÃ" autocomplete="off" autocapitalize="characters"><button class="btn b2" id="bJoin">Vào phòng</button></div>
     <div class="err" id="lobbyErr"></div>
-    <div class="links"><button class="btn b3" data-go="guide">Hướng dẫn</button><button class="btn b3" data-go="stats">Bảng thông số</button></div>
+    <button class="btn b3" data-go="guide">Hướng dẫn và bộ skill</button>
     <a class="btn b3" href="/" style="font-size:19px">← HandMagination</a>
   </div>
   <p class="muted" id="homeStats"></p>
+</section>
+
+<!-- ============ CHỌN NHÂN VẬT (ĐẤU MÁY) ============ -->
+<section class="scr" id="pick">
+  <div class="sel">
+    <h2>SELECT CHARACTERS</h2>
+    <div class="selrow">
+      <div class="post p1 empty" id="postA"><u></u><i></i><span>P1 · BẠN</span><b>?</b><small></small></div>
+      <div id="pickGrid"></div>
+      <div class="post p2 empty" id="postB"><u></u><i></i><span>CPU · MÁY</span><b>?</b><small></small></div>
+    </div>
+  </div>
+  <p class="err" id="pickTip" style="color:#7fd4ff;margin-top:8px"></p>
+  <p id="pickInfo"></p>
+  <div id="lvPick"></div>
+  <div class="col" style="margin-top:8px"><button class="btn" id="bFight" disabled>VÀO TRẬN</button><button class="btn b3" data-go="home">← Quay lại</button></div>
 </section>
 
 <!-- ============ PHÒNG CHỜ ============ -->
@@ -85,7 +124,9 @@
   <p>Gửi mã này cho đối thủ. Người kia mở cùng trang, nhập mã rồi bấm "Vào phòng".</p>
   <div class="bigcode" id="codeBig">----</div>
   <p class="err" id="roomStatus" style="color:#7fd4ff">Đang tạo phòng…</p>
-  <div class="players"><div class="pl" id="p1Card"><b>Pháp sư 1 (bên trái)</b><span id="p1St">Chủ phòng</span></div><div class="pl" id="p2Card"><b>Pháp sư 2 (bên phải)</b><span id="p2St">Đang chờ…</span></div></div>
+  <p>Chọn nhân vật của bạn:</p>
+  <div id="roomGrid"></div>
+  <div class="players"><div class="pl" id="p1Card"><b>Người chơi 1 (bên trái)</b><span id="p1St">Chủ phòng</span></div><div class="pl" id="p2Card"><b>Người chơi 2 (bên phải)</b><span id="p2St">Đang chờ…</span></div></div>
   <div class="col" style="margin-top:6px"><button class="btn" id="bReady">Sẵn sàng</button><button class="btn b3" data-go="home">← Rời phòng</button></div>
   <div class="err" id="roomErr"></div>
   <div class="diag" id="diag"></div>
@@ -99,53 +140,39 @@
   <div id="netBar"></div>
   <div class="pad">
     <div class="dpad"><span></span><button data-k="u">↑<small>nhảy</small></button><span></span><button data-k="l">←</button><button data-k="d">↓<small>cúi</small></button><button data-k="r">→</button></div>
-    <div class="acts"><button class="f" data-k="F">F<small>tia</small></button><button class="g" data-k="G">G<small>nặng</small></button><button class="b" data-k="B">B<small>nạp</small></button><button class="c" data-k="C">C<small>khiên</small></button><button class="v" data-k="V">V<small>phản</small></button><span></span></div>
+    <div class="acts"><button class="f" data-k="F">F<small>nhanh</small></button><button class="g" data-k="G">G<small>nặng</small></button><button class="b" data-k="B">B<small>nạp</small></button><button class="c" data-k="C">C<small>khiên</small></button><button class="v" data-k="V">V<small>phản</small></button><span></span></div>
   </div>
-  <details><summary>18 phép combo (chạm vào ô để ra phép)</summary><div id="spells"></div></details>
+  <details open><summary id="spTitle">8 skill</summary><div id="spells"></div></details>
   <div id="endBox" style="display:none"></div>
 </section>
 
 <!-- ============ HƯỚNG DẪN ============ -->
 <section class="scr" id="guide">
   <h2>Hướng dẫn</h2>
-  <p>Bạn là pháp sư cầm đũa, đứng bên trái (người vào phòng đứng bên phải). Đánh cho đối thủ hết máu trước là thắng hiệp. Hết hiệp, cả hai đầy máu và đấu tiếp; tỉ số ghi ở giữa màn hình.</p>
+  <p>Chọn một trong bốn nhân vật của agency. Đánh cho đối thủ hết máu trước là thắng hiệp. Hết hiệp, cả hai đầy máu và đấu tiếp; tỉ số ghi ở giữa màn hình.</p>
   <h3>Điều khiển</h3>
   <div class="keys">
     <b>← →</b><span>Di chuyển. Luôn cách đối thủ ít nhất 100 px.</span>
-    <b>↑</b><span>Nhảy: né sóng lửa chạy sát mặt sàn.</span>
-    <b>↓ (giữ)</b><span>Cúi: né tia bay ngang ngực.</span>
-    <b>F</b><span>Tia phép nhanh, 6 sát thương.</span>
+    <b>↑</b><span>Nhảy: né đòn chạy sát mặt sàn.</span>
+    <b>↓ (giữ)</b><span>Cúi: né đòn cơ bản bay ngang ngực.</span>
+    <b>F</b><span>Đòn nhanh, 6 sát thương. Mỗi nhân vật ném một thứ khác nhau.</span>
     <b>G</b><span>Đòn nặng, 13 sát thương. Khi đấu 2 người, đòn G chạy sát sàn nên phải nhảy mới né được.</span>
-    <b>C</b><span>Khiên Protego: chặn mọi đòn trong 0,85 giây.</span>
+    <b>C</b><span>Khiên: chặn mọi đòn trong 0,85 giây (trừ skill Tối thượng).</span>
     <b>V</b><span>Phản đòn: bị trúng trong 0,38 giây sau khi bấm thì bật ngược một tia 15 sát thương.</span>
-    <b>B</b><span>Nạp phép: đứng yên 0,65 giây, hồi MP rất nhanh.</span>
+    <b>B</b><span>Nạp năng lượng: đứng yên 0,65 giây, hồi MP rất nhanh.</span>
   </div>
   <p style="margin-top:8px">Trên điện thoại có nút cảm ứng ngay dưới sân đấu. MP (thanh xanh) tự hồi 7 điểm mỗi giây.</p>
-  <h3>Né đòn của máy</h3>
+  <h3>Ra skill</h3>
+  <p>Bấm các phím liền nhau, mỗi phím cách phím trước dưới nửa giây. Tám skill của cả bốn nhân vật dùng chung tám chuỗi phím, nên học một lần là chơi được hết. Chuỗi càng dài, skill càng mạnh và càng tốn MP. Thiếu MP thì hiện "NO MP". Skill không né được bằng cúi hay nhảy; phải dùng khiên C hoặc phản đòn V.</p>
+  <h3>Đấu với máy</h3>
   <div class="keys">
-    <b>Tia cao</b><span>Bay ngang ngực. Cúi ↓ để né.</span>
-    <b>Sóng thấp</b><span>Lửa chạy sát sàn. Nhảy ↑ để né.</span>
-    <b>Sét</b><span>Có vòng báo dưới chân trong 0,8 giây. Đi ra xa hơn 30 px.</span>
+    <b>LV1 Thực tập sinh</b><span>100 HP, chậm, chỉ ném đòn cao.</span>
+    <b>LV2 Senior</b><span>150 HP, nhanh, có đòn thấp và thỉnh thoảng ra skill.</span>
+    <b>LV3 Sếp tổng</b><span>210 HP, đánh dồn dập, thả đồ rơi từ trần (đi ra khỏi vòng báo), hay ra skill và dựng khiên.</span>
   </div>
-  <p style="margin-top:8px">Đốm sáng trước mặt đối thủ báo trước độ cao của đòn sắp ra. Khiên C và phản đòn V chặn được cả ba loại.</p>
-  <h3>Combo phép</h3>
-  <p>Bấm các phím liền nhau, mỗi phím cách phím trước dưới nửa giây. Combo càng dài, phép càng mạnh và càng tốn MP. Các phím đầu của chuỗi vẫn ra đòn cơ bản. Thiếu MP thì hiện "NO MP". Hai phép Tối thượng xuyên qua khiên.</p>
+  <p style="margin-top:8px">Đốm sáng trước mặt máy báo trước độ cao của đòn sắp ra. Skill của máy yếu hơn của bạn khoảng một nửa.</p>
+  <h3>Bốn nhân vật và bộ skill</h3>
   <div id="guideSpells"></div>
-  <h3>Ba đối thủ máy</h3>
-  <div class="keys">
-    <b>LV1 Giáp sắt yểm bùa</b><span>100 HP, chậm, chỉ bắn tia cao, ít khi dựng khiên.</span>
-    <b>LV2 Đấu sĩ mặt nạ</b><span>150 HP, nhanh, có thêm sóng thấp.</span>
-    <b>LV3 Vua pháp sư</b><span>210 HP, đánh dồn dập, nửa số đòn là sét, hay dựng khiên (khiên của máy giảm 80% sát thương).</span>
-  </div>
-  <div class="col"><button class="btn" data-go="home">← Về màn hình chính</button></div>
-</section>
-
-<!-- ============ BẢNG THÔNG SỐ ============ -->
-<section class="scr" id="stats">
-  <h2>Bảng thông số 10 phù thuỷ</h2>
-  <p>Thang 0–100. Đây là ước lượng từ truyện, phim và tranh luận của người hâm mộ, không phải số liệu chính thức. Bấm vào tên cột để sắp xếp.</p>
-  <table id="wz"></table>
-  <p class="muted" style="text-align:left">Tổng lực = 30% Phép lực + 25% Đấu tay đôi + 15% Phòng vệ + 15% Đa dụng + 15% Tri thức. Hắc ám không cộng vào tổng.</p>
   <div class="col"><button class="btn" data-go="home">← Về màn hình chính</button></div>
 </section>
 

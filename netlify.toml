@@ -1,6 +1,8 @@
 [build]
   publish = "public"
-  # Không cần bước build: trang tĩnh nằm trong public/, API nằm trong netlify/edge-functions/ và netlify/functions/
+  # Bước build duy nhất: tải ảnh của /agcCombat/ (vẽ bằng Higgsfield) về public/agcCombat/ nếu repo chưa có file.
+  command = "node scripts/fetch-agc-assets.mjs"
+  # Trang tĩnh nằm trong public/, API nằm trong netlify/edge-functions/ và netlify/functions/
   # Có package.json (gói @netlify/database) nên Netlify tự cài gói và tự tạo database khi deploy.
 
 [build.environment]
