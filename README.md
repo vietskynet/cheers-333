@@ -300,3 +300,13 @@ Giữ nguyên bộ skill của 13 nhân vật; chỉ đổi luật.
 - **Đỡ không miễn phí:** khiên W chặn hết đòn thường nhưng skill vẫn lọt 20%; mỗi lần đỡ hao sức khiên (`guard`, vạch nhỏ dưới thanh máu: −18 với đòn thường, −34 với skill, hồi 14/giây), hết thì vỡ khiên và choáng 1,2 giây. Vòng đỡ E không hao sức khiên.
 - (lần 18) Điện thoại: trong trận khoá cuộn và zoom (viewport `user-scalable=no`, chặn `touchstart/touchmove/touchend`, `gesturestart`, `dblclick`), không bôi đen chữ, không hiện menu giữ-lâu (`user-select`, `-webkit-touch-callout`), giữ màn hình sáng bằng Wake Lock. Nút trong trận dùng pointer event nên vẫn nhận; thanh nút trên cùng và bảng Game Over được chừa ra. Bấm ↑ hai lần liền (dưới 0,32 giây) là nhảy cao gấp đôi (61 → 124 px).
 - (lần 19) Ảnh nền màn mở đầu: poster nhóm 13 nhân vật (`wall-p.webp` 1080×1920 cho màn dọc, `wall-l.webp` 1920×1080 cho màn ngang). Ghép từ 13 poster nhân vật có sẵn trên nền văn phòng-đấu-trường vẽ bằng Higgsfield (script `wall.py` trong sandbox Higgsfield). Tải theo cùng cách với các hình khác (`scripts/fetch-agc-assets.mjs`, dự phòng lấy từ kho ảnh). Màn mở đầu thấy rõ ảnh, các màn khác phủ tối 86%, trong trận che hẳn. Dải card nhân vật vẫn chạy.
+
+### Cập nhật 26/11 (lần 20): Boss cuối DEADLINE và nhạc mới
+
+- **Boss cuối DEADLINE** (`CH` mục cuối, `boss: 1`; `NPC` = số nhân vật chọn được, `BOSS` = chỉ số boss): thần chết của deadline, mặt đồng hồ đỏ, lưỡi hái kim giờ. Không hiện ở lưới chọn, dải card, phòng đấu đôi hay trang hướng dẫn; chỉ xuất hiện ở trận 13 của Tournament (`startTour` thêm `BOSS` vào cuối `order`). Vẽ to hơn 20%.
+- Thông số `BOSSLV`: 340 máu, đòn thường 12, skill mạnh ngang người chơi, né 50%, mở vòng đỡ 75% trước tối thượng, luôn kết chuỗi đòn thường bằng một skill. Dưới nửa máu thì nổi giận (đánh nhanh gấp rưỡi).
+- **Kéo theo một nhân vật ngẫu nhiên** (`G.ally`): đứng sau boss, cứ 6–9 giây (nổi giận thì dày hơn) ra một skill bậc 1–3 của chính nhân vật đó (`doCast(1, si, false, ci)`), không đánh được vào đồng đội.
+- 8 skill: Còn 5 Phút, ASAP ASAP, Dời Hạn Cho Mình, Thứ Sáu 5 Giờ Chiều, OT Xuyên Đêm, Chạy Deadline, Mưa Lịch Đỏ, tối thượng HẾT GIỜ (đồng hồ khổng lồ đếm ngược, fx `timeup`).
+- `sprites.webp`: 14 hàng nhân vật (hàng 13 là boss), cao 3186 px; hàng đặc biệt và đạo cụ lùi xuống một hàng.
+- **Nhạc mới, nhanh hơn:** menu 138 bpm, trận đấu 176 bpm (bass dồn từng nốt móc kép, trống bốn phách), thêm bài riêng cho boss 190 bpm.
+- Sửa lỗi: KO xảy ra giữa lúc đang duyệt danh sách đòn làm văng lỗi một khung hình.
