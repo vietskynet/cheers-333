@@ -2,7 +2,7 @@
 // Chỉ tải file nào repo chưa có. Lỗi tải không làm hỏng build: game sẽ tự lấy ảnh từ kho Higgsfield.
 import { existsSync, writeFileSync } from "node:fs";
 const CDN = "https://d2ol7oe51mr4n9.cloudfront.net/user_2vybgglAYZMtuRPV18Aqg7zS5iW/";
-const FILES = { "sprites.png": "e71bceab-9f7c-4465-baa1-90c7e884ff3e.png", "bg.png": "073e9582-2bbe-44d6-98ac-5cf73662bbb0.png", "posters.png": "922a4a6c-9867-4f2d-817d-12c2e9d625ef.png" };
+const FILES = { "sprites.webp": "7bdb61ad-66e1-4452-b723-9394d7daaf07.webp", "bg.png": "073e9582-2bbe-44d6-98ac-5cf73662bbb0.png", "posters.webp": "95107550-251f-411b-9175-c6ee040bf1f6.webp" };
 for (const [name, src] of Object.entries(FILES)) {
   const out = "public/agcCombat/" + name;
   if (existsSync(out)) { console.log("có sẵn:", out); continue; }

@@ -38,12 +38,11 @@
   .topbar{display:flex;gap:6px;align-items:center;margin-bottom:6px;flex-wrap:wrap}
   .topbar button,.topbar span{border:2px solid #3b3766;background:#15132a;color:#e9e6f5;font:inherit;font-size:17px;padding:4px 6px;cursor:pointer;white-space:nowrap}
   .topbar span{border:0;background:none;color:#8c86b3;margin-left:auto}
-  #oppPick{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:6px}#oppPick button{font-size:18px;padding:5px 7px}#oppPick button.on{border-color:#ffd84a;background:#2a2550}
   #cv{display:block;width:100%;aspect-ratio:16/9;image-rendering:pixelated;image-rendering:crisp-edges;background:#000;border:2px solid #000;touch-action:none}
   #netBar{display:none;background:#a3261c;color:#fff;text-align:center;padding:6px;margin-top:6px}
   .pad{display:flex;justify-content:space-between;gap:10px;margin-top:10px;user-select:none;-webkit-user-select:none;touch-action:none}
-  .dpad{display:grid;grid-template-columns:repeat(3,54px);grid-template-rows:repeat(2,54px);gap:5px}
-  .acts{display:grid;grid-template-columns:repeat(3,54px);grid-template-rows:repeat(2,54px);gap:5px}
+  .dpad{display:grid;grid-template-columns:repeat(3,58px);grid-template-rows:repeat(2,58px);gap:5px}
+  .acts{display:grid;grid-template-columns:repeat(3,58px);grid-template-rows:repeat(2,58px);gap:5px}
   .pad button{border:2px solid #000;background:#262347;color:#fff;font:inherit;font-size:28px;box-shadow:3px 3px 0 #000;touch-action:none}
   .pad button.on{background:#ffd84a;color:#000;transform:translate(2px,2px);box-shadow:1px 1px 0 #000}
   .pad button small{display:block;font-size:13px;color:#9a94c2;line-height:.8}
@@ -102,8 +101,28 @@
   #lvPick{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:8px 0}#lvPick button.on{border-color:#ffd84a;background:#2a2550}
   #pickInfo{font-size:17px;color:#cfc9e6;min-height:44px;margin-top:6px}
   .keys{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:baseline}.keys b{color:#ffd84a;font-weight:400;white-space:nowrap}
-  @media (min-width:800px){.pad{display:none}}
-  @media (max-width:420px){h1{font-size:38px}.dpad,.acts{grid-template-columns:repeat(3,50px);grid-template-rows:repeat(2,50px)}}
+  /* màn chơi: vừa khít một màn hình, không phải cuộn */
+  #game.on{display:grid;grid-template-rows:auto auto auto 1fr;gap:5px;height:100vh;height:100dvh;max-width:none;margin:0;overflow:hidden;touch-action:none;padding:calc(env(safe-area-inset-top) + 4px) calc(env(safe-area-inset-right) + 6px) calc(env(safe-area-inset-bottom) + 6px) calc(env(safe-area-inset-left) + 6px)}
+  #game .topbar{margin:0;flex-wrap:nowrap;overflow:hidden}#game .topbar button{font-size:15px;padding:3px 6px}#game .topbar span{font-size:13px;padding:0}
+  .stage{position:relative;justify-self:center;width:min(100%,calc((100dvh - 330px) * 16 / 9));min-width:min(100%,300px)}
+  #netBar{position:absolute;left:0;right:0;bottom:0;margin:0}
+  #spells{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;width:100%;max-width:980px;justify-self:center}
+  .sk{position:relative;min-width:0;overflow-wrap:anywhere;border:2px solid #000;background:#1f1c3d;color:#fff;font:inherit;padding:3px 2px;cursor:pointer;min-height:46px;line-height:1;box-shadow:2px 2px 0 #000;touch-action:none;overflow:hidden}
+  .sk b{display:block;font-weight:400;font-size:15px;line-height:.95}.sk span{display:block;font-size:13px;color:#7fd4ff;margin-top:2px;white-space:nowrap}
+  .sk i{position:absolute;top:0;right:1px;font-style:normal;font-size:11px;color:#9a94c2}.sk.t2 b{color:#ffd84a}.sk.t3 b{color:#ff9d3c}.sk.t4{border-color:#39ff6a}.sk.t4 b{color:#39ff6a}
+  .sk:active{transform:translate(2px,2px);box-shadow:none;background:#3b3766}.sk.no{opacity:.4}
+  #game .pad{margin:0;align-self:center;align-items:center;width:100%;max-width:560px;justify-self:center}
+  @media not all and (pointer:coarse){.pad{display:none}#game.on{grid-template-rows:auto auto auto}.stage{width:min(100%,calc((100dvh - 120px) * 16 / 9))}#spells{grid-template-columns:repeat(8,1fr)}}
+  /* điện thoại cầm ngang: sân ở giữa, nút hai bên, skill một hàng dưới đáy */
+  @media (orientation:landscape) and (max-height:520px) and (pointer:coarse){
+    #game.on{grid-template-columns:1fr auto 1fr;grid-template-rows:auto 1fr auto;gap:4px}
+    #game .topbar{grid-column:1/4}#game .topbar button{font-size:14px;padding:1px 6px}
+    .stage{grid-column:2;grid-row:2;width:min(calc((100dvh - 100px) * 16 / 9),calc(100vw - 350px));min-width:0;align-self:center}
+    .dpad,.acts{grid-template-columns:repeat(3,50px);grid-template-rows:repeat(2,50px);gap:4px}.pad button{font-size:24px}
+    #game .pad{display:contents}.dpad{grid-column:1;grid-row:2;align-self:end;justify-self:start}.acts{grid-column:3;grid-row:2;align-self:end;justify-self:end}
+    #spells{grid-column:1/4;grid-row:3;grid-template-columns:repeat(8,1fr);max-width:none}.sk{min-height:40px}.sk b{font-size:13px}.sk span{font-size:12px}
+  }
+  @media (max-width:420px){h1{font-size:38px}.dpad,.acts{grid-template-columns:repeat(3,54px);grid-template-rows:repeat(2,54px)}}
 </style>
 </head>
 <body>
@@ -162,14 +181,12 @@
 <!-- ============ TRẬN ĐẤU ============ -->
 <section class="scr" id="game">
   <div class="topbar"><button data-go="home" class="exit">✕ Thoát</button><button id="bReset">↻ Đấu lại</button><button id="bSound">🔊 Âm thanh</button><button data-go="guide">? Skill</button><span id="pingTx"></span></div>
-  <div id="oppPick"></div>
-  <canvas id="cv" width="480" height="270"></canvas>
-  <div id="netBar"></div>
+  <div class="stage"><canvas id="cv" width="480" height="270"></canvas><div id="netBar"></div></div>
+  <div id="spells"></div>
   <div class="pad">
     <div class="dpad"><span></span><button data-k="u">↑<small>nhảy</small></button><span></span><button data-k="l">←</button><button data-k="d">↓<small>cúi</small></button><button data-k="r">→</button></div>
     <div class="acts"><button class="f" data-k="F">F<small>nhanh</small></button><button class="g" data-k="G">G<small>nặng</small></button><button class="b" data-k="B">B<small>nạp</small></button><button class="c" data-k="C">C<small>khiên</small></button><button class="v" data-k="V">V<small>phản</small></button><span></span></div>
   </div>
-  <details open><summary id="spTitle">8 skill</summary><div id="spells"></div></details>
   <div id="endBox" style="display:none"></div>
 </section>
 

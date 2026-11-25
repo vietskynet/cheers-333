@@ -224,4 +224,10 @@ Game đối kháng phép thuật 16-bit, chơi bằng bàn phím hoặc nút c�
 
 - Việt Đinh cầm cà phê phin; thêm Book Grab, Handsome Power, tối thượng là Brainstorm. Đức Phan: Cuộc Gọi Deadline là màn hình cuộc gọi phủ kín sân. Hiếu Thứ 3: Research Kính Lúp. Nhân Ziku: Cuốn Hút.
 - Thêm Bao Tu (The Performative): Kính Loé Sáng, Hai Trứng, Protein Shake, Con Vịt, Sức Mạnh Đẹp Trai, Powerful Squat, Muscle Man, Performative.
-- `sprites.png`: 7 hàng nhân vật, rồi 1 hàng khung hình đặc biệt (hằng `SR`: ô 0 = Bao Tu khoe cơ, ô 1 = Bao Tu dang tay ôm), rồi đạo cụ từ y = 1200 (6 hàng × 16 ô). `posters.png`: 7 poster, CSS `background-size:700%`.
+- `sprites.webp` (trước là sprites.png): 7 hàng nhân vật, rồi 1 hàng khung hình đặc biệt (hằng `SR`: ô 0 = Bao Tu khoe cơ, ô 1 = Bao Tu dang tay ôm), rồi đạo cụ từ y = 1200 (6 hàng × 16 ô). `posters.png`: 7 poster, CSS `background-size:700%`.
+
+### Cập nhật 25/11 (lần 5): màn chơi vừa một màn hình
+
+- Màn trận đấu của `/agcCombat/` không còn phải cuộn: thanh nút, sân đấu, 8 nút skill, rồi nút di chuyển và F G C V B, tất cả nằm trong chiều cao màn hình (`100dvh`). Điện thoại cầm dọc: skill 4 cột × 2 hàng. Cầm ngang: sân ở giữa, nút hai bên, skill một hàng dưới đáy. Laptop: sân to theo chiều cao cửa sổ, skill một hàng 8 nút, ẩn nút cảm ứng.
+- Nút skill mờ đi khi thiếu MP. Bỏ hàng chọn cấp máy trong trận (chọn ở màn chọn nhân vật).
+- Hình chuyển sang WebP cho nhẹ: `sprites.webp` (~0,5 MB, trước 2,2 MB), `posters.webp` (~0,5 MB, trước 2,4 MB).

@@ -158,12 +158,12 @@ function onDisconnect() {
 /* ======================= AGC COMBAT – ĐẤU TRƯỜNG MA PHÁP VML ======================= */
 const W = 480, H = 270, FLOOR = 248, HIGH = 94, CW = 190, CHH = 150;
 const rnd = (a, b) => a + Math.random() * (b - a), clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-/* Hình: sprites.png = 4 nhân vật × 12 khung (ô 190×150, chân ở đáy ô, tâm ở x=95) + 32 đạo cụ (ô 96×72, từ y=600). bg.png = nền 480×270.
+/* Hình: sprites.webp = mỗi nhân vật một hàng 12 khung (ô 190×150, chân ở đáy ô, tâm ở x=95), rồi hàng khung đặc biệt, rồi đạo cụ (ô 96×72). bg.png = nền 480×270. posters.webp = poster xếp ngang.
    Nếu site chưa có file thì lấy tạm từ kho ảnh Higgsfield. */
 const CDN = "https://d2ol7oe51mr4n9.cloudfront.net/user_2vybgglAYZMtuRPV18Aqg7zS5iW/";
-function loadImg(local, cdn) { const im = new Image(); im.onerror = () => { if (!im._f) { im._f = 1; im.src = CDN + cdn; } }; im.onload = () => document.documentElement.style.setProperty(local === "./sprites.png" ? "--spr" : "--bg", `url("${im.src}")`); im.src = local; return im; }
-const SPR = loadImg("./sprites.png", "e71bceab-9f7c-4465-baa1-90c7e884ff3e.png"), BG = loadImg("./bg.png", "073e9582-2bbe-44d6-98ac-5cf73662bbb0.png");
-const POST = new Image(); POST.onload = () => { document.documentElement.style.setProperty("--post", `url("${POST.src}")`); document.body.classList.add("hasPost"); }; POST.onerror = () => { if (!POST._f) { POST._f = 1; POST.src = CDN + "922a4a6c-9867-4f2d-817d-12c2e9d625ef.png"; } }; POST.src = "./posters.png";
+function loadImg(local, cdn) { const im = new Image(); im.onerror = () => { if (!im._f) { im._f = 1; im.src = CDN + cdn; } }; im.onload = () => document.documentElement.style.setProperty(local === "./sprites.webp" ? "--spr" : "--bg", `url("${im.src}")`); im.src = local; return im; }
+const SPR = loadImg("./sprites.webp", "7bdb61ad-66e1-4452-b723-9394d7daaf07.webp"), BG = loadImg("./bg.png", "073e9582-2bbe-44d6-98ac-5cf73662bbb0.png");
+const POST = new Image(); POST.onload = () => { document.documentElement.style.setProperty("--post", `url("${POST.src}")`); document.body.classList.add("hasPost"); }; POST.onerror = () => { if (!POST._f) { POST._f = 1; POST.src = CDN + "95107550-251f-411b-9175-c6ee040bf1f6.webp"; } }; POST.src = "./posters.webp";
 const ok = im => im.complete && im.naturalWidth > 0;
 const IC = { phone: 0, mail: 1, folder: 2, chat: 3, car: 4, table: 5, coin: 6, cal: 7, bulb: 8, marker: 9, cat1: 10, cat2: 11, dumb: 12, frame: 13, easel: 14, wind: 15, splat: 16, brush: 17, scis: 18, cig: 19, smoke: 20, shrimp: 21, layers: 22, pen: 23, mag: 24, report: 25, funnel: 26, book: 27, trophy: 28, chart: 29, venn: 30, stamp: 31, paw: 32, wig: 33, buffet: 34, menu: 35, pho: 36, banhmi: 37, roll: 38, cake: 39, tea: 40, chicken: 41, redpen: 42, hand: 43, news: 44, sushi: 45, pizza: 46, quote: 47, mega: 48, vali: 49, plane: 50, ticket: 51, passport: 52, pencil: 53, ghost: 54, bat: 55, moon: 56, shand: 57, fire: 58, globe: 59, photo: 60, world: 61, shades: 62, scrib: 63, bike: 64, phin: 65, cdrop: 66, rose: 67, spark: 68, heart: 69, cloud: 70, note: 71, crown: 72, mirror: 73, zap: 74, bean: 75, clock: 76, laurel: 77, warn: 78, callbtn: 79, tee: 80, jeans: 81, egg: 82, chick: 83, plate: 84, duck: 85, barbell: 86, shaker: 87, glasses: 88, tmirror: 89, matcha: 90, tote: 91, vinyl: 92, earph: 93, camera: 94, obook: 95 };
 /* Ba cấp máy */
@@ -280,9 +280,10 @@ function newF(i) {
 }
 function startMatch(mode, lvl, chars) {
   G.mode = mode; G.lvl = lvl || 0; G.round = 1; G.score = [0, 0]; G.ME = mode === "pvp" && !net.host ? 1 : 0; G.chars = chars;
-  show("game"); $("oppPick").style.display = mode === "ai" ? "" : "none"; document.querySelectorAll("#oppPick button").forEach((b, i) => b.classList.toggle("on", i === G.lvl));
-  $("spells").innerHTML = spellHTML(G.chars[G.ME], true); document.querySelectorAll("[data-sp]").forEach(b => b.onclick = () => tapSpell(+b.dataset.sp));
-  $("spTitle").textContent = `8 skill của ${chOf(G.ME).name} (chạm vào ô để ra chiêu)`;
+  show("game"); scrollTo(0, 0);
+  // thanh 8 skill ngay dưới sân đấu: chạm là ra chiêu, giữ chuột lên để đọc mô tả
+  $("spells").innerHTML = chOf(G.ME).sp.map((s, i) => `<button class="sk t${s.t}" data-sp="${i}" data-mp="${TIER[s.t].mp}" title="${s.d}"><i>${TIER[s.t].mp}</i><b>${s.n}</b><span>${s.k.split("").join("›")}</span></button>`).join("");
+  document.querySelectorAll("[data-sp]").forEach(b => b.addEventListener("pointerdown", e => { e.preventDefault(); tapSpell(+b.dataset.sp); }));
   newRound();
 }
 function newRound() {
@@ -640,12 +641,13 @@ function render() {
   if (G.phase === "ko") { const win = G.loser !== G.ME; if (G.ko < 2.5) { text("K.O.", W / 2, 128, "#ff3b30", 64, "center"); text(win ? "YOU WIN" : "YOU LOSE", W / 2, 158, win ? "#ffe14a" : "#9fd8ff", 30, "center"); } }
   if (G.flash > .02) { x.fillStyle = `rgba(255,255,255,${G.flash})`; x.fillRect(0, 0, W, H); G.flash *= .8; }
 }
-let prev = performance.now(), lastSend = 0;
+let prev = performance.now(), lastSend = 0, lastUi = 0;
 function loop(now) {
   requestAnimationFrame(loop); let dt = Math.min(.05, (now - prev) / 1000); prev = now;
   if (!$("game").classList.contains("on") || !F.length) return;
   if (G.stop > 0) { G.stop -= dt; dt = 0; }
   if (dt > 0) update(dt);
+  if (now - lastUi > 150) { lastUi = now; const mp = F[G.ME].mp; document.querySelectorAll("#spells .sk").forEach(b => b.classList.toggle("no", mp < +b.dataset.mp)); }
   if (G.mode === "pvp" && now - lastSend > 33) { lastSend = now; const p = F[G.ME]; send({ t: "s", x: Math.round(p.x), y: Math.round(p.y), hp: p.hp, mp: Math.round(p.mp), f: frameOf(p), sh: +p.shield.toFixed(2), bg: +p.big.toFixed(2), bk: p.bigK, gi: +p.giant.toFixed(2), sm: +p.smoke.toFixed(2), rd: p.ride, fx: p.flyX == null ? null : Math.round(p.flyX), iv: p.inv > 0 ? 1 : 0, cr: p.crouch ? 1 : 0, c: p.ctrl ? [p.ctrl.k, +p.ctrl.t.toFixed(2), 0, p.ctrl.lb, p.ctrl.ic] : null, ko: p.ko ? 1 : 0 }, false); }
   render();
 }
@@ -702,8 +704,6 @@ $("lvPick").innerHTML = LVL.map((o, i) => `<button data-i="${i}"><b>LV${i + 1}</
 document.querySelectorAll("#lvPick button").forEach(b => b.onclick = () => { pick.lvl = +b.dataset.i; drawPick(); });
 $("bAI").onclick = () => { pick.a = -1; pick.b = -1; drawPick(); show("pick"); };
 $("bFight").onclick = () => { me.ch = pick.a; try { localStorage.setItem("hmwiz-ch", me.ch); } catch {} startMatch("ai", pick.lvl, [pick.a, pick.b]); };
-$("oppPick").innerHTML = LVL.map((o, i) => `<button data-i="${i}">LV${i + 1}</button>`).join("");
-document.querySelectorAll("#oppPick button").forEach(b => b.onclick = () => startMatch("ai", +b.dataset.i, G.chars));
 /* chọn nhân vật trong phòng 2 người */
 $("roomGrid").innerHTML = CH.map(card).join("");
 const drawRoomPick = () => document.querySelectorAll("#roomGrid .chr").forEach((b, i) => { b.classList.toggle("p1", i === me.ch); b.querySelector("em").textContent = i === me.ch ? "BẠN" : ""; });
