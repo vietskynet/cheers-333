@@ -255,7 +255,7 @@ const CH = [
       { n: "Bible Strategy", b: 36, d: "Cuốn kinh chiến lược giáng xuống trong ánh hào quang", mk: (c, D) => [{ wait: 1.0, dmg: D, fx: "drop", ic: IC.book, sc: 1.8, holy: 1, lb: "BIBLE STRATEGY", say: "AMEN!" }] },
       { n: "5 WIN Strategy", b: 18, m: 5, fixed: 1, d: "Năm con dấu WIN đóng liên tiếp, chốt bằng cúp vàng. Xuyên khiên", mk: (c, D) => [0, 1, 2, 3, 4].map(i => ({ wait: .35 + i * .3, dmg: D, pierce: 1, fx: "drop", ic: i < 4 ? IC.stamp : IC.trophy, sc: i < 4 ? .9 : 1.7, quick: 1, n: i, say: "WIN " + (i + 1) })) },
     ] },
-  { id: "ngan", name: "Phương Ngân", role: "Creative Copy-based", col: "#f472b6", tag: "Chơi chữ, set menu, mèo khổng lồ và mái tóc trùm",
+  { id: "ngan", name: "Phương Ngân", role: "Taste Maker", col: "#f472b6", tag: "Chơi chữ, set menu, mèo khổng lồ và mái tóc trùm",
     F: { n: "Chữ cái", ic: -2 }, G: { n: "Bút đỏ", ic: IC.redpen }, th: { n: "Ngoặc kép rơi", ic: IC.quote },
     sp: [
       { n: "Giật Tít", b: 18, d: "Một dòng tít giật gân bay thẳng vào mặt, đối thủ đứng hình", mk: (c, D) => [{ p: 1, v: 320, ic: IC.news, sc: .75, wob: 1, dmg: D, col: "#f472b6", on: { stun: .9 }, say: "SỐC!" }] },
@@ -267,7 +267,7 @@ const CH = [
       { n: "Giơ Tay Ý Kiến", b: 36, d: "Giơ tay phát biểu, bão comment đổ xuống đè đối thủ", mk: (c, D) => [{ wait: 1.2, dmg: D, fx: "rain", ic: IC.chat, top: IC.hand, say: "EM CÓ Ý KIẾN!" }] },
       { n: "Mèo Khổng Lồ", b: 90, fixed: 1, d: "Bàn chân mèo xám trắng mũm mĩm khổng lồ đập xuống. Xuyên khiên", mk: (c, D) => [{ wait: .8, dmg: D, pierce: 1, fx: "drop", ic: IC.paw, sc: 2.6, gnd: 1, on: { ctrl: ["flat", 1.8, 0, "BẸP!"] }, say: "MEOOO!" }] },
     ] },
-  { id: "khoa", name: "Khoa Đặng", role: "Sr Art Director", col: "#8b5cf6", tag: "Nói nhiều, cầu lông, karaoke, vé 0 đồng, thần vẽ và bịa chuyện",
+  { id: "khoa", name: "Khoa Đặng", role: "Ông Hoàng Bóng Đêm", col: "#8b5cf6", tag: "Nói nhiều, cầu lông, karaoke, vé 0 đồng, thần vẽ và bịa chuyện",
     F: { n: "Nói nhiều", ic: -4 }, G: { n: "Nói to hơn", ic: IC.mega }, th: { n: "Quà lưu niệm rơi", ic: IC.globe },
     sp: [
       { n: "Book Vé 0 Đồng", b: 9, m: 4, d: "Bốn tấm vé 0 đồng tự tìm tới, đối thủ đỏ mặt xấu hổ", mk: (c, D) => four({ ic: IC.zticket, sc: .5, dmg: D, col: "#fde68a", on: { ctrl: ["blush", .7, 0, "XẤU HỔ QUÁ…"] } }, ["0 ĐỒNG!", "Chưa thuế phí", "Bay 2 giờ sáng", "Không hành lý"]) },
@@ -743,7 +743,7 @@ function drawFighter(p) {
   else if (c.k === "lowbat") { spr(ci, f, px, bot, flip, { gray: 1 }); const bl = Math.floor(t * 4) % 2; x.fillStyle = "#000"; x.fillRect(px - 19, FLOOR - 160, 38, 18); x.fillRect(px + 19, FLOOR - 155, 3, 8); x.fillStyle = "#111827"; x.fillRect(px - 17, FLOOR - 158, 34, 14); if (bl) { x.fillStyle = "#ef4444"; x.fillRect(px - 15, FLOOR - 156, 4, 10); } text("10%", px + 4, FLOOR - 147, "#ef4444", 12, "center"); }
   else if (c.k === "seen") {   // gửi tin nhắn, bên kia "đã xem" mà không trả lời
     spr(ci, f, px, bot, flip, { tint }); const bx = clamp(px, 62, W - 62), by = FLOOR - 172, ph = Math.min(2, Math.floor(((c.T0 = c.T0 || c.t) - c.t) / .5));
-    x.fillStyle = "#000"; x.fillRect(bx - 59, by - 1, 118, 40); x.fillStyle = "#e5f0ff"; x.fillRect(bx - 58, by, 116, 38); x.fillStyle = "#2563eb"; x.fillRect(bx - 4, by + 3, 58, 13); x.font = FONT(11); x.textAlign = "right"; x.fillStyle = "#fff"; x.fillText("Anh duyệt chưa ạ?", bx + 52, by + 13);
+    x.fillStyle = "#000"; x.fillRect(bx - 59, by - 1, 118, 40); x.fillStyle = "#e5f0ff"; x.fillRect(bx - 58, by, 116, 38); x.fillStyle = "#2563eb"; x.fillRect(bx - 46, by + 3, 100, 13); x.font = FONT(11); x.textAlign = "right"; x.fillStyle = "#fff"; x.fillText("Anh duyệt chưa ạ?", bx + 52, by + 13);
     if (ph >= 1) { x.fillStyle = "#64748b"; x.fillText("Đã xem ✓✓", bx + 52, by + 26); } if (ph >= 2) { x.textAlign = "left"; x.fillStyle = "#94a3b8"; x.fillText("…".repeat(1 + Math.floor(t * 3) % 3), bx - 52, by + 34); }
     text("…", px, FLOOR - 132, "#fff", 26, "center"); prop(IC.crow, (t * 130) % (W + 80) - 40, 78 + Math.sin(t * 6) * 5, .6); }
   else if (c.k === "sand") {   // đồng hồ cát: cát dâng lấp người, đầy thì giam 1 giây rồi nổ
