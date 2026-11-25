@@ -231,3 +231,7 @@ Game đối kháng phép thuật 16-bit, chơi bằng bàn phím hoặc nút c�
 - Màn trận đấu của `/agcCombat/` không còn phải cuộn: thanh nút, sân đấu, 8 nút skill, rồi nút di chuyển và F G C V B, tất cả nằm trong chiều cao màn hình (`100dvh`). Điện thoại cầm dọc: skill 4 cột × 2 hàng. Cầm ngang: sân ở giữa, nút hai bên, skill một hàng dưới đáy. Laptop: sân to theo chiều cao cửa sổ, skill một hàng 8 nút, ẩn nút cảm ứng.
 - Nút skill mờ đi khi thiếu MP. Bỏ hàng chọn cấp máy trong trận (chọn ở màn chọn nhân vật).
 - Hình chuyển sang WebP cho nhẹ: `sprites.webp` (~0,5 MB, trước 2,2 MB), `posters.webp` (~0,5 MB, trước 2,4 MB).
+
+### Cập nhật 25/11 (lần 6): giảm sát thương
+
+- Đòn thường F 6 → 4, G 13 → 8, phản đòn 15 → 9. Skill nhân thêm hệ số `CUT` theo bậc: cấp 1 ×0,6, cấp 2 ×0,55, cấp 3 ×0,5, tối thượng ×0,4 (90 → 36). Đòn thường của máy 8/11/14 → 5/7/9. Chỉnh trong `CUT`, `BASIC`, `LVL` ở `game.js`.

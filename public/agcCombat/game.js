@@ -168,13 +168,15 @@ const ok = im => im.complete && im.naturalWidth > 0;
 const IC = { phone: 0, mail: 1, folder: 2, chat: 3, car: 4, table: 5, coin: 6, cal: 7, bulb: 8, marker: 9, cat1: 10, cat2: 11, dumb: 12, frame: 13, easel: 14, wind: 15, splat: 16, brush: 17, scis: 18, cig: 19, smoke: 20, shrimp: 21, layers: 22, pen: 23, mag: 24, report: 25, funnel: 26, book: 27, trophy: 28, chart: 29, venn: 30, stamp: 31, paw: 32, wig: 33, buffet: 34, menu: 35, pho: 36, banhmi: 37, roll: 38, cake: 39, tea: 40, chicken: 41, redpen: 42, hand: 43, news: 44, sushi: 45, pizza: 46, quote: 47, mega: 48, vali: 49, plane: 50, ticket: 51, passport: 52, pencil: 53, ghost: 54, bat: 55, moon: 56, shand: 57, fire: 58, globe: 59, photo: 60, world: 61, shades: 62, scrib: 63, bike: 64, phin: 65, cdrop: 66, rose: 67, spark: 68, heart: 69, cloud: 70, note: 71, crown: 72, mirror: 73, zap: 74, bean: 75, clock: 76, laurel: 77, warn: 78, callbtn: 79, tee: 80, jeans: 81, egg: 82, chick: 83, plate: 84, duck: 85, barbell: 86, shaker: 87, glasses: 88, tmirror: 89, matcha: 90, tote: 91, vinyl: 92, earph: 93, camera: 94, obook: 95 };
 /* Ba cấp máy */
 const LVL = [
-  { n: "Thực tập sinh", hp: 100, spd: 34, dist: 170, rest: [2.4, 3.3], wind: .6, types: ["hi"], dmg: 8, bolt: 190, shield: .12, cast: 0, maxT: 0 },
-  { n: "Senior", hp: 150, spd: 58, dist: 215, rest: [1.5, 2.3], wind: .48, types: ["hi", "hi", "lo"], dmg: 11, bolt: 240, shield: .32, cast: .25, maxT: 2 },
-  { n: "Sếp tổng", hp: 210, spd: 46, dist: 240, rest: [1.0, 1.7], wind: .4, types: ["hi", "lo", "th", "th"], dmg: 14, bolt: 290, shield: .5, cast: .4, maxT: 4 },
+  { n: "Thực tập sinh", hp: 100, spd: 34, dist: 170, rest: [2.4, 3.3], wind: .6, types: ["hi"], dmg: 5, bolt: 190, shield: .12, cast: 0, maxT: 0 },
+  { n: "Senior", hp: 150, spd: 58, dist: 215, rest: [1.5, 2.3], wind: .48, types: ["hi", "hi", "lo"], dmg: 7, bolt: 240, shield: .32, cast: .25, maxT: 2 },
+  { n: "Sếp tổng", hp: 210, spd: 46, dist: 240, rest: [1.0, 1.7], wind: .4, types: ["hi", "lo", "th", "th"], dmg: 9, bolt: 290, shield: .5, cast: .4, maxT: 4 },
 ];
 /* 8 ô skill dùng chung phím cho cả 4 nhân vật */
 const KEYS = ["FG", "GF", "BF", "FFV", "GGF", "FFFV", "BBBF", "VBGCF"], TOF = [1, 1, 1, 2, 2, 3, 3, 4];
 const TIER = { 1: { mp: 10, k: 1, n: "Cấp 1" }, 2: { mp: 20, k: 1.25, n: "Cấp 2" }, 3: { mp: 35, k: 1.6, n: "Cấp 3" }, 4: { mp: 55, k: 2, n: "Tối thượng" } };
+/* Hệ số giảm sát thương skill theo bậc (trận đấu dài hơn; tối thượng giảm mạnh nhất). Đòn thường: F 4, G 8. */
+const CUT = { 1: .6, 2: .55, 3: .5, 4: .4 }, BASIC = { F: 4, G: 8, parry: 9 };
 function healClear(c, ic) { c.hp = Math.min(c.max, c.hp + 15); clearAttacksOn(c.i); for (let i = 0; i < 26; i++) FX.push({ k: "icon", ic, t: -i * .03, d: 1.1, x: rnd(10, W - 10), y: rnd(-80, -10), vx: rnd(-10, 10), vy: rnd(150, 260), sc: rnd(.3, .5) }); pop("+15 HP", c.x, FLOOR - 150, "#7CFC8A", 1); }
 const four = (o, says) => [0, 1, 2, 3].map(i => ({ p: 1, v: 265, hom: 1, h: HIGH + 24 - i * 15, wait: .3 + i * .13, sc: .48, ...o, ic: Array.isArray(o.ic) ? o.ic[i % o.ic.length] : o.ic, say: says[i % says.length] }));
 /* Mỗi skill: n tên, b sát thương gốc, m số đòn, d mô tả, self(c) tác dụng lên mình, mk(c, D, K, dist) trả về danh sách đòn */
@@ -222,7 +224,7 @@ const CH = [
       { n: "Khảo Sát 1000 Mẫu", b: 9, m: 4, d: "Bốn bản khảo sát tự tìm tới đối thủ", mk: (c, D) => four({ ic: IC.report, dmg: D, col: "#bfdbfe" }, ["n=1000", "p<0.05", "Top 2 box", "Quali!"]) },
       { n: "Khiên SWOT", b: 0, d: "Vòm khiên 4 ô S-W-O-T, chặn mọi đòn 3,2 giây", self: c => { c.big = 3.2; c.bigK = 2; } },
       { n: "Framework", b: 25, d: "Nhốt đối thủ vào giữa hai vòng tròn giao nhau", mk: (c, D) => [{ wait: .25, dmg: D, on: { ctrl: ["frame", 2.5, 0, "FRAMEWORK", IC.venn] } }] },
-      { n: "Phễu Insight", b: 6, d: "Hút đối thủ lên phễu 2,6 giây rồi thả rơi (6 + 12)", mk: (c, D, K) => [{ wait: .1, dmg: D, on: { ctrl: ["lev", 2.6, 12 * K, "AWARENESS → LOYALTY", IC.funnel] } }] },
+      { n: "Phễu Insight", b: 6, d: "Hút đối thủ lên phễu 2,6 giây rồi thả rơi (4 + 8)", mk: (c, D, K) => [{ wait: .1, dmg: D, on: { ctrl: ["lev", 2.6, 12 * K, "AWARENESS → LOYALTY", IC.funnel] } }] },
       { n: "Mô Hình Tăng Trưởng", b: 45, d: "Mũi tên tăng trưởng phóng xuyên qua đối thủ", mk: (c, D) => [{ wait: .5, dmg: D, fx: "dash", ic: IC.chart, sc: 1.5, say: "+300% YoY" }] },
       { n: "Bible Strategy", b: 36, d: "Cuốn kinh chiến lược giáng xuống trong ánh hào quang", mk: (c, D) => [{ wait: 1.0, dmg: D, fx: "drop", ic: IC.book, sc: 1.8, holy: 1, lb: "BIBLE STRATEGY", say: "AMEN!" }] },
       { n: "5 WIN Strategy", b: 18, m: 5, fixed: 1, d: "Năm con dấu WIN đóng liên tiếp, chốt bằng cúp vàng. Xuyên khiên", mk: (c, D) => [0, 1, 2, 3, 4].map(i => ({ wait: .35 + i * .3, dmg: D, pierce: 1, fx: "drop", ic: i < 4 ? IC.stamp : IC.trophy, sc: i < 4 ? .9 : 1.7, quick: 1, n: i, say: "WIN " + (i + 1) })) },
@@ -260,7 +262,7 @@ const CH = [
       { n: "Con Vịt", b: 25, d: "Một đĩa đồ ăn thừa hiện ra và đối thủ hoá thành con vịt", mk: (c, D) => [{ wait: .25, dmg: D, on: { ctrl: ["duck", 2.6, 0, "QUẠC QUẠC!", IC.plate] } }] },
       { n: "Sức Mạnh Đẹp Trai", b: 13, m: 3, d: "Gương vô cực mọc quanh đối thủ, tia đẹp trai bắn ra bất ngờ từ từng tấm", mk: (c, D) => [0, 1, 2].map(i => ({ wait: .5 + i * .28, dmg: D, fx: "mirror", n: i, say: ["HỚP HỒN!", "ĐẸP!", "QUÁ ĐẸP!"][i] })) },
       { n: "Powerful Squat", b: 45, d: "Gánh tạ nặng, nhảy lên, ngồi xuống đè mông lên đối thủ", self: c => { c.smoke = 1.3; c.ride = -9; }, mk: (c, D) => [{ wait: .95, dmg: D, fx: "butt", on: { ctrl: ["flat", 1.4, 0, "BẸP!"] }, say: "ĐỦ 100 KÝ!" }] },
-      { n: "Muscle Man", b: 20, d: "Cởi áo khoe cơ ngực và 6 múi, bay tới ôm chặt đối thủ gây ngạt (20 + 16)", self: c => { c.smoke = 3.3; c.ride = -9; }, mk: (c, D, K) => [{ wait: 1.1, dmg: D, fx: "hug", on: { ctrl: ["hug", 2.2, 16 * K, "NGẠT… THẢ RA…"] }, say: "ÔM CÁI NÀO!" }] },
+      { n: "Muscle Man", b: 20, d: "Cởi áo khoe cơ ngực và 6 múi, bay tới ôm chặt đối thủ gây ngạt (16 + 13)", self: c => { c.smoke = 3.3; c.ride = -9; }, mk: (c, D, K) => [{ wait: 1.1, dmg: D, fx: "hug", on: { ctrl: ["hug", 2.2, 16 * K, "NGẠT… THẢ RA…"] }, say: "ÔM CÁI NÀO!" }] },
       { n: "Performative", b: 90, fixed: 1, d: "Năm bản thể đẹp trai cùng trình diễn, đối thủ choáng ngợp. Xuyên khiên", mk: (c, D) => [{ wait: 1.5, dmg: D, pierce: 1, fx: "perf", on: { ctrl: ["dizzy", 2.2, 0, "CHOÁNG NGỢP…"] }, say: "PERFORMATIVE!" }] },
     ] },
 ];
@@ -320,8 +322,8 @@ function doBasic(i, k, local) {
   const p = F[i], c = chOf(i); if (local && (p.cd[k] || 0) > 0) return;
   if (local && G.mode === "pvp") send({ t: "b", k });
   p.cd[k] = CD[k];
-  if (k === "F") { p.act = "cast"; p.actT = .18; spawn(i, { p: 1, v: 300, dmg: 6, col: c.col, ic: c.F.ic, sc: .4, basic: 1 }); beep(880, .06); aiReact(i, .4); }
-  if (k === "G") { p.act = "heavy"; p.actT = .3; p.lock = .22; const low = G.mode === "pvp"; spawn(i, { p: 1, v: 240, dmg: 13, col: c.col, ic: c.G.ic, sc: .6, wob: 1, low, h: low ? 16 : HIGH, basic: 1 }); beep(330, .12, "sawtooth"); aiReact(i, .7); }
+  if (k === "F") { p.act = "cast"; p.actT = .18; spawn(i, { p: 1, v: 300, dmg: BASIC.F, col: c.col, ic: c.F.ic, sc: .4, basic: 1 }); beep(880, .06); aiReact(i, .4); }
+  if (k === "G") { p.act = "heavy"; p.actT = .3; p.lock = .22; const low = G.mode === "pvp"; spawn(i, { p: 1, v: 240, dmg: BASIC.G, col: c.col, ic: c.G.ic, sc: .6, wob: 1, low, h: low ? 16 : HIGH, basic: 1 }); beep(330, .12, "sawtooth"); aiReact(i, .7); }
   if (k === "C") { p.shield = .85; p.cd.C = .85 + CD.C; beep(520, .1, "triangle"); }
   if (k === "V") { p.parry = .38; beep(700, .05, "triangle"); }
   if (k === "B") { p.charge = .65; beep(260, .3, "sine", .05, 520); }
@@ -329,7 +331,7 @@ function doBasic(i, k, local) {
 function doCast(i, si, local) {
   const p = F[i], s = chOf(i).sp[si], T = TIER[s.t], tg = F[1 - i];
   if (local) { p.mp -= T.mp; if (G.mode === "pvp") send({ t: "c", s: si }); }
-  const wait = s.t >= 3 ? .6 : .42, weak = p.ai ? .55 : 1;                 // máy ra skill yếu hơn người
+  const wait = s.t >= 3 ? .6 : .42, weak = (p.ai ? .55 : 1) * CUT[s.t];                 // máy ra skill yếu hơn người
   p.lock = wait + .15; p.act = "wind"; p.actT = wait; G.cine = { n: s.n, t: 0, d: wait + .25, tier: s.t, i }; beep(200, wait, "sawtooth", .05, 900); aiReact(i, 1);
   p.q.push({ t: wait, fn: () => {
     p.act = s.t >= 3 ? "heavy" : "cast"; p.actT = .3; beep(1200, .15, "square", .07, 300);
@@ -368,7 +370,7 @@ function resolve(a, T) {
     if (on.ctrl) { T.ctrl = mkCtrl(on.ctrl); T.shield = 0; T.y = 0; T.vy = 0; }
   }
   T.hp = Math.max(0, T.hp - res.dmg);
-  if (res.r === "parry") { T.parry = 0; spawn(T.i, { p: 1, v: 360, dmg: 15, col: "#fff", sp: 1 }); if (G.mode === "pvp") send({ t: "rf" }); }
+  if (res.r === "parry") { T.parry = 0; spawn(T.i, { p: 1, v: 360, dmg: BASIC.parry, col: "#fff", sp: 1 }); if (G.mode === "pvp") send({ t: "rf" }); }
   if (T.hp <= 0) res.ko = 1;
   return res;
 }
@@ -665,7 +667,7 @@ function onMsg(m) {
   if (m.t === "s") { o.x += (m.x - o.x) * .6; o.y = m.y; o.hp = m.hp; o.mp = m.mp; o.rf = m.f; o.shield = m.sh; o.big = m.bg; o.bigK = m.bk; o.giant = m.gi || 0; o.smoke = m.sm; o.ride = m.rd; o.flyX = m.fx; o.fly = m.fx == null ? 0 : .1; o.inv = m.iv ? .1 : 0; o.crouch = !!m.cr; o.ctrl = m.c ? mkCtrl(m.c) : null; return; }
   if (m.t === "b") return doBasic(1 - G.ME, m.k, false);
   if (m.t === "c") return doCast(1 - G.ME, m.s, false);
-  if (m.t === "rf") { spawn(1 - G.ME, { p: 1, v: 360, dmg: 15, col: "#fff", sp: 1 }); return; }
+  if (m.t === "rf") { spawn(1 - G.ME, { p: 1, v: 360, dmg: BASIC.parry, col: "#fff", sp: 1 }); return; }
   if (m.t === "res") { const j = ATK.findIndex(a => a.id === m.aid), a = j >= 0 ? ATK[j] : null; if (a && a.p) ATK.splice(j, 1); if (m.res.to === undefined) m.res.to = 1 - G.ME; showRes(m.res, a); return; }
   if (m.t === "reset") { if (net.host) resetMatch(); return; }
   if (m.t === "round") { G.round = m.n; G.score = m.sc; return newRound(); }
@@ -719,6 +721,6 @@ $("bSound").onclick = () => { G.sound = !G.sound; $("bSound").textContent = G.so
 // nút cảm ứng: giữ được
 document.querySelectorAll("[data-k]").forEach(b => { const k = b.dataset.k, down = e => { e.preventDefault(); b.classList.add("on"); if (KEY[k] !== undefined) KEY[k] = 1; else press(k); }, up = e => { e.preventDefault(); b.classList.remove("on"); if (KEY[k] !== undefined) KEY[k] = 0; }; b.addEventListener("pointerdown", down); b.addEventListener("pointerup", up); b.addEventListener("pointercancel", up); b.addEventListener("pointerleave", up); b.addEventListener("contextmenu", e => e.preventDefault()); });
 // bảng 8 skill của một nhân vật (trang chơi: chạm để ra chiêu; trang hướng dẫn: để tra)
-function spellHTML(ci, tap) { return `<div class="spg">` + CH[ci].sp.map((s, i) => `<button class="sp t${s.t}" ${tap ? `data-sp="${i}"` : "disabled"}><span class="ks">${s.k.split("").join(" › ")} · ${TIER[s.t].mp} MP</span><b>${s.n}</b><small>${s.b ? (s.m ? s.m + " × " : "") + Math.round(s.fixed ? s.b : s.b * TIER[s.t].k) + " sát thương · " : ""}${s.d}</small></button>`).join("") + "</div>"; }
+function spellHTML(ci, tap) { return `<div class="spg">` + CH[ci].sp.map((s, i) => `<button class="sp t${s.t}" ${tap ? `data-sp="${i}"` : "disabled"}><span class="ks">${s.k.split("").join(" › ")} · ${TIER[s.t].mp} MP</span><b>${s.n}</b><small>${s.b ? (s.m ? s.m + " × " : "") + Math.round((s.fixed ? s.b : s.b * TIER[s.t].k) * CUT[s.t]) + " sát thương · " : ""}${s.d}</small></button>`).join("") + "</div>"; }
 $("guideSpells").innerHTML = CH.map((c, i) => `<h3 style="color:${c.col}">${c.name} · ${c.role}</h3><p>${c.tag}. Đòn F: ${c.F.n}. Đòn G: ${c.G.n}.</p>` + spellHTML(i, false)).join("");
 window.__wz = { G, CH, get F() { return F; }, get ATK() { return ATK; }, press, tapSpell, startMatch, net, setReady, KEY, pick };
