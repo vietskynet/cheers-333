@@ -252,3 +252,9 @@ Game đối kháng phép thuật 16-bit, chơi bằng bàn phím hoặc nút c�
 - Thêm Thẳng Tính (Fashionista): Giày Móng Ngựa, Ăn Cắp (chôm MP), Giấu Đồ (khoá skill đối thủ 5 giây, trường `mute`), Đi Triển Lãm, Chọc Chửi, Chọc Bạo Hành, Sàn Diễn, Dê Xồm.
 - `sprites.webp`: 9 hàng nhân vật, hàng đặc biệt, đạo cụ từ y = 1500 (8 hàng × 16 ô). `posters.webp`: 9 poster, CSS `background-size:900%`.
 - Tên dài trên poster ở màn chọn nhân vật tự thu nhỏ chữ.
+
+### Cập nhật 25/11 (lần 10): nhân vật thứ 10
+
+- Thêm Lê Như (The Perfect Woman): Ánh Mắt Sắc Lẹm, Đẹp Không Góc Chết, Pose Dáng Điệu Đà, Quay TikTok, Snap Snap Pose Pose, Vẽ Tranh Sống Ảo, Filter Làm Đẹp, Thật Hoàn Hảo. Đòn thường là chính các dáng pose của nhân vật bay ra (`ic: -6`).
+- `sprites.webp`: 10 hàng nhân vật, hàng đặc biệt `SR` (ô 2 = tượng nữ thần của Lê Như), đạo cụ từ y = 1650 (9 hàng × 16 ô). `posters.webp`: 10 poster, CSS `background-size:1000%`.
+- Sửa ô mặt bị lệch ở lưới chọn nhân vật; điện thoại trong "Chọc Bạo Hành" to và cao hơn.
