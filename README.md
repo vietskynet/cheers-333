@@ -278,5 +278,5 @@ Game đối kháng phép thuật 16-bit, chơi bằng bàn phím hoặc nút c�
 - Sửa lỗi: combo có phím nạp hoặc đòn nặng ở giữa (Q›S, Q›Q›Q›S, D›S, D›D›S, E›Q›D›W›S) trước đây không ra được bằng bàn phím vì nhân vật đang bận; giờ phím kế tiếp khớp chuỗi thì huỷ nạp và ra skill.
 - Màn mở đầu: poster to gấp đôi; ba nút chế độ nằm một hàng; tạo phòng / nhập mã gọn trong ô Đấu đôi.
 - Màn chọn nhân vật: ô mặt lớn (lưới 5 cột), cắt đúng trọn khuôn mặt theo bảng `FACE`; trên điện thoại hai poster nằm trên, lưới nằm dưới.
-- Nguyên Cô Đơn: danh hiệu đổi thành "Đang tìm người yêu".
+- Nguyên Cô Đơn: danh hiệu đổi thành "Đang tìm người yêu". Đức Phan: tối thượng là "Cuộc Gọi Tử Thần" (trước là skill đầu "Cuộc Gọi Deadline"); "Meeting Gấp" xuống ô skill đầu, bản nhẹ.
 - Kết quả lưu trên máy: Tournament ghi số trận thắng xa nhất và số lần vô địch.
