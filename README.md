@@ -310,3 +310,4 @@ Giữ nguyên bộ skill của 13 nhân vật; chỉ đổi luật.
 - `sprites.webp`: 14 hàng nhân vật (hàng 13 là boss), cao 3186 px; hàng đặc biệt và đạo cụ lùi xuống một hàng.
 - **Nhạc mới, nhanh hơn:** menu 138 bpm, trận đấu 176 bpm (bass dồn từng nốt móc kép, trống bốn phách), thêm bài riêng cho boss 190 bpm.
 - Sửa lỗi: KO xảy ra giữa lúc đang duyệt danh sách đòn làm văng lỗi một khung hình.
+- (lần 21) Skill "Framework" của Hiếu Thứ 3 vẽ lại thành "ngôi nhà chiến lược" kiểu slide công ty (thanh Vision, thanh Mission, năm ô sứ mệnh, mái tam giác "Trụ cột chiến lược", sáu trụ) rơi xuống đè đối thủ, bắt đứng gồng làm "trụ thứ 7" (ctrl `house`). Bố cục lấy cảm hứng từ sơ đồ người dùng gửi; chữ trong sơ đồ là chữ đùa tự viết.

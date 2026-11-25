@@ -248,7 +248,7 @@ const CH = [
       { n: "Research Kính Lúp", b: 18, d: "Kính lúp khổng lồ zoom thẳng vào đối thủ, soi ra insight", mk: (c, D) => [{ wait: 1.0, dmg: D, fx: "zoom", on: { stun: 1 }, say: "INSIGHT!" }] },
       { n: "Khảo Sát 1000 Mẫu", b: 9, m: 4, d: "Bốn bản khảo sát tự tìm tới đối thủ", mk: (c, D) => four({ ic: IC.report, dmg: D, col: "#bfdbfe" }, ["n=1000", "p<0.05", "Top 2 box", "Quali!"]) },
       { n: "Khiên SWOT", b: 0, d: "Vòm khiên 4 ô S-W-O-T, chặn mọi đòn 3,2 giây", self: c => { c.big = 3.2; c.bigK = 2; } },
-      { n: "Framework", b: 25, d: "Nhốt đối thủ vào giữa hai vòng tròn giao nhau", mk: (c, D) => [{ wait: .25, dmg: D, on: { ctrl: ["frame", 2.5, 0, "FRAMEWORK", IC.venn] } }] },
+      { n: "Framework", b: 25, d: "Thả nguyên ngôi nhà chiến lược Vision – Mission – Trụ Cột xuống, bắt đối thủ gồng làm trụ thứ 7", mk: (c, D) => [{ wait: .25, dmg: D, on: { ctrl: ["house", 2.6, 0, "ĐANG GỒNG FRAMEWORK"] }, say: "SLIDE 47!" }] },
       { n: "Phễu Insight", b: 6, d: "Hút đối thủ lên phễu 2,6 giây rồi thả rơi (4 + 8)", mk: (c, D, K) => [{ wait: .1, dmg: D, on: { ctrl: ["lev", 2.6, 12 * K, "AWARENESS → LOYALTY", IC.funnel] } }] },
       { n: "Mô Hình Tăng Trưởng", b: 45, d: "Mũi tên tăng trưởng phóng xuyên qua đối thủ", mk: (c, D) => [{ wait: .5, dmg: D, fx: "dash", ic: IC.chart, sc: 1.5, say: "+300% YoY" }] },
       { n: "Bible Strategy", b: 36, d: "Cuốn kinh chiến lược giáng xuống trong ánh hào quang", mk: (c, D) => [{ wait: 1.0, dmg: D, fx: "drop", ic: IC.book, sc: 1.8, holy: 1, lb: "BIBLE STRATEGY", say: "AMEN!" }] },
@@ -756,6 +756,17 @@ function drawFighter(p) {
   else if (c.k === "hair") { const sx = Math.sin(t * 40) * 3; spr(ci, f, px + sx, bot, flip, { tint }); prop(IC.wig, px + sx, FLOOR - 108, 1.05); if (Math.floor(t * 4) % 2) text("!?", px + 26, FLOOR - 120, "#ffe14a", 18); }
   else if (c.k === "meet") { spr(ci, f, px, bot, flip, { tint }); prop(IC.table, px + p.dir * 14, FLOOR - 30, 1.5, p.dir < 0); text("z", px + 10, FLOOR - 96 - (t * 20 % 16), "#fff", 14); text("Z", px + 18, FLOOR - 108 - (t * 20 % 16), "#fff", 18); }
   else { spr(ci, f, px, bot, flip, { tint });
+    if (c.k === "house") {   // "ngôi nhà chiến lược" kiểu slide công ty: Vision, Mission, mái tam giác và hàng trụ cột; đối thủ phải đứng gồng mái
+      c.T0 = c.T0 || c.t; const dk = clamp((c.T0 - c.t) / .22, 0, 1), hx = clamp(px, 166, W - 166), oy = -230 * (1 - dk) * (1 - dk) + (dk >= 1 ? Math.sin(t * 30) * Math.max(0, .35 - (c.T0 - c.t)) * 8 : 0), L = hx - 160, box = (X, Y, w, h, col) => { x.fillStyle = "#000"; x.fillRect(X - 1, Y - 1, w + 2, h + 2); x.fillStyle = col; x.fillRect(X, Y, w, h); };
+      x.save(); x.translate(0, Math.round(oy) + 28); x.globalAlpha = .94;
+      box(L, 30, 320, 30, "#1e4fa3"); text("VISION", hx, 44, "#fff", 17, "center"); text("Làm ít · Lương cao · Về trước 6 giờ", hx, 56, "#dbeafe", 12, "center");
+      box(L, 63, 320, 15, "#5aa9e6"); text("MISSION", hx, 75, "#fff", 14, "center");
+      [["Họp để", "chốt lịch họp"], ["Thêm một", "slide nữa"], ["Nghe hay", "mà khó làm"], ["Synergy", "là gì vậy?"], ["Đẩy sang", "tuần sau"]].forEach((tx2, i) => { box(L + i * 64.5, 81, 62, 28, "#f8fafc"); x.font = FONT(11); x.textAlign = "center"; x.fillStyle = "#1e293b"; x.fillText(tx2[0], L + i * 64.5 + 31, 92); x.fillText(tx2[1], L + i * 64.5 + 31, 104); });
+      x.fillStyle = "#000"; x.beginPath(); x.moveTo(hx, 110); x.lineTo(L + 322, 152); x.lineTo(L - 2, 152); x.fill(); x.fillStyle = "#3f4650"; x.beginPath(); x.moveTo(hx, 113); x.lineTo(L + 314, 150); x.lineTo(L + 6, 150); x.fill(); text("TRỤ CỘT CHIẾN LƯỢC", hx, 136, "#fff", 15, "center"); text("& TRỤ CỘT GỒNG", hx, 148, "#cbd5e1", 11, "center");
+      ["Cà phê", "Trà sữa", "Deadline", "OT", "KPI", "Vibe"].forEach((tx2, i) => { box(L + i * 53.6, 154, 51, 30, i < 3 ? "#6aa22e" : "#1e4fa3"); text(tx2, L + i * 53.6 + 25.5, 173, "#fff", 13, "center"); });
+      x.restore(); x.globalAlpha = 1;
+      if (dk >= 1) { spr(ci, 7, px + Math.sin(t * 38) * 1.5, bot, flip, { sy: .9, tint: "rgba(255,80,60,.25)" }); box(px - 27, 214, 54, 13, "#dc2626"); text("TRỤ THỨ 7", px, 225, "#fff", 12, "center"); x.fillStyle = "#7fd4ff"; for (let i = 0; i < 3; i++) x.fillRect(px - 22 + i * 20, FLOOR - 112 + ((t * 36 + i * 9) % 20), 3, 5); }
+    }
     if (c.k === "frame") { x.save(); const bx = px - 34, by = FLOOR - 132; ["rgba(255,77,61,.28)", "rgba(255,216,74,.28)", "rgba(96,165,250,.28)", "rgba(45,212,191,.28)"].forEach((cl, i) => { x.fillStyle = cl; x.fillRect(bx + (i % 2) * 34, by + (i >> 1) * 64, 34, 64); }); x.strokeStyle = "#fff"; x.lineWidth = 2; x.strokeRect(bx, by, 68, 128); x.beginPath(); x.moveTo(px, by); x.lineTo(px, by + 128); x.moveTo(bx, by + 64); x.lineTo(bx + 68, by + 64); x.stroke(); x.restore(); } }
   if (c) { if (c.ic != null) prop(c.ic, px, FLOOR - 152 + Math.sin(t * 6) * 3, c.k === "lev" ? .9 : .6); if (c.lb) text(c.lb, clamp(px, 70, W - 70), FLOOR - (c.ic != null ? 176 : 142), "#fff", 14, "center"); }
   if (p.big > 0 && p.bigK !== 1) { x.save(); x.strokeStyle = "#bfe6ff"; x.lineWidth = 2; x.globalAlpha = .6 + .3 * Math.sin(t * 20); x.beginPath(); x.arc(px, FLOOR, 66, Math.PI, 0); x.stroke(); x.fillStyle = "rgba(127,212,255,.14)"; x.fill();
