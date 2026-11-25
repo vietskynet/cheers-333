@@ -172,6 +172,10 @@ const LVL = [
   { n: "Senior", hp: 150, spd: 58, dist: 215, rest: [1.5, 2.3], wind: .48, types: ["hi", "hi", "lo"], dmg: 7, bolt: 240, shield: .32, cast: .25, maxT: 2 },
   { n: "Sếp tổng", hp: 210, spd: 46, dist: 240, rest: [1.0, 1.7], wind: .4, types: ["hi", "lo", "th", "th"], dmg: 9, bolt: 290, shield: .5, cast: .4, maxT: 4 },
 ];
+const DUMMY = { ...LVL[0], n: "Bao cát", hp: 300, spd: 0, rest: [1e9, 1e9], shield: 0 };
+/* Tournament: trận s trong n trận, máy mạnh dần đều từ dễ tới khó */
+function tourLv(s, n) { const t = n > 1 ? s / (n - 1) : 1; return { n: s === n - 1 ? "Chung kết" : "Trận " + (s + 1), hp: Math.round(90 + 120 * t), spd: 34 + 20 * t, dist: 170 + 70 * t, rest: [2.4 - 1.4 * t, 3.3 - 1.6 * t], wind: .6 - .2 * t, types: t < .25 ? ["hi"] : t < .6 ? ["hi", "hi", "lo"] : ["hi", "lo", "th", "th"], dmg: Math.round(5 + 4 * t), bolt: 190 + 100 * t, shield: .1 + .4 * t, cast: t < .2 ? 0 : .15 + .25 * t, maxT: t < .2 ? 0 : t < .5 ? 2 : t < .8 ? 3 : 4 }; }
+const lv = () => G.lvo || LVL[G.lvl];
 /* 8 ô skill dùng chung phím cho cả 4 nhân vật */
 const KEYS = ["FG", "GF", "BF", "FFV", "GGF", "FFFV", "BBBF", "VBGCF"], TOF = [1, 1, 1, 2, 2, 3, 3, 4];
 const TIER = { 1: { mp: 10, k: 1, n: "Cấp 1" }, 2: { mp: 20, k: 1.25, n: "Cấp 2" }, 3: { mp: 35, k: 1.6, n: "Cấp 3" }, 4: { mp: 55, k: 2, n: "Tối thượng" } };
@@ -266,7 +270,7 @@ const CH = [
       { n: "Muscle Man", b: 20, d: "Cởi áo khoe cơ ngực và 6 múi, bay tới ôm chặt đối thủ gây ngạt (16 + 13)", self: c => { c.smoke = 3.3; c.ride = -9; }, mk: (c, D, K) => [{ wait: 1.1, dmg: D, fx: "hug", on: { ctrl: ["hug", 2.2, 16 * K, "NGẠT… THẢ RA…"] }, say: "ÔM CÁI NÀO!" }] },
       { n: "Performative", b: 90, fixed: 1, d: "Năm bản thể đẹp trai cùng trình diễn, đối thủ choáng ngợp. Xuyên khiên", mk: (c, D) => [{ wait: 1.5, dmg: D, pierce: 1, fx: "perf", on: { ctrl: ["dizzy", 2.2, 0, "CHOÁNG NGỢP…"] }, say: "PERFORMATIVE!" }] },
     ] },
-  { id: "nguyen", name: "Nguyên Cô Đơn", role: "AI Designer", col: "#fb7185", tag: "Trái tim, yêu thầm, nhiệt huyết và prompt",
+  { id: "nguyen", name: "Nguyên Cô Đơn", role: "Đang tìm người yêu", col: "#fb7185", tag: "Trái tim, yêu thầm, nhiệt huyết và prompt",
     F: { n: "Nói nhiều", ic: -4, words: ["ê nè", "kể nghe", "rồi sao?"] }, G: { n: "Voice 5 phút", ic: IC.chat }, th: { n: "Tim vỡ rơi", ic: IC.bheart },
     sp: [
       { n: "Thánh AI", b: 18, d: "Gõ prompt, AI sinh ra bàn tay 7 ngón đập xuống đối thủ", mk: (c, D) => [{ wait: 1.1, dmg: D, fx: "prompt", on: { stun: .9 }, say: "7 NGÓN?!" }] },
@@ -350,23 +354,23 @@ const own = i => G.mode === "ai" || i === G.ME;        // máy này có quyền 
 const chOf = i => CH[G.chars[i]];
 
 function newF(i) {
-  const o = G.mode === "ai" && i === 1 ? LVL[G.lvl] : null;
+  const o = G.mode === "ai" && i === 1 ? lv() : null;
   return { i, dir: i ? -1 : 1, x: i ? 372 : 110, y: 0, vy: 0, hp: o ? o.hp : 100, max: o ? o.hp : 100, lag: 1, mp: 60, stun: 0, inv: 0, shield: 0, parry: 0, charge: 0, big: 0, bigK: 0, giant: 0, nap: 0, mute: 0, smoke: 0, fly: 0, ride: null, paint: 0, lock: 0, ctrl: null, crouch: false, walk: 0, moving: false, act: "", actT: 0, cd: {}, ko: false, q: [], ai: o ? { rest: rnd(...o.rest), wind: 0, type: "", fire: 0 } : null };
 }
-function startMatch(mode, lvl, chars) {
-  G.mode = mode; G.lvl = lvl || 0; G.round = 1; G.score = [0, 0]; G.ME = mode === "pvp" && !net.host ? 1 : 0; G.chars = chars;
+function startMatch(mode, lvl, chars, sub) {
+  G.mode = mode; G.lvl = lvl || 0; G.sub = mode === "ai" ? sub || "" : ""; G.lvo = G.sub === "tour" ? tourLv(G.tour.s, G.tour.order.length) : G.sub === "test" && G.passive ? DUMMY : null; $("tourBox").className = ""; G.round = 1; G.score = [0, 0]; G.ME = mode === "pvp" && !net.host ? 1 : 0; G.chars = chars;
   show("game"); scrollTo(0, 0);
   // thanh 8 skill ngay dưới sân đấu: chạm là ra chiêu, giữ chuột lên để đọc mô tả
-  $("spells").innerHTML = chOf(G.ME).sp.map((s, i) => `<button class="sk t${s.t}" data-sp="${i}" data-mp="${TIER[s.t].mp}" title="${s.d}"><i>${TIER[s.t].mp}</i><b>${s.n}</b><span>${s.k.split("").join("›")}</span></button>`).join("");
+  $("spells").innerHTML = chOf(G.ME).sp.map((s, i) => `<button class="sk t${s.t}" data-sp="${i}" data-mp="${TIER[s.t].mp}" title="${s.d}"><i>${TIER[s.t].mp}</i><b>${s.n}</b><span>${kshow(s.k, "›")}</span></button>`).join("");
   document.querySelectorAll("[data-sp]").forEach(b => b.addEventListener("pointerdown", e => { e.preventDefault(); tapSpell(+b.dataset.sp); }));
   newRound();
 }
 function newRound() {
   F = [newF(0), newF(1)]; ATK = []; FX = []; NUM = []; aid = [0, 0];
   G.phase = "fight"; G.ko = 0; G.hits = 0; G.cine = null; seq.s = "";
-  const mine = me.name ? me.name + " · " + chOf(G.ME).name : chOf(G.ME).name, other = G.mode === "ai" ? chOf(1).name + " (" + LVL[G.lvl].n + ")" : (G.oppName ? G.oppName + " · " : "") + chOf(1 - G.ME).name;
+  const mine = me.name ? me.name + " · " + chOf(G.ME).name : chOf(G.ME).name, other = G.mode === "ai" ? chOf(1).name + " (" + lv().n + ")" : (G.oppName ? G.oppName + " · " : "") + chOf(1 - G.ME).name;
   G.names = G.ME === 0 ? [mine, other] : [other, mine];
-  pop("ROUND " + G.round, W / 2, 120, "#fff", 1.2, 2);
+  pop(G.sub === "tour" ? (G.tour.s === G.tour.order.length - 1 ? "CHUNG KẾT" : `TRẬN ${G.tour.s + 1}/${G.tour.order.length}`) : G.sub === "test" ? "TẬP LUYỆN" : "ROUND " + G.round, W / 2, 120, "#fff", 1.2, 2);
 }
 
 /* ======================= ÂM THANH ======================= */
@@ -374,19 +378,23 @@ let AC = null;
 function beep(f, d = .08, type = "square", vol = .06, slide = 0) { if (!G.sound) return; try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === "suspended") AC.resume(); const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain(); o.type = type; o.frequency.setValueAtTime(f, t); if (slide) o.frequency.exponentialRampToValueAtTime(slide, t + d); g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t + d + .02); } catch {} }
 
 /* ======================= ĐIỀU KHIỂN ======================= */
-const KMAP = { ArrowLeft: "l", ArrowRight: "r", ArrowUp: "u", ArrowDown: "d" }, AMAP = { KeyF: "F", KeyG: "G", KeyC: "C", KeyV: "V", KeyB: "B" };
+const KMAP = { ArrowLeft: "l", ArrowRight: "r", ArrowUp: "u", ArrowDown: "d" }, AMAP = { KeyS: "F", KeyD: "G", KeyW: "C", KeyE: "V", KeyQ: "B" };
+/* mã đòn bên trong vẫn là F G B C V; phím thật và chữ hiển thị là S D Q W E */
+const LB = { F: "S", G: "D", B: "Q", C: "W", V: "E" }, kshow = (k, sep) => k.split("").map(c => LB[c] || c).join(sep);
 addEventListener("keydown", e => { if (!$("game").classList.contains("on")) return; if (KMAP[e.code] || AMAP[e.code]) e.preventDefault(); if (e.repeat) return; if (KMAP[e.code]) KEY[KMAP[e.code]] = 1; if (AMAP[e.code]) press(AMAP[e.code]); });
 addEventListener("keyup", e => { if (KMAP[e.code]) KEY[KMAP[e.code]] = 0; });
 const canAct = p => !p.ko && G.phase === "fight" && p.stun <= 0 && !p.ctrl && p.lock <= 0 && p.charge <= 0 && p.fly <= 0 && p.nap <= 0;
 function press(k) {
   const p = F[G.ME]; if (!p || G.phase !== "fight" || p.ko) return;
   seq.s = G.t - seq.t < .5 ? (seq.s + k).slice(-6) : k; seq.t = G.t; G.keys.push({ k, t: G.t }); if (G.keys.length > 8) G.keys.shift();
-  if (!canAct(p)) return;
+  // đang nạp (Q) hoặc vừa ra đòn nặng (D) vẫn nối được combo: phím kế tiếp khớp chuỗi thì huỷ nạp và ra skill luôn
+  const free = canAct(p), link = !free && p.stun <= 0 && !p.ctrl && p.fly <= 0 && p.nap <= 0 && (p.lock <= 0 || p.softT > G.t);
+  if (!free && !link) return;
   const SP = chOf(G.ME).sp; let best = null;                       // combo dài nhất khớp với phần cuối chuỗi phím
   for (const s of SP) if (seq.s.endsWith(s.k) && (!best || s.k.length > best.k.length)) best = s;
   if (best && p.mute > 0) { best = null; pop("ĐỒ ĐÂU RỒI?", p.x, FLOOR - 150, "#d4d4d8", .8); }
-  if (best) { if (p.mp >= TIER[best.t].mp) { seq.s = ""; return doCast(G.ME, SP.indexOf(best), true); } pop("NO MP", p.x, FLOOR - 150, "#7fd4ff", .8); beep(140, .12, "sawtooth"); }
-  doBasic(G.ME, k, true);
+  if (best) { if (p.mp >= TIER[best.t].mp) { seq.s = ""; p.charge = 0; p.lock = 0; return doCast(G.ME, SP.indexOf(best), true); } if (free) pop("NO MP", p.x, FLOOR - 150, "#7fd4ff", .8); beep(140, .12, "sawtooth"); }
+  if (free) doBasic(G.ME, k, true);
 }
 function tapSpell(i) { const p = F[G.ME]; if (!p || !canAct(p)) return; if (p.mute > 0) { pop("ĐỒ ĐÂU RỒI?", p.x, FLOOR - 150, "#d4d4d8", .8); return; } if (p.mp < TIER[TOF[i]].mp) { pop("NO MP", p.x, FLOOR - 150, "#7fd4ff", .8); return; } doCast(G.ME, i, true); }
 
@@ -397,7 +405,7 @@ function doBasic(i, k, local) {
   if (local && G.mode === "pvp") send({ t: "b", k });
   p.cd[k] = CD[k];
   if (k === "F") { p.act = "cast"; p.actT = .18; spawn(i, { p: 1, v: 300, dmg: BASIC.F, col: c.col, ic: c.F.ic, sc: .4, basic: 1 }); beep(880, .06); aiReact(i, .4); }
-  if (k === "G") { p.act = "heavy"; p.actT = .3; p.lock = .22; const low = G.mode === "pvp"; spawn(i, { p: 1, v: 240, dmg: BASIC.G, col: c.col, ic: c.G.ic, sc: .6, wob: 1, low, h: low ? 16 : HIGH, basic: 1 }); beep(330, .12, "sawtooth"); aiReact(i, .7); }
+  if (k === "G") { p.act = "heavy"; p.actT = .3; p.lock = .22; p.softT = G.t + .25; const low = G.mode === "pvp"; spawn(i, { p: 1, v: 240, dmg: BASIC.G, col: c.col, ic: c.G.ic, sc: .6, wob: 1, low, h: low ? 16 : HIGH, basic: 1 }); beep(330, .12, "sawtooth"); aiReact(i, .7); }
   if (k === "C") { p.shield = .85; p.cd.C = .85 + CD.C; beep(520, .1, "triangle"); }
   if (k === "V") { p.parry = WARD; beep(700, .12, "triangle", .06, 1400); }
   if (k === "B") { p.charge = .65; beep(260, .3, "sine", .05, 520); }
@@ -421,7 +429,7 @@ function spawn(i, a) {
 }
 function clearAttacksOn(i) { ATK = ATK.filter(a => a.to !== i); }
 /* máy thấy người chơi ra chiêu thì có thể dựng khiên */
-function aiReact(i, k) { const o = F[1]; if (G.mode !== "ai" || i !== 0 || !o || o.ko || o.ctrl || o.stun > 0 || o.shield > 0 || o.lock > 0) return; if (Math.random() < LVL[G.lvl].shield * k) { o.shield = 1.1; o.ai.wind = 0; } }
+function aiReact(i, k) { const o = F[1]; if (G.mode !== "ai" || i !== 0 || !o || o.ko || o.ctrl || o.stun > 0 || o.shield > 0 || o.lock > 0) return; if (Math.random() < lv().shield * k) { o.shield = 1.1; o.ai.wind = 0; } }
 const mkCtrl = c => ({ k: c[0], t: c[1], end: c[2] || 0, lb: c[3] || "", ic: c[4] ?? null });
 
 /* Người sở hữu mục tiêu quyết định đòn có trúng không */
@@ -472,9 +480,9 @@ function stepFighter(p, dt) {
   if (p.smoke <= 0 && own(p.i)) p.ride = null;
   for (let j = p.q.length - 1; j >= 0; j--) { p.q[j].t -= dt; if (p.q[j].t <= 0) { const e = p.q.splice(j, 1)[0]; if (!p.ko) e.fn(); } }
   if (p.charge > 0) { p.charge -= dt; p.mp = Math.min(100, p.mp + 48 * dt); if (Math.random() < .5) FX.push({ k: "mote", t: 0, d: .4, x: p.x + rnd(-30, 30), y: FLOOR - rnd(10, 110), tx: p.x + p.dir * 40, ty: FLOOR - HIGH, c: "#7fd4ff" }); }
-  if (!p.ai) { p.mp = Math.min(100, p.mp + 7 * dt);
+  if (!p.ai) { p.mp = Math.min(100, p.mp + (G.sub === "test" ? 45 : 7) * dt);
     // mana đầy quá 3 giây mà không dùng thì tuột về 40
-    if (p.mp >= 100) { p.fullT = (p.fullT || 0) + dt; if (p.fullT >= FULL_HOLD && own(p.i) && G.phase === "fight") { p.mp = FULL_DROP; p.fullT = 0; pop("TUỘT MANA!", p.x, FLOOR - 150, "#7fd4ff", 1, 1.2); beep(500, .25, "sawtooth", .05, 120); } } else p.fullT = 0; }
+    if (p.mp >= 100 && G.sub !== "test") { p.fullT = (p.fullT || 0) + dt; if (p.fullT >= FULL_HOLD && own(p.i) && G.phase === "fight") { p.mp = FULL_DROP; p.fullT = 0; pop("TUỘT MANA!", p.x, FLOOR - 150, "#7fd4ff", 1, 1.2); beep(500, .25, "sawtooth", .05, 120); } } else p.fullT = 0; }
   if (p.ctrl) { p.ctrl.t -= dt; if (p.ctrl.t <= 0) { const e = p.ctrl.end; p.ctrl = null; if (e && own(p.i) && !p.ko) { p.hp = Math.max(0, p.hp - Math.round(e)); const res = { id: "c", to: p.i, r: "hit", dmg: Math.round(e), x: p.x, h: 60, ko: p.hp <= 0 ? 1 : 0 }; showRes(res, null); if (G.mode === "pvp") send({ t: "res", res }); } p.stun = .3; } }
   p.vy -= 900 * dt; p.y += p.vy * dt; if (p.y <= 0) { p.y = 0; p.vy = 0; }
 }
@@ -488,7 +496,7 @@ function stepLocal(p, dt) {
   if (KEY.u && p.y === 0) { p.vy = 340; beep(500, .08, "square", .04, 800); }
 }
 function stepAI(p, dt) {
-  const o = LVL[G.lvl], a = p.ai, pl = F[0], c = chOf(1); p.moving = false;
+  const o = lv(), a = p.ai, pl = F[0], c = chOf(1); p.moving = false;
   if (p.ko || G.phase !== "fight" || p.ctrl || p.stun > 0) { a.wind = 0; return; }
   if (p.lock > 0 || p.fly > 0 || p.nap > 0) return;
   if (a.fire > 0) { a.fire -= dt; return; }
@@ -531,7 +539,7 @@ function update(dt) {
   F.forEach(p => { if (!own(p.i)) return; if (p.fly > 0) { const k = 1 - p.fly / .9, o = F[1 - p.i]; p.flyX = p.x + (o.x + p.dir * 50 - p.x) * Math.sin(k * Math.PI); } else p.flyX = null; });
   stepAttacks(dt);
   F.forEach(p => { p.lag += ((p.hp / p.max) - p.lag) * Math.min(1, dt * 2.5); if (p.lag < p.hp / p.max) p.lag = p.hp / p.max; });
-  if (G.phase === "ko") { G.ko -= dt; if (G.ko <= 0 && (G.mode === "ai" || net.host)) { G.round++; if (G.mode === "pvp") send({ t: "round", n: G.round, sc: G.score }); newRound(); } }
+  if (G.phase === "ko") { G.ko -= dt; if (G.ko <= 0 && G.sub === "tour") return tourNext(); if (G.ko <= 0 && (G.mode === "ai" || net.host)) { G.round++; if (G.mode === "pvp") send({ t: "round", n: G.round, sc: G.score }); newRound(); } }
   for (let j = FX.length - 1; j >= 0; j--) { const f = FX[j]; f.t += dt; if (f.t > 0 && f.vx !== undefined) { f.x += f.vx * dt; f.y += f.vy * dt; } if (f.t > f.d) FX.splice(j, 1); }
   for (let j = NUM.length - 1; j >= 0; j--) { NUM[j].t += dt; NUM[j].y -= 26 * dt; if (NUM[j].t > NUM[j].d) NUM.splice(j, 1); }
   if (FX.length > 500) FX.splice(0, FX.length - 500);
@@ -641,7 +649,7 @@ function drawFighter(p) {
   else if (p.shield > 0) { x.save(); x.globalCompositeOperation = "lighter"; x.strokeStyle = "#7fd4ff"; x.lineWidth = 2; x.globalAlpha = .6 + .3 * Math.sin(t * 20); x.beginPath(); x.ellipse(px + p.dir * 30, FLOOR - 70, 9, 50, 0, 0, 6.283); x.stroke(); x.fillStyle = "rgba(127,212,255,.15)"; x.fill(); x.restore(); }
   if (p.mute > 0 && !c) { prop(IC.manne, px, FLOOR - 150 + Math.sin(t * 5) * 2, .4); text("mất đồ " + p.mute.toFixed(0) + "s", px, FLOOR - 136, "#d4d4d8", 12, "center"); }
   if (p.parry > 0) { const k = p.parry / WARD; x.save(); x.globalCompositeOperation = "lighter"; x.strokeStyle = "#ffe14a"; x.lineWidth = 3; x.globalAlpha = .5 + .5 * k; x.beginPath(); x.ellipse(px, FLOOR - 66, 44 + (1 - k) * 8, 74 + (1 - k) * 8, 0, 0, 6.283); x.stroke(); x.fillStyle = "rgba(255,225,74,.16)"; x.fill(); x.strokeStyle = "#fff"; x.lineWidth = 1; x.beginPath(); x.ellipse(px, FLOOR - 66, 38, 68, 0, t * 9, t * 9 + 2.2); x.stroke(); x.restore(); }
-  if (p.ai && p.ai.wind > 0) { x.save(); x.globalCompositeOperation = "lighter"; x.fillStyle = chOf(1).col; const r = 4 + (1 - p.ai.wind / LVL[G.lvl].wind) * 6; x.beginPath(); x.arc(px - 44, FLOOR - (p.ai.type === "lo" ? 14 : p.ai.type === "th" ? 150 : HIGH), r, 0, 6.283); x.fill(); x.restore(); }
+  if (p.ai && p.ai.wind > 0) { x.save(); x.globalCompositeOperation = "lighter"; x.fillStyle = chOf(1).col; const r = 4 + (1 - p.ai.wind / lv().wind) * 6; x.beginPath(); x.arc(px - 44, FLOOR - (p.ai.type === "lo" ? 14 : p.ai.type === "th" ? 150 : HIGH), r, 0, 6.283); x.fill(); x.restore(); }
 }
 function bolt(x0, y0, x1, y1, c, w) { x.strokeStyle = c; x.lineWidth = w; x.beginPath(); x.moveTo(x0, y0); for (let i = 1; i < 8; i++) x.lineTo(x0 + (x1 - x0) * i / 8 + rnd(-9, 9), y0 + (y1 - y0) * i / 8 + rnd(-5, 5)); x.lineTo(x1, y1); x.stroke(); }
 function drawAttack(a) {
@@ -746,11 +754,11 @@ function hud() {
     x.fillStyle = "#000"; x.fillRect(bx - 2, 12, bw + 4, 12); x.fillStyle = "#3a0d0d"; x.fillRect(bx, 14, bw, 8);
     const lw = bw * p.lag, hw = bw * r; x.fillStyle = "#fff"; x.fillRect(i ? bx : bx + bw - lw, 14, lw, 8); x.fillStyle = r < .3 ? "#ff3b30" : "#ffd21f"; x.fillRect(i ? bx : bx + bw - hw, 14, hw, 8);
     text(G.names[i].toUpperCase().slice(0, 26), i ? W - 14 : 14, 35, i === G.ME ? "#ffe680" : "#fff", 14, i ? "right" : "left");
-    if (!p.ai) { x.fillStyle = "#000"; x.fillRect(i ? W - 14 - 122 : 12, 39, 124, 7); x.fillStyle = "#0d2440"; x.fillRect(i ? W - 14 - 120 : 14, 41, 120, 3); const full = p.mp >= 100; x.fillStyle = full ? (Math.floor(G.t * 8) % 2 ? "#ffe14a" : "#fff") : "#3aa0ff"; const mw = 120 * p.mp / 100; x.fillRect(i ? W - 14 - mw : 14, 41, mw, 3); if (i === G.ME) text(full ? "MP ĐẦY! DÙNG NGAY " + Math.max(0, FULL_HOLD - (p.fullT || 0)).toFixed(1) + "s" : "MP " + Math.floor(p.mp), i ? W - 14 : 14, 56, full ? "#ffe14a" : "#7fd4ff", 12, i ? "right" : "left"); } });
+    if (!p.ai) { x.fillStyle = "#000"; x.fillRect(i ? W - 14 - 122 : 12, 39, 124, 7); x.fillStyle = "#0d2440"; x.fillRect(i ? W - 14 - 120 : 14, 41, 120, 3); const full = p.mp >= 100; x.fillStyle = full ? (Math.floor(G.t * 8) % 2 ? "#ffe14a" : "#fff") : "#3aa0ff"; const mw = 120 * p.mp / 100; x.fillRect(i ? W - 14 - mw : 14, 41, mw, 3); if (i === G.ME) text(full ? (G.sub === "test" ? "MP ĐẦY" : "MP ĐẦY! DÙNG NGAY " + Math.max(0, FULL_HOLD - (p.fullT || 0)).toFixed(1) + "s") : "MP " + Math.floor(p.mp), i ? W - 14 : 14, 56, full ? "#ffe14a" : "#7fd4ff", 12, i ? "right" : "left"); } });
   x.fillStyle = "#000"; x.fillRect(W / 2 - 17, 9, 34, 18); x.fillStyle = "#c81e1e"; x.fillRect(W / 2 - 15, 11, 30, 14); text("KO", W / 2, 23, "#fff", 16, "center");
-  text(`HIỆP ${G.round}  ${G.score[0]}-${G.score[1]}`, W / 2, 50, "#fff", 13, "center");
+  text(G.sub === "tour" ? `TRẬN ${G.tour.s + 1}/${G.tour.order.length}` : G.sub === "test" ? "TẬP LUYỆN" : `HIỆP ${G.round}  ${G.score[0]}-${G.score[1]}`, W / 2, 50, "#fff", 13, "center");
   if (G.hits > 1) text(G.hits + " HIT", G.ME ? W - 20 : 20, 78, "#ffe14a", 22, G.ME ? "right" : "left");
-  const ks = G.keys.filter(k => G.t - k.t < 1.6).map(k => k.k).join(" › "); if (ks) text(ks, 10, H - 6, "#9fd8ff", 14);
+  const ks = G.keys.filter(k => G.t - k.t < 1.6).map(k => LB[k.k] || k.k).join(" › "); if (ks) text(ks, 10, H - 6, "#9fd8ff", 14);
 }
 function render() {
   x.setTransform(1, 0, 0, 1, 0, 0); x.imageSmoothingEnabled = false; x.globalAlpha = 1; x.globalCompositeOperation = "source-over";
@@ -820,7 +828,8 @@ function onMsg(m) {
   if (m.t === "round") { G.round = m.n; G.score = m.sc; return newRound(); }
 }
 function resetMatch() {                                   // đấu lại từ hiệp 1, tỉ số 0-0
-  if (G.mode === "ai") return startMatch("ai", G.lvl, G.chars);
+  if (G.sub === "tour") return startTour(G.tour.me);
+  if (G.mode === "ai") return startMatch("ai", G.lvl, G.chars, G.sub);
   if (G.mode !== "pvp") return;
   if (!net.host) return send({ t: "reset" });
   G.round = 1; G.score = [0, 0]; send({ t: "round", n: 1, sc: [0, 0] }); newRound();
@@ -830,29 +839,46 @@ function maybeStart() { if (me.ready && G.oppReady && net.host) { const ch = [me
 function banner(t, sub) { $("lobbyErr").textContent = t + (sub ? " – " + sub : ""); if (t === "MẤT KẾT NỐI") { $("netBar").textContent = "Mất kết nối với đối thủ"; $("netBar").style.display = "block"; } }
 
 /* ======================= LƯU KẾT QUẢ (trên máy này) ======================= */
-function saveResult(win) { try { const k = "hmwiz-stats", s = JSON.parse(localStorage.getItem(k) || "{}"), key = G.mode === "ai" ? "lv" + (G.lvl + 1) : "pvp"; s[key] = s[key] || { w: 0, l: 0 }; s[key][win ? "w" : "l"]++; localStorage.setItem(k, JSON.stringify(s)); } catch {} }
-function statLine() { try { const s = JSON.parse(localStorage.getItem("hmwiz-stats") || "{}"); const f = k => s[k] ? `${s[k].w} thắng / ${s[k].l} thua` : "chưa đấu"; return `LV1: ${f("lv1")} · LV2: ${f("lv2")} · LV3: ${f("lv3")} · Đấu người: ${f("pvp")}`; } catch { return ""; } }
+function goHome() { show("home"); G.mode = ""; G.sub = ""; F = []; $("tourBox").className = ""; $("homeStats").textContent = statLine(); }
+function tourBox(title, sub, btns) { G.phase = "end"; const el = $("tourBox"); el.innerHTML = `<h2>${title}</h2><p>${sub}</p>` + btns.map((b, i) => `<button class="btn${i ? " b3" : ""}">${b[0]}</button>`).join(""); el.querySelectorAll("button").forEach((b, i) => b.onclick = btns[i][1]); el.className = "on"; }
+function startTour(ci) { const order = CH.map((c, i) => i).filter(i => i !== ci); for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; } G.tour = { me: ci, order, s: 0 }; startMatch("ai", 0, [ci, order[0]], "tour"); }
+function tourNext() {
+  const T = G.tour, n = T.order.length, again = ["Đấu giải mới", () => startTour(T.me)], out = ["Thoát", goHome];
+  if (G.loser === 0) return tourBox("GAME OVER", `Dừng ở trận ${T.s + 1}/${n}, thua ${chOf(1).name}.`, [["Đấu lại trận này", () => startMatch("ai", 0, [T.me, T.order[T.s]], "tour")], again, out]);
+  T.s++; try { const k = "hmwiz-stats", s = JSON.parse(localStorage.getItem(k) || "{}"); s.tour = s.tour || { best: 0, champ: 0 }; s.tour.best = Math.max(s.tour.best, T.s); if (T.s >= n) s.tour.champ++; localStorage.setItem(k, JSON.stringify(s)); } catch {}
+  if (T.s >= n) { T.s = n - 1; return tourBox("VÔ ĐỊCH!", `${CH[T.me].name} thắng cả ${n} trận.`, [again, out]); }
+  startMatch("ai", 0, [T.me, T.order[T.s]], "tour");
+}
+function saveResult(win) { if (G.mode === "ai") return; try { const k = "hmwiz-stats", s = JSON.parse(localStorage.getItem(k) || "{}"), key = G.mode === "ai" ? "lv" + (G.lvl + 1) : "pvp"; s[key] = s[key] || { w: 0, l: 0 }; s[key][win ? "w" : "l"]++; localStorage.setItem(k, JSON.stringify(s)); } catch {} }
+function statLine() { try { const s = JSON.parse(localStorage.getItem("hmwiz-stats") || "{}"), t = s.tour, p = s.pvp; return `Tournament: ${t ? "xa nhất " + t.best + " trận thắng · vô địch " + t.champ + " lần" : "chưa đấu"} · Đấu đôi: ${p ? p.w + " thắng / " + p.l + " thua" : "chưa đấu"}`; } catch { return ""; } }
 
 /* ======================= GIAO DIỆN ======================= */
 try { me.name = localStorage.getItem("hmwiz-name") || ""; me.ch = clamp(+localStorage.getItem("hmwiz-ch") || 0, 0, CH.length - 1); } catch {}
 $("inName").value = me.name; $("inName").oninput = () => { me.name = $("inName").value.trim().slice(0, 12); try { localStorage.setItem("hmwiz-name", me.name); } catch {} };
 $("homeStats").textContent = statLine();
-const card = (c, i) => `<button class="chr" data-c="${i}" style="--c:${c.col}"><i style="background-position:-179px ${-(i * 150 + 23) * 2}px"></i><b>${c.name.split(" ")[0]}</b><em></em></button>`;
+const FACE = [98, 98, 97, 96, 96, 96, 97, 98, 97, 94, 96, 93, 101];   // tâm khuôn mặt (x) trong khung đứng yên của từng nhân vật
+const card = (c, i) => `<button class="chr" data-c="${i}" style="--c:${c.col}"><i style="background-position:calc(var(--t) * ${-((FACE[i] || 96) - 17) / 34}) calc(var(--t) * ${-(i * 150 + 19) / 34})"></i><b>${c.name.split(" ")[0]}</b><em></em></button>`;
 /* chọn nhân vật đấu máy: chạm lần 1 = bạn, lần 2 = máy */
-const pick = { a: -1, b: -1, lvl: 0 };
-$("pickGrid").innerHTML = CH.map(card).join("") + `<button class="chr rnd" data-c="-1"><i></i><b>Ngẫu nhiên</b><em></em></button>`;
+const pick = { a: -1, b: -1, mode: "test", passive: true };
+$("pickGrid").innerHTML = CH.map(card).join("") + `<button class="chr rnd" data-c="-1"><i></i><b>Bất kỳ</b><em></em></button>`;
 function drawPick() {
+  const tour = pick.mode === "tour", n = CH.length - 1;
+  $("pickTitle").textContent = tour ? "TOURNAMENT" : "TEST NHÂN VẬT";
   document.querySelectorAll("#pickGrid .chr").forEach((b, i) => { b.classList.toggle("p1", i === pick.a); b.classList.toggle("p2", i === pick.b); b.querySelector("em").textContent = (i === pick.a ? "BẠN" : "") + (i === pick.a && i === pick.b ? " + " : "") + (i === pick.b ? "MÁY" : ""); });
-  [["postA", pick.a], ["postB", pick.b]].forEach(([id, ci]) => { const el = $(id); el.classList.toggle("empty", ci < 0); el.style.setProperty("--c", ci < 0 ? "#555" : CH[ci].col); el.querySelector("i").style.backgroundPosition = ci < 0 ? "0 9999px" : `-40px ${-ci * 150}px`; el.querySelector("u").style.backgroundPosition = ci < 0 ? "0 9999px" : `${ci * 100 / (CH.length - 1)}% 0`; el.querySelector("b").textContent = ci < 0 ? "?" : CH[ci].name.toUpperCase(); el.querySelector("b").style.fontSize = ci >= 0 && CH[ci].name.length > 11 ? "13px" : ci >= 0 && CH[ci].name.length > 7 ? "16px" : ""; el.querySelector("small").textContent = ci < 0 ? "" : CH[ci].role.split(" · ").pop(); });
-  $("pickTip").textContent = pick.a < 0 ? "Chạm để chọn nhân vật của BẠN" : pick.b < 0 ? `Bạn là ${CH[pick.a].name}. Giờ chọn nhân vật cho MÁY` : `${CH[pick.a].name} đấu ${CH[pick.b].name}. Chạm nhân vật bất kỳ để chọn lại`;
-  $("pickInfo").innerHTML = pick.a < 0 ? "" : `<b style="color:${CH[pick.a].col}">${CH[pick.a].name}</b> · ${CH[pick.a].tag}<br>F: ${CH[pick.a].F.n} · G: ${CH[pick.a].G.n} · Tối thượng: ${CH[pick.a].sp[7].n}`;
-  $("bFight").disabled = pick.a < 0 || pick.b < 0; document.querySelectorAll("#lvPick button").forEach((b, i) => b.classList.toggle("on", i === pick.lvl));
+  [["postA", pick.a], ["postB", pick.b]].forEach(([id, ci]) => { const el = $(id); el.classList.toggle("empty", ci < 0); el.style.setProperty("--c", ci < 0 ? "#555" : CH[ci].col); el.querySelector("i").style.backgroundPosition = ci < 0 ? "0 9999px" : `-40px ${-ci * 150}px`; el.querySelector("u").style.backgroundPosition = ci < 0 ? "0 9999px" : `${ci * 100 / (CH.length - 1)}% 0`; el.querySelector("b").textContent = ci < 0 ? "?" : CH[ci].name.toUpperCase(); el.querySelector("b").style.fontSize = ci >= 0 && CH[ci].name.length > 11 ? "15px" : ci >= 0 && CH[ci].name.length > 8 ? "18px" : ""; el.querySelector("small").textContent = ci < 0 ? "" : CH[ci].role.split(" · ").pop(); });
+  if (tour) { $("postB").querySelector("b").textContent = n + " ĐỐI THỦ"; $("postB").querySelector("small").textContent = "khó dần từng trận"; }
+  $("pickTip").textContent = pick.a < 0 ? "Chạm để chọn nhân vật của BẠN" : tour ? `Bạn là ${CH[pick.a].name}. Đấu lần lượt ${n} nhân vật còn lại, thứ tự ngẫu nhiên, trận sau khó hơn trận trước` : pick.b < 0 ? `Bạn là ${CH[pick.a].name}. Giờ chọn nhân vật làm ĐỐI THỦ` : `${CH[pick.a].name} đấu ${CH[pick.b].name}. Chạm nhân vật bất kỳ để chọn lại`;
+  $("pickInfo").innerHTML = pick.a < 0 ? "" : `<b style="color:${CH[pick.a].col}">${CH[pick.a].name}</b> · ${CH[pick.a].tag}<br>S: ${CH[pick.a].F.n} · D: ${CH[pick.a].G.n} · Tối thượng: ${CH[pick.a].sp[7].n}`;
+  $("lvPick").style.display = tour ? "none" : ""; document.querySelectorAll("#lvPick button").forEach((b, i) => b.classList.toggle("on", (i === 0) === pick.passive));
+  $("bFight").disabled = pick.a < 0 || (!tour && pick.b < 0); $("bFight").textContent = tour ? "VÀO GIẢI" : "VÀO TẬP";
 }
-document.querySelectorAll("#pickGrid .chr").forEach(b => b.onclick = () => { const i = +b.dataset.c < 0 ? Math.floor(Math.random() * CH.length) : +b.dataset.c; if (pick.a < 0 || pick.b >= 0) { pick.a = i; pick.b = -1; } else pick.b = i; drawPick(); });
-$("lvPick").innerHTML = LVL.map((o, i) => `<button data-i="${i}"><b>LV${i + 1}</b> ${o.n}<small>${o.hp} HP</small></button>`).join("");
-document.querySelectorAll("#lvPick button").forEach(b => b.onclick = () => { pick.lvl = +b.dataset.i; drawPick(); });
-$("bAI").onclick = () => { pick.a = -1; pick.b = -1; drawPick(); show("pick"); };
-$("bFight").onclick = () => { me.ch = pick.a; try { localStorage.setItem("hmwiz-ch", me.ch); } catch {} startMatch("ai", pick.lvl, [pick.a, pick.b]); };
+document.querySelectorAll("#pickGrid .chr").forEach(b => b.onclick = () => { const i = +b.dataset.c < 0 ? Math.floor(Math.random() * CH.length) : +b.dataset.c; if (pick.mode === "tour" || pick.a < 0 || pick.b >= 0) { pick.a = i; pick.b = -1; } else pick.b = i; drawPick(); });
+$("lvPick").innerHTML = `<button><b>Bao cát</b><small>Đối thủ đứng yên, 300 HP</small></button><button><b>Đánh trả</b><small>Đối thủ đánh như Senior</small></button>`;
+document.querySelectorAll("#lvPick button").forEach((b, i) => b.onclick = () => { pick.passive = i === 0; drawPick(); });
+const openPick = m => { pick.mode = m; pick.a = -1; pick.b = -1; drawPick(); show("pick"); scrollTo(0, 0); };
+$("bTest").onclick = () => openPick("test"); $("bTour").onclick = () => openPick("tour");
+$("bDuo").onclick = () => { $("duoBox").hidden = !$("duoBox").hidden; $("bDuo").classList.toggle("on", !$("duoBox").hidden); };
+$("bFight").onclick = () => { me.ch = pick.a; try { localStorage.setItem("hmwiz-ch", me.ch); } catch {} if (pick.mode === "tour") return startTour(pick.a); G.passive = pick.passive; startMatch("ai", 1, [pick.a, pick.b], "test"); };
 /* chọn nhân vật trong phòng 2 người */
 $("roomGrid").innerHTML = CH.map(card).join("");
 const drawRoomPick = () => document.querySelectorAll("#roomGrid .chr").forEach((b, i) => { b.classList.toggle("p1", i === me.ch); b.querySelector("em").textContent = i === me.ch ? "BẠN" : ""; });
@@ -860,14 +886,14 @@ document.querySelectorAll("#roomGrid .chr").forEach(b => b.onclick = () => { if 
 drawRoomPick();
 $("bCreate").onclick = createRoom; $("bJoin").onclick = () => joinRoom($("inCode").value); $("inCode").onkeydown = e => { if (e.key === "Enter") joinRoom($("inCode").value); };
 $("bReady").onclick = setReady;
-document.querySelectorAll("[data-go]").forEach(b => b.onclick = () => { if (b.dataset.go === "home" && (G.mode === "pvp" || net.connected)) return location.reload(); show(b.dataset.go); if (b.dataset.go === "home") { G.mode = ""; F = []; $("homeStats").textContent = statLine(); } });
+document.querySelectorAll("[data-go]").forEach(b => b.onclick = () => { if (b.dataset.go === "home" && (G.mode === "pvp" || net.connected)) return location.reload(); if (b.dataset.go === "home") return goHome(); show(b.dataset.go); });
 $("bReset").onclick = resetMatch;
 // màn mở đầu: dải nhân vật chạy ngang
-$("roster").innerHTML = [0, 1].map(() => CH.map((c, i) => `<div class="rost" style="--c:${c.col}"><u style="background-position:${i * 100 / (CH.length - 1)}% 0"></u><i style="background-position:-40px ${-i * 150}px"></i><b>${c.name.toUpperCase()}</b><small>${c.role}</small></div>`).join("")).join("");
+$("roster").innerHTML = [0, 1].map(() => CH.map((c, i) => `<div class="rost" style="--c:${c.col}"><u style="background-position:${i * 100 / (CH.length - 1)}% 0"></u><i style="background-position:-40px ${-i * 150}px"></i><b>${c.name.toUpperCase()}</b><small>${c.role.split(" · ").pop()}</small></div>`).join("")).join("");
 $("bSound").onclick = () => { G.sound = !G.sound; $("bSound").textContent = G.sound ? "🔊 Âm thanh" : "🔇 Tắt tiếng"; };
 // nút cảm ứng: giữ được
 document.querySelectorAll("[data-k]").forEach(b => { const k = b.dataset.k, down = e => { e.preventDefault(); b.classList.add("on"); if (KEY[k] !== undefined) KEY[k] = 1; else press(k); }, up = e => { e.preventDefault(); b.classList.remove("on"); if (KEY[k] !== undefined) KEY[k] = 0; }; b.addEventListener("pointerdown", down); b.addEventListener("pointerup", up); b.addEventListener("pointercancel", up); b.addEventListener("pointerleave", up); b.addEventListener("contextmenu", e => e.preventDefault()); });
 // bảng 8 skill của một nhân vật (trang chơi: chạm để ra chiêu; trang hướng dẫn: để tra)
-function spellHTML(ci, tap) { return `<div class="spg">` + CH[ci].sp.map((s, i) => `<button class="sp t${s.t}" ${tap ? `data-sp="${i}"` : "disabled"}><span class="ks">${s.k.split("").join(" › ")} · ${TIER[s.t].mp} MP</span><b>${s.n}</b><small>${s.b ? (s.m ? s.m + " × " : "") + Math.round((s.fixed ? s.b : s.b * TIER[s.t].k) * CUT[s.t]) + " sát thương · " : ""}${s.d}</small></button>`).join("") + "</div>"; }
-$("guideSpells").innerHTML = CH.map((c, i) => `<h3 style="color:${c.col}">${c.name} · ${c.role}</h3><p>${c.tag}. Đòn F: ${c.F.n}. Đòn G: ${c.G.n}.</p>` + spellHTML(i, false)).join("");
-window.__wz = { G, CH, doCast, get F() { return F; }, get ATK() { return ATK; }, press, tapSpell, startMatch, net, setReady, KEY, pick };
+function spellHTML(ci, tap) { return `<div class="spg">` + CH[ci].sp.map((s, i) => `<button class="sp t${s.t}" ${tap ? `data-sp="${i}"` : "disabled"}><span class="ks">${kshow(s.k, " › ")} · ${TIER[s.t].mp} MP</span><b>${s.n}</b><small>${s.b ? (s.m ? s.m + " × " : "") + Math.round((s.fixed ? s.b : s.b * TIER[s.t].k) * CUT[s.t]) + " sát thương · " : ""}${s.d}</small></button>`).join("") + "</div>"; }
+$("guideSpells").innerHTML = CH.map((c, i) => `<h3 style="color:${c.col}">${c.name} · ${c.role}</h3><p>${c.tag}. Đòn S: ${c.F.n}. Đòn D: ${c.G.n}.</p>` + spellHTML(i, false)).join("");
+window.__wz = { G, CH, doCast, get F() { return F; }, get ATK() { return ATK; }, press, tapSpell, startMatch, startTour, net, setReady, KEY, pick };

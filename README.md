@@ -270,3 +270,13 @@ Game đối kháng phép thuật 16-bit, chơi bằng bàn phím hoặc nút c�
 - Thêm Tuấn Huỳnh (Người Việt Gốc Thái): kính đen, hoodie rộng, quần boxing Thái, găng Muay. Skill: Quăng Xôi Xoài, Muay Thái Thần Công, Vòi Phun Trà Sữa Thái, Gã Săn Cá, Triệu Hồi Voi Thái, Đi Bangkok Liên Tục, Say Hi, Hít Dầu Thái (ultimate). Đòn thường: ném ớt hiểm (F), đấm găng (G).
 - `sprites.webp`: 13 hàng nhân vật, hàng đặc biệt `SR`, đạo cụ từ y = 2100 (12 hàng × 16 ô). `posters.webp`: 13 poster, CSS `background-size:1300%`.
 - Poster: tên dài tự thu nhỏ chữ, dòng vai trò chỉ hiện danh hiệu. "Diễu Binh": Jen đứng phía trước đoàn.
+
+### Cập nhật 25/11 (lần 13): ba chế độ, phím mới, màn mở đầu và màn chọn nhân vật
+
+- Ba chế độ ở màn mở đầu: **Test nhân vật** (`G.sub = "test"`: MP hồi nhanh, không tuột; đối thủ là bao cát `DUMMY` 300 HP hoặc máy đánh trả), **Tournament** (`G.sub = "tour"`: chọn một nhân vật, đấu 12 nhân vật còn lại theo thứ tự ngẫu nhiên, mỗi trận một hiệp, độ khó tăng đều qua `tourLv(s, n)`; thua thì đấu lại trận đó hoặc làm lại giải), **Đấu đôi** (phòng 2 người như cũ). Bỏ màn chọn LV1/LV2/LV3.
+- Phím ra chiêu đổi thành **Q W E / S D**: S đòn nhanh, D đòn nặng, Q nạp MP, W khiên, E vòng đỡ. Mã bên trong vẫn là F G B C V (bảng `LB` đổi sang chữ hiển thị), nên `KEYS` và giao thức đấu đôi không đổi.
+- Sửa lỗi: combo có phím nạp hoặc đòn nặng ở giữa (Q›S, Q›Q›Q›S, D›S, D›D›S, E›Q›D›W›S) trước đây không ra được bằng bàn phím vì nhân vật đang bận; giờ phím kế tiếp khớp chuỗi thì huỷ nạp và ra skill.
+- Màn mở đầu: poster to gấp đôi; ba nút chế độ nằm một hàng; tạo phòng / nhập mã gọn trong ô Đấu đôi.
+- Màn chọn nhân vật: ô mặt lớn (lưới 5 cột), cắt đúng trọn khuôn mặt theo bảng `FACE`; trên điện thoại hai poster nằm trên, lưới nằm dưới.
+- Nguyên Cô Đơn: danh hiệu đổi thành "Đang tìm người yêu".
+- Kết quả lưu trên máy: Tournament ghi số trận thắng xa nhất và số lần vô địch.
