@@ -288,3 +288,13 @@ Game đối kháng phép thuật 16-bit, chơi bằng bàn phím hoặc nút c�
 - **Khoa Đặng** đổi bộ skill: Book Vé 0 Đồng, Bão Cầu Lông, Tắt Đèn (giữ lại cho đủ 8 ô), Cầu Nguyện, Nấu Xói, Đụng Là Hát, Thần Vẽ, tối thượng Bịa Chuyện (drama đánh ghen). Đòn thường: Nói nhiều / Nói to hơn. `sprites.webp` thêm hàng đạo cụ thứ 13 (ô 192–207), cao 3036 px.
 - (lần 15) Bảng 8 skill dưới sân không còn bấm được: chỉ hiện tổ hợp phím (chữ lớn) và tên chiêu, ô sáng khi đủ MP. Ra chiêu chỉ bằng tổ hợp Q W E / S D (bàn phím hoặc nút cảm ứng).
 - (lần 16) Nhạc nền 16-bit: hai bài tự soạn, phát bằng Web Audio ngay trong `game.js` (`SONGS`, `musTick`), không có file nhạc. "menu" cho các màn ngoài trận, "fight" (nhanh hơn) cho trận đấu. Bật sau lần chạm / bấm phím đầu tiên; nút Âm thanh tắt cả nhạc lẫn tiếng động; tự im khi chuyển tab.
+
+### Cập nhật 25/11 (lần 17): lối chơi kiểu arcade (thanh nộ, hướng + nút, hở sau chiêu, đòn thường cận chiến, vỡ khiên)
+
+Giữ nguyên bộ skill của 13 nhân vật; chỉ đổi luật.
+
+- **Thanh nộ thay MP tự hồi:** nộ không tự tăng. Đánh trúng đòn S +6, đòn D +9, skill +25% sát thương; bị đánh +70% sát thương nhận; đứng nạp Q khoảng +10 mỗi lần. Mỗi hiệp bắt đầu với 25. Luật "đầy 100 quá 3 giây thì tuột về 40" vẫn giữ. Chế độ Test vẫn hồi nhanh.
+- **Ra skill bằng hướng + nút** (`KEYS`, `dirIn`, `SEQT = 0,38 s`): ↓ tới S · ↓ lui S · ↓ ↓ D (10) · tới ↓ tới S · lui ↓ lui D (20) · lui tới D · tới lui tới S (35) · ↓ tới ↓ tới E (55). "Tới" tính theo phía đối thủ; bảng skill vẽ mũi tên theo phía người chơi đứng. Giao thức đấu đôi không đổi (vẫn gửi số thứ tự skill).
+- **Hở sau chiêu** (`REC`): ra skill xong đứng hình thêm 0,3 / 0,5 / 0,75 / 1 giây theo bậc, áp dụng cho cả máy.
+- **Đòn thường cận chiến:** S với tới khoảng 85 px, D khoảng 100 px (`range`); hai nhân vật áp sát được tới 48 px (`GAP`, trước là 100). Máy muốn đánh thường phải chạy vào tầm (`a.want`), đuổi không tới thì thả đồ từ trần; né xong thì phản đòn; ăn 3 đòn thường liền thì thoát đòn.
+- **Đỡ không miễn phí:** khiên W chặn hết đòn thường nhưng skill vẫn lọt 20%; mỗi lần đỡ hao sức khiên (`guard`, vạch nhỏ dưới thanh máu: −18 với đòn thường, −34 với skill, hồi 14/giây), hết thì vỡ khiên và choáng 1,2 giây. Vòng đỡ E không hao sức khiên.

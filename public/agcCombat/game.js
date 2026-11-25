@@ -183,10 +183,12 @@ function tourLv(s, n) {
 }
 const lv = () => G.lvo || LVL[G.lvl];
 /* 8 ô skill dùng chung phím cho cả 4 nhân vật */
-const KEYS = ["FG", "GF", "BF", "FFV", "GGF", "FFFV", "BBBF", "VBGCF"], TOF = [1, 1, 1, 2, 2, 3, 3, 4];
+/* Ra chiêu kiểu arcade: hướng + nút. d = ↓, f = tới (phía đối thủ), b = lui; F G V = nút S D E */
+const KEYS = ["dfF", "dbF", "ddG", "fdfF", "bdbG", "bfG", "fbfF", "dfdfV"], TOF = [1, 1, 1, 2, 2, 3, 3, 4];
 const TIER = { 1: { mp: 10, k: 1, n: "Cấp 1" }, 2: { mp: 20, k: 1.25, n: "Cấp 2" }, 3: { mp: 35, k: 1.6, n: "Cấp 3" }, 4: { mp: 55, k: 2, n: "Tối thượng" } };
 /* Hệ số giảm sát thương skill theo bậc (trận đấu dài hơn; tối thượng giảm mạnh nhất). Đòn thường: F 4, G 8. */
 const FULL_HOLD = 3, FULL_DROP = 40;
+const REC = { 1: .3, 2: .5, 3: .75, 4: 1 };   // đứng hình sau khi ra skill (giây): chiêu càng mạnh càng hở lâu
 const CUT = { 1: .6, 2: .55, 3: .5, 4: .4 }, BASIC = { F: 4, G: 8 };
 function healClear(c, ic) { c.hp = Math.min(c.max, c.hp + 15); clearAttacksOn(c.i); for (let i = 0; i < 26; i++) FX.push({ k: "icon", ic, t: -i * .03, d: 1.1, x: rnd(10, W - 10), y: rnd(-80, -10), vx: rnd(-10, 10), vy: rnd(150, 260), sc: rnd(.3, .5) }); pop("+15 HP", c.x, FLOOR - 150, "#7CFC8A", 1); }
 const four = (o, says) => [0, 1, 2, 3].map(i => ({ p: 1, v: 265, hom: 1, h: HIGH + 24 - i * 15, wait: .3 + i * .13, sc: .48, ...o, ic: Array.isArray(o.ic) ? o.ic[i % o.ic.length] : o.ic, say: says[i % says.length] }));
@@ -363,7 +365,7 @@ const chOf = i => CH[G.chars[i]];
 
 function newF(i) {
   const o = G.mode === "ai" && i === 1 ? lv() : null;
-  return { i, dir: i ? -1 : 1, x: i ? 372 : 110, y: 0, vy: 0, hp: o ? o.hp : 100, max: o ? o.hp : 100, lag: 1, mp: 60, stun: 0, inv: 0, shield: 0, parry: 0, charge: 0, big: 0, bigK: 0, giant: 0, nap: 0, mute: 0, smoke: 0, fly: 0, ride: null, paint: 0, lock: 0, ctrl: null, crouch: false, walk: 0, moving: false, act: "", actT: 0, cd: {}, ko: false, q: [], ai: o ? { rest: rnd(...o.rest), wind: 0, type: "", fire: 0 } : null };
+  return { i, dir: i ? -1 : 1, x: i ? 372 : 110, y: 0, vy: 0, hp: o ? o.hp : 100, max: o ? o.hp : 100, lag: 1, mp: 25, guard: 100, stun: 0, inv: 0, shield: 0, parry: 0, charge: 0, big: 0, bigK: 0, giant: 0, nap: 0, mute: 0, smoke: 0, fly: 0, ride: null, paint: 0, lock: 0, ctrl: null, crouch: false, walk: 0, moving: false, act: "", actT: 0, cd: {}, ko: false, q: [], ai: o ? { rest: rnd(...o.rest), wind: 0, type: "", fire: 0 } : null };
 }
 function startMatch(mode, lvl, chars, sub) {
   G.mode = mode; G.lvl = lvl || 0; G.sub = mode === "ai" ? sub || "" : ""; G.lvo = G.sub === "tour" ? tourLv(G.tour.s, G.tour.order.length) : G.sub === "test" && G.passive ? DUMMY : null; $("tourBox").className = ""; G.round = 1; G.score = [0, 0]; G.ME = mode === "pvp" && !net.host ? 1 : 0; G.chars = chars;
@@ -421,32 +423,35 @@ addEventListener("pointerdown", musUnlock); addEventListener("keydown", musUnloc
 /* ======================= ĐIỀU KHIỂN ======================= */
 const KMAP = { ArrowLeft: "l", ArrowRight: "r", ArrowUp: "u", ArrowDown: "d" }, AMAP = { KeyS: "F", KeyD: "G", KeyW: "C", KeyE: "V", KeyQ: "B" };
 /* mã đòn bên trong vẫn là F G B C V; phím thật và chữ hiển thị là S D Q W E */
-const LB = { F: "S", G: "D", B: "Q", C: "W", V: "E" }, kshow = (k, sep) => k.split("").map(c => LB[c] || c).join(sep);
-addEventListener("keydown", e => { if (!$("game").classList.contains("on")) return; if (KMAP[e.code] || AMAP[e.code]) e.preventDefault(); if (e.repeat) return; if (KMAP[e.code]) KEY[KMAP[e.code]] = 1; if (AMAP[e.code]) press(AMAP[e.code]); });
+const LB = { F: "S", G: "D", B: "Q", C: "W", V: "E" }, arrow = c => c === "d" ? "↓" : (c === "f") === (!F[G.ME] || F[G.ME].dir > 0) ? "→" : "←", kshow = (k, sep) => k.split("").map(c => LB[c] || arrow(c)).join(sep);
+const SEQT = .38;   // mỗi lần bấm phải cách lần trước dưới 0,38 giây
+function dirIn(k) { const p = F[G.ME]; if (!p || G.phase !== "fight" || k === "u") return; const c = k === "d" ? "d" : (k === "r") === (p.dir > 0) ? "f" : "b"; seq.s = G.t - seq.t < SEQT ? (seq.s + c).slice(-6) : c; seq.t = G.t; G.keys.push({ k: arrow(c), t: G.t }); if (G.keys.length > 8) G.keys.shift(); }
+addEventListener("keydown", e => { if (!$("game").classList.contains("on")) return; if (KMAP[e.code] || AMAP[e.code]) e.preventDefault(); if (e.repeat) return; if (KMAP[e.code]) { KEY[KMAP[e.code]] = 1; dirIn(KMAP[e.code]); } if (AMAP[e.code]) press(AMAP[e.code]); });
 addEventListener("keyup", e => { if (KMAP[e.code]) KEY[KMAP[e.code]] = 0; });
 const canAct = p => !p.ko && G.phase === "fight" && p.stun <= 0 && !p.ctrl && p.lock <= 0 && p.charge <= 0 && p.fly <= 0 && p.nap <= 0;
 function press(k) {
   const p = F[G.ME]; if (!p || G.phase !== "fight" || p.ko) return;
-  seq.s = G.t - seq.t < .5 ? (seq.s + k).slice(-6) : k; seq.t = G.t; G.keys.push({ k, t: G.t }); if (G.keys.length > 8) G.keys.shift();
+  seq.s = G.t - seq.t < SEQT ? (seq.s + k).slice(-6) : k; seq.t = G.t; G.keys.push({ k, t: G.t }); if (G.keys.length > 8) G.keys.shift();
   // đang nạp (Q) hoặc vừa ra đòn nặng (D) vẫn nối được combo: phím kế tiếp khớp chuỗi thì huỷ nạp và ra skill luôn
   const free = canAct(p), link = !free && p.stun <= 0 && !p.ctrl && p.fly <= 0 && p.nap <= 0 && (p.lock <= 0 || p.softT > G.t);
   if (!free && !link) return;
   const SP = chOf(G.ME).sp; let best = null;                       // combo dài nhất khớp với phần cuối chuỗi phím
   for (const s of SP) if (seq.s.endsWith(s.k) && (!best || s.k.length > best.k.length)) best = s;
   if (best && p.mute > 0) { best = null; pop("ĐỒ ĐÂU RỒI?", p.x, FLOOR - 150, "#d4d4d8", .8); }
-  if (best) { if (p.mp >= TIER[best.t].mp) { seq.s = ""; p.charge = 0; p.lock = 0; return doCast(G.ME, SP.indexOf(best), true); } if (free) pop("NO MP", p.x, FLOOR - 150, "#7fd4ff", .8); beep(140, .12, "sawtooth"); }
+  if (best) { if (p.mp >= TIER[best.t].mp) { seq.s = ""; p.charge = 0; p.lock = 0; return doCast(G.ME, SP.indexOf(best), true); } if (free) pop("THIẾU NỘ", p.x, FLOOR - 150, "#7fd4ff", .8); beep(140, .12, "sawtooth"); }
   if (free) doBasic(G.ME, k, true);
 }
-function tapSpell(i) { const p = F[G.ME]; if (!p || !canAct(p)) return; if (p.mute > 0) { pop("ĐỒ ĐÂU RỒI?", p.x, FLOOR - 150, "#d4d4d8", .8); return; } if (p.mp < TIER[TOF[i]].mp) { pop("NO MP", p.x, FLOOR - 150, "#7fd4ff", .8); return; } doCast(G.ME, i, true); }
+function tapSpell(i) { const p = F[G.ME]; if (!p || !canAct(p)) return; if (p.mute > 0) { pop("ĐỒ ĐÂU RỒI?", p.x, FLOOR - 150, "#d4d4d8", .8); return; } if (p.mp < TIER[TOF[i]].mp) { pop("THIẾU NỘ", p.x, FLOOR - 150, "#7fd4ff", .8); return; } doCast(G.ME, i, true); }
 
 /* ======================= ĐÒN CƠ BẢN & SKILL ======================= */
 const CD = { F: .3, G: .65, C: .5, V: 1.6, B: .7 }, WARD = .5;   // V: vòng đỡ toàn diện, mở 0,5 giây, hồi 1,6 giây
+const GAP = 48, near = i => Math.abs(F[0].x - F[1].x) < 125;   // GAP: hai nhân vật áp sát tối đa tới đâu
 function doBasic(i, k, local) {
   const p = F[i], c = chOf(i); if (local && (p.cd[k] || 0) > 0) return;
   if (local && G.mode === "pvp") send({ t: "b", k });
   p.cd[k] = CD[k];
-  if (k === "F") { p.act = "cast"; p.actT = .18; spawn(i, { p: 1, v: 300, dmg: BASIC.F, col: c.col, ic: c.F.ic, sc: .4, basic: 1 }); beep(880, .06); aiReact(i, .4); }
-  if (k === "G") { p.act = "heavy"; p.actT = .3; p.lock = .22; p.softT = G.t + .25; const low = G.mode === "pvp"; spawn(i, { p: 1, v: 240, dmg: BASIC.G, col: c.col, ic: c.G.ic, sc: .6, wob: 1, low, h: low ? 16 : HIGH, basic: 1 }); beep(330, .12, "sawtooth"); aiReact(i, .7); }
+  if (k === "F") { p.act = "cast"; p.actT = .18; spawn(i, { p: 1, v: 300, dmg: BASIC.F, col: c.col, ic: c.F.ic, sc: .4, basic: 1, range: 62 }); beep(880, .06); if (near(i)) aiReact(i, .4); }
+  if (k === "G") { p.act = "heavy"; p.actT = .3; p.lock = .22; p.softT = G.t + .25; const low = G.mode === "pvp"; spawn(i, { p: 1, v: 240, dmg: BASIC.G, col: c.col, ic: c.G.ic, sc: .6, wob: 1, low, h: low ? 16 : HIGH, basic: 1, range: 80 }); beep(330, .12, "sawtooth"); if (near(i)) aiReact(i, .7); }
   if (k === "C") { p.shield = .85; p.cd.C = .85 + CD.C; beep(520, .1, "triangle"); }
   if (k === "V") { p.parry = WARD; beep(700, .12, "triangle", .06, 1400); }
   if (k === "B") { p.charge = .65; beep(260, .3, "sine", .05, 520); }
@@ -455,7 +460,7 @@ function doCast(i, si, local) {
   const p = F[i], s = chOf(i).sp[si], T = TIER[s.t], tg = F[1 - i];
   if (local) { p.mp -= T.mp; if (G.mode === "pvp") send({ t: "c", s: si }); }
   const wait = s.t >= 3 ? .6 : .42, weak = (p.ai ? lv().sk || .55 : 1) * CUT[s.t];                 // máy ra skill yếu hơn người
-  p.lock = wait + .15; p.act = "wind"; p.actT = wait; G.cine = { n: s.n, t: 0, d: wait + .25, tier: s.t, i }; beep(200, wait, "sawtooth", .05, 900); aiReact(i, 1);
+  p.lock = wait + .15 + REC[s.t]; p.act = "wind"; p.actT = wait; G.cine = { n: s.n, t: 0, d: wait + .25, tier: s.t, i }; beep(200, wait, "sawtooth", .05, 900); aiReact(i, 1);
   p.q.push({ t: wait, fn: () => {
     p.act = s.t >= 3 ? "heavy" : "cast"; p.actT = .3; beep(1200, .15, "square", .07, 300);
     if (s.self) s.self(p);
@@ -483,12 +488,15 @@ function resolve(a, T) {
   else if (a.p && a.low && T.y > 24) res.r = "miss";
   else if (T.big > 0 && !a.pierce) res.r = "block";
   else if (T.parry > 0) { res.r = "ward"; res.dmg = a.pierce ? Math.max(1, Math.round(a.dmg * .3)) : 0; }   // vòng đỡ: chặn hết đòn thường, skill tối thượng chỉ còn 30%
-  else if (T.shield > 0 && !a.pierce) { if (T.ai) { res.r = "guard"; res.dmg = Math.max(1, Math.round(a.dmg * .2)); } else res.r = "block"; }
+  else if (T.shield > 0 && !a.pierce) {   // khiên: đòn thường chặn hết, skill vẫn lọt 20%; mỗi lần đỡ hao sức khiên, hết thì vỡ và choáng
+    res.r = "guard"; res.dmg = a.sp ? Math.max(1, Math.round(a.dmg * .2)) : 0; T.guard -= a.sp ? 34 : 18;
+    if (T.guard <= 0) { T.guard = 60; T.shield = 0; T.stun = 1.2; res.brk = 1; if (T.ai) T.ai.wind = 0; } }
   else res.dmg = Math.round(a.dmg);
   if (res.r === "miss") { if (a.p) { a.passed = 1; return null; } return res; }
   if (res.r === "hit") {
     const on = a.on || {};
-    if (res.dmg > 0) { if (!T.ctrl) { T.stun = T.ai ? .25 : .34; T.x = clamp(T.x - T.dir * 10, 36, 448); } if (!T.ai) T.inv = .55; T.charge = 0; if (T.ai) T.ai.wind = 0; }
+    if (res.dmg > 0 && T.ai && a.basic) { const A = T.ai; A.cb = A.cbT > G.t ? A.cb + 1 : 1; A.cbT = G.t + .7; if (A.cb >= 3) { A.cb = 0; T.inv = .6; } }   // ăn 3 đòn thường liền thì máy thoát đòn, không bị khoá cứng
+    if (res.dmg > 0) { if (!T.ctrl) { T.stun = T.ai ? .25 : .34; T.x = clamp(T.x - T.dir * (a.basic ? 16 : 10), 36, 448); } if (!T.ai) T.inv = .55; T.charge = 0; if (T.ai) T.ai.wind = 0; }
     if (T.ctrl && T.ctrl.k === "sleep" && res.dmg > 0) { T.ctrl = null; res.wake = 1; }   // đang ngủ mà bị đánh thì tỉnh
     if (on.stun) T.stun = on.stun; if (on.mute) T.mute = on.mute; if (on.steal) { const n = T.ai ? on.steal : Math.min(on.steal, T.mp); if (!T.ai) T.mp -= n; res.steal = n; } if (on.push) T.x = clamp(T.x - T.dir * on.push, 36, 448); if (on.paint) res.paint = on.paint;
     if (on.ctrl) { T.ctrl = mkCtrl(on.ctrl); T.shield = 0; T.y = 0; T.vy = 0; }
@@ -501,6 +509,9 @@ function resolve(a, T) {
 function showRes(res, a) {
   const to = a ? a.to : res.to, T = F[to], X = res.x, Y = FLOOR - res.h - (T ? T.y : 0), col = a?.col || chOf(1 - to).col;
   if (res.r === "hit" || res.r === "guard") {
+    if (res.dmg > 0) { const fr = a ? a.from : 1 - to, me = F[G.ME]; if (me && !me.ai) { if (fr === G.ME) me.mp = Math.min(100, me.mp + (a && a.basic ? (res.dmg >= 8 ? 9 : 6) : res.dmg * .25)); else if (to === G.ME) me.mp = Math.min(100, me.mp + res.dmg * .7); } }
+    if (res.r === "guard" && !res.dmg) { pop("CHẶN!", X, Y - 24, "#7fd4ff", .7); burst(X, Y, "#7fd4ff", 8); beep(900, .06, "triangle"); }
+    if (res.brk) { pop("VỠ KHIÊN!", clamp(X, 50, W - 50), Y - 44, "#ff8a7a", 1.2, 1.3); burst(X, Y, "#9fd8ff", 26); G.shake = Math.max(G.shake, 7); beep(180, .3, "sawtooth", .09, 60); }
     if (res.dmg > 0) { pop("-" + res.dmg, X + rnd(-8, 8), Y - 20, res.r === "guard" ? "#9fd8ff" : "#ffe14a", .9); G.stop = Math.max(G.stop, .06); G.shake = Math.max(G.shake, a?.sp ? 7 : 3.5); G.flash = Math.max(G.flash, a?.sp ? .3 : .12); burst(X, Y, col, a?.sp ? 24 : 12); beep(res.r === "guard" ? 300 : 160, .1, "sawtooth", .08, 60);
       if ((a ? a.from : 1 - res.to) === G.ME) { G.hits++; G.hitT = 2.4; } }
     if (res.r === "hit" && a?.say) pop(a.say, clamp(X, 50, W - 50), Y - 42, "#fff", 1.1, 1.25);
@@ -520,11 +531,12 @@ function stepFighter(p, dt) {
   ["stun", "inv", "shield", "parry", "big", "smoke", "lock", "actT", "fly", "paint", "giant", "nap", "mute"].forEach(k => { if (p[k] > 0) p[k] = Math.max(0, p[k] - dt); });
   if (p.smoke <= 0 && own(p.i)) p.ride = null;
   for (let j = p.q.length - 1; j >= 0; j--) { p.q[j].t -= dt; if (p.q[j].t <= 0) { const e = p.q.splice(j, 1)[0]; if (!p.ko) e.fn(); } }
-  if (p.charge > 0) { p.charge -= dt; p.mp = Math.min(100, p.mp + 48 * dt); if (Math.random() < .5) FX.push({ k: "mote", t: 0, d: .4, x: p.x + rnd(-30, 30), y: FLOOR - rnd(10, 110), tx: p.x + p.dir * 40, ty: FLOOR - HIGH, c: "#7fd4ff" }); }
-  if (!p.ai) { p.mp = Math.min(100, p.mp + (G.sub === "test" ? 45 : 7) * dt);
+  if (p.charge > 0) { p.charge -= dt; p.mp = Math.min(100, p.mp + 15 * dt); if (Math.random() < .5) FX.push({ k: "mote", t: 0, d: .4, x: p.x + rnd(-30, 30), y: FLOOR - rnd(10, 110), tx: p.x + p.dir * 40, ty: FLOOR - HIGH, c: "#7fd4ff" }); }
+  if (!p.ai) { p.mp = Math.min(100, p.mp + (G.sub === "test" ? 45 : 0) * dt);   // thanh nộ không tự hồi: chỉ tăng khi đánh trúng, bị đánh hoặc đứng nạp (Q)
     // mana đầy quá 3 giây mà không dùng thì tuột về 40
-    if (p.mp >= 100 && G.sub !== "test") { p.fullT = (p.fullT || 0) + dt; if (p.fullT >= FULL_HOLD && own(p.i) && G.phase === "fight") { p.mp = FULL_DROP; p.fullT = 0; pop("TUỘT MANA!", p.x, FLOOR - 150, "#7fd4ff", 1, 1.2); beep(500, .25, "sawtooth", .05, 120); } } else p.fullT = 0; }
+    if (p.mp >= 100 && G.sub !== "test") { p.fullT = (p.fullT || 0) + dt; if (p.fullT >= FULL_HOLD && own(p.i) && G.phase === "fight") { p.mp = FULL_DROP; p.fullT = 0; pop("TUỘT NỘ!", p.x, FLOOR - 150, "#7fd4ff", 1, 1.2); beep(500, .25, "sawtooth", .05, 120); } } else p.fullT = 0; }
   if (p.ctrl) { p.ctrl.t -= dt; if (p.ctrl.t <= 0) { const e = p.ctrl.end; p.ctrl = null; if (e && own(p.i) && !p.ko) { p.hp = Math.max(0, p.hp - Math.round(e)); const res = { id: "c", to: p.i, r: "hit", dmg: Math.round(e), x: p.x, h: 60, ko: p.hp <= 0 ? 1 : 0 }; showRes(res, null); if (G.mode === "pvp") send({ t: "res", res }); } p.stun = .3; } }
+  if (p.shield <= 0) p.guard = Math.min(100, p.guard + 14 * dt);
   p.vy -= 900 * dt; p.y += p.vy * dt; if (p.y <= 0) { p.y = 0; p.vy = 0; }
 }
 function stepLocal(p, dt) {
@@ -533,7 +545,7 @@ function stepLocal(p, dt) {
   if (KEY.d && p.y === 0) { p.crouch = true; return; }
   const mv = (KEY.r ? 1 : 0) - (KEY.l ? 1 : 0);
   if (mv) { p.x += mv * 125 * dt; p.moving = true; p.walk += dt; }
-  p.x = p.i === 0 ? clamp(p.x, 36, o.x - 100) : clamp(p.x, o.x + 100, 444);
+  p.x = p.i === 0 ? clamp(p.x, 36, o.x - GAP) : clamp(p.x, o.x + GAP, 444);
   if (KEY.u && p.y === 0) { p.vy = 340; beep(500, .08, "square", .04, 800); }
 }
 function stepAI(p, dt) {
@@ -545,28 +557,32 @@ function stepAI(p, dt) {
     if (k.to !== 1 || k.age < (k.wait || 0) - .3) continue;
     if (k.pierce) { if (k.aiW === undefined) k.aiW = Math.random() < (o.ward || 0); if (k.aiW && p.parry <= 0 && (k.p ? Math.abs(k.x - p.x) < 60 : k.wait - k.age < .28)) p.parry = WARD; continue; }
     if (!k.p || k.sp || k.aiS || Math.abs(k.x - p.x) > 46 + o.dodge * 40) continue;
-    k.aiS = 1; if (Math.random() < o.dodge && a.fire <= 0) { a.wind = 0; if (k.low) { if (p.y === 0) p.vy = 340; } else a.duck = .38; }
+    k.aiS = 1; if (Math.random() < o.dodge && a.fire <= 0) { a.wind = 0; if (k.low) { if (p.y === 0) p.vy = 340; } else { a.duck = .26; a.counter = 1; } }
   }
   if (a.duck > 0) { a.duck -= dt; if (p.y === 0) { p.crouch = true; return; } }
+  else if (a.counter) { a.counter = 0; if (p.x - pl.x <= 84) { a.want = 0; a.type = o.types.includes("lo") ? "lo" : "hi"; a.wind = o.wind * .5; } }   // né xong thì phản đòn ngay khi đối thủ còn trong tầm
   if (a.fire > 0) { a.fire -= dt; return; }
   if (a.wind > 0) { a.wind -= dt; p.act = "wind"; p.actT = .1; if (a.wind <= 0) { a.fire = .32; p.act = "cast"; p.actT = .32; beep(240, .15, "sawtooth", .06, 120);
       // đánh dồn: bắn xong có thể bồi ngay 1–2 phát nữa
       if (a.chain > 0) a.chain--; else a.chain = Math.random() < (o.burst || 0) ? 1 + (Math.random() < o.burst ? 1 : 0) : 0;
       a.rest = a.chain > 0 ? .12 : rnd(...o.rest);
       if (a.type === "th") spawn(1, { wait: .8, dmg: o.dmg, cond: 1, tx: pl.x, fx: "drop", ic: c.th.ic, sc: .9, quick: 1, col: c.col });
-      else if (a.type === "lo") spawn(1, { p: 1, v: o.bolt * .85, dmg: o.dmg, col: c.col, ic: c.G.ic, sc: .55, wob: 1, low: 1, h: 16 });
-      else spawn(1, { p: 1, v: o.bolt, dmg: o.dmg, col: c.col, ic: c.F.ic, sc: .45 }); } return; }
+      else if (a.type === "lo") spawn(1, { p: 1, v: o.bolt * .85, dmg: o.dmg, col: c.col, ic: c.G.ic, sc: .55, wob: 1, low: 1, h: 16, range: 66 });
+      else spawn(1, { p: 1, v: o.bolt, dmg: o.dmg, col: c.col, ic: c.F.ic, sc: .45, range: 66 }); } return; }
   if (p.shield > 0) return;
-  // di chuyển: máy thường giữ một khoảng cách; máy Tournament áp sát, lùi ra và thỉnh thoảng nhảy
-  if (o.roam) { a.mvT = (a.mvT || 0) - dt; if (a.mvT <= 0) { a.mvT = rnd(.5, 1.4); a.goal = Math.random() < .25 + .35 * o.roam ? rnd(104, 150) : rnd(150, o.dist); if (p.y === 0 && Math.random() < .22 * o.roam) p.vy = 340; } }
-  const want = pl.x + (o.roam ? a.goal || o.dist : o.dist), dx = want - p.x;
-  if (Math.abs(dx) > 14) { p.x += Math.sign(dx) * o.spd * dt; p.moving = true; p.walk += dt; }
-  p.x = clamp(p.x, pl.x + 100, 448);
-  a.rest -= dt * (o.punish && (pl.stun > 0 || pl.ctrl || pl.charge > 0) ? 2.5 : 1);     // thấy người chơi choáng hoặc đang nạp thì ra đòn sớm hơn
-  if (a.rest <= 0) {
+  // di chuyển: đòn thường là cận chiến nên muốn đánh phải áp sát; máy Tournament còn lượn vào lượn ra và nhảy
+  const REACH = 80, gap = p.x - pl.x;
+  if (o.roam) { a.mvT = (a.mvT || 0) - dt; if (a.mvT <= 0) { a.mvT = rnd(.5, 1.4); a.goal = Math.random() < .3 + .4 * o.roam ? rnd(54, 96) : rnd(96, 200); if (p.y === 0 && Math.random() < .22 * o.roam) p.vy = 340; } }
+  a.rest -= dt * (o.punish && (pl.stun > 0 || pl.ctrl || pl.charge > 0 || pl.lock > .3) ? 2.5 : 1);     // thấy người chơi choáng, đang nạp hoặc đang hở sau chiêu thì ra đòn sớm hơn
+  if (a.rest <= 0 && !a.want) {
     if (p.mute <= 0 && !a.chain && Math.random() < o.cast) { const okSp = c.sp.map((s, i) => i).filter(i => TOF[i] <= o.maxT && (TOF[i] < 4 || Math.random() < .35)); a.rest = rnd(...o.rest) + 1.2; return doCast(1, okSp[Math.floor(Math.random() * okSp.length)], false); }
-    a.type = a.chain > 0 && a.type === "hi" && o.types.includes("lo") ? "lo" : a.chain > 0 && a.type === "lo" ? "hi" : o.types[Math.floor(Math.random() * o.types.length)]; a.wind = o.wind * (a.chain > 0 ? .6 : 1);
+    a.type = a.chain > 0 && a.type === "hi" && o.types.includes("lo") ? "lo" : a.chain > 0 && a.type === "lo" ? "hi" : o.types[Math.floor(Math.random() * o.types.length)]; a.want = 1; a.chase = 0;
   }
+  if (a.want && (a.type === "th" || gap <= REACH)) { a.want = 0; a.wind = o.wind * (a.chain > 0 ? .6 : 1); return; }
+  if (a.want) { a.chase += dt; if (a.chase > 2.2 && o.types.includes("th")) a.type = "th"; }       // đuổi mãi không tới thì thả đồ từ trần
+  const want = pl.x + (a.want ? REACH - 14 : o.roam ? a.goal || o.dist : Math.min(o.dist, 150)), dx = want - p.x, sp = o.spd * (a.want ? 1.7 : 1);
+  if (Math.abs(dx) > 6 && o.spd) { p.x += Math.sign(dx) * Math.min(Math.abs(dx), sp * dt); p.moving = true; p.walk += dt; }
+  p.x = clamp(p.x, pl.x + GAP, 448);
 }
 function stepAttacks(dt) {
   for (let j = ATK.length - 1; j >= 0; j--) {
@@ -577,7 +593,7 @@ function stepAttacks(dt) {
       if (a.hom) a.h += (HIGH - 20 + T.y - a.h) * Math.min(1, dt * 3) + Math.sin(fl * 14 + a.h0) * 30 * dt;
       if (Math.random() < .6) FX.push({ k: "spark", t: 0, d: .25, x: a.x, y: FLOOR - a.h, vx: rnd(-20, 20), vy: rnd(-20, 20), c: a.col });
       if (!a.passed && Math.abs(a.x - T.x) < 22 && own(a.to)) { const res = resolve(a, T); if (res) { showRes(res, a); if (G.mode === "pvp") send({ t: "res", res, aid: a.id }); ATK.splice(j, 1); continue; } }
-      if (a.x < -40 || a.x > W + 40) ATK.splice(j, 1);
+      if (a.x < -40 || a.x > W + 40 || (a.range && Math.abs(a.x - a.cx) > a.range + 46)) ATK.splice(j, 1);   // đòn thường chỉ với tới tầm ngắn
     } else if (!a.done) {
       a.done = 1; a.hitAt = a.age; a.hx = a.cond ? a.tx : T.x;
       if (own(a.to)) { const res = resolve(a, T); if (res) { showRes(res, a); if (G.mode === "pvp") send({ t: "res", res, aid: a.id }); } }
@@ -823,8 +839,9 @@ function hud() {
   [0, 1].forEach(i => { const p = F[i], bw = 190, bx = i ? W - 14 - bw : 14, r = p.hp / p.max;
     x.fillStyle = "#000"; x.fillRect(bx - 2, 12, bw + 4, 12); x.fillStyle = "#3a0d0d"; x.fillRect(bx, 14, bw, 8);
     const lw = bw * p.lag, hw = bw * r; x.fillStyle = "#fff"; x.fillRect(i ? bx : bx + bw - lw, 14, lw, 8); x.fillStyle = r < .3 ? "#ff3b30" : "#ffd21f"; x.fillRect(i ? bx : bx + bw - hw, 14, hw, 8);
+    x.fillStyle = "#000"; x.fillRect(i ? W - 14 - 62 : 12, 24, 64, 4); x.fillStyle = p.guard < 36 ? "#ff8a7a" : "#7fd4ff"; const gw = 60 * Math.max(0, p.guard) / 100; x.fillRect(i ? W - 14 - gw : 14, 25, gw, 2);
     text(G.names[i].toUpperCase().slice(0, 26), i ? W - 14 : 14, 35, i === G.ME ? "#ffe680" : "#fff", 14, i ? "right" : "left");
-    if (!p.ai) { x.fillStyle = "#000"; x.fillRect(i ? W - 14 - 122 : 12, 39, 124, 7); x.fillStyle = "#0d2440"; x.fillRect(i ? W - 14 - 120 : 14, 41, 120, 3); const full = p.mp >= 100; x.fillStyle = full ? (Math.floor(G.t * 8) % 2 ? "#ffe14a" : "#fff") : "#3aa0ff"; const mw = 120 * p.mp / 100; x.fillRect(i ? W - 14 - mw : 14, 41, mw, 3); if (i === G.ME) text(full ? (G.sub === "test" ? "MP ĐẦY" : "MP ĐẦY! DÙNG NGAY " + Math.max(0, FULL_HOLD - (p.fullT || 0)).toFixed(1) + "s") : "MP " + Math.floor(p.mp), i ? W - 14 : 14, 56, full ? "#ffe14a" : "#7fd4ff", 12, i ? "right" : "left"); } });
+    if (!p.ai) { x.fillStyle = "#000"; x.fillRect(i ? W - 14 - 122 : 12, 39, 124, 7); x.fillStyle = "#0d2440"; x.fillRect(i ? W - 14 - 120 : 14, 41, 120, 3); const full = p.mp >= 100; x.fillStyle = full ? (Math.floor(G.t * 8) % 2 ? "#ffe14a" : "#fff") : "#3aa0ff"; const mw = 120 * p.mp / 100; x.fillRect(i ? W - 14 - mw : 14, 41, mw, 3); if (i === G.ME) text(full ? (G.sub === "test" ? "NỘ ĐẦY" : "NỘ ĐẦY! DÙNG NGAY " + Math.max(0, FULL_HOLD - (p.fullT || 0)).toFixed(1) + "s") : "NỘ " + Math.floor(p.mp), i ? W - 14 : 14, 56, full ? "#ffe14a" : "#7fd4ff", 12, i ? "right" : "left"); } });
   x.fillStyle = "#000"; x.fillRect(W / 2 - 17, 9, 34, 18); x.fillStyle = "#c81e1e"; x.fillRect(W / 2 - 15, 11, 30, 14); text("KO", W / 2, 23, "#fff", 16, "center");
   text(G.sub === "tour" ? `TRẬN ${G.tour.s + 1}/${G.tour.order.length} · ${G.tour.score}đ` : G.sub === "test" ? "TẬP LUYỆN" : `HIỆP ${G.round}  ${G.score[0]}-${G.score[1]}`, W / 2, 50, "#fff", 13, "center");
   if (G.hits > 1) text(G.hits + " HIT", G.ME ? W - 20 : 20, 78, "#ffe14a", 22, G.ME ? "right" : "left");
@@ -979,7 +996,7 @@ $("bReset").onclick = resetMatch;
 $("roster").innerHTML = [0, 1].map(() => CH.map((c, i) => `<div class="rost" style="--c:${c.col}"><u style="background-position:${i * 100 / (CH.length - 1)}% 0"></u><i style="background-position:-40px ${-i * 150}px"></i><b>${c.name.toUpperCase()}</b><small>${c.role.split(" · ").pop()}</small></div>`).join("")).join("");
 $("bSound").onclick = () => { G.sound = !G.sound; $("bSound").textContent = G.sound ? "🔊 Âm thanh" : "🔇 Tắt tiếng"; };
 // nút cảm ứng: giữ được
-document.querySelectorAll("[data-k]").forEach(b => { const k = b.dataset.k, down = e => { e.preventDefault(); b.classList.add("on"); if (KEY[k] !== undefined) KEY[k] = 1; else press(k); }, up = e => { e.preventDefault(); b.classList.remove("on"); if (KEY[k] !== undefined) KEY[k] = 0; }; b.addEventListener("pointerdown", down); b.addEventListener("pointerup", up); b.addEventListener("pointercancel", up); b.addEventListener("pointerleave", up); b.addEventListener("contextmenu", e => e.preventDefault()); });
+document.querySelectorAll("[data-k]").forEach(b => { const k = b.dataset.k, down = e => { e.preventDefault(); b.classList.add("on"); if (KEY[k] !== undefined) { KEY[k] = 1; dirIn(k); } else press(k); }, up = e => { e.preventDefault(); b.classList.remove("on"); if (KEY[k] !== undefined) KEY[k] = 0; }; b.addEventListener("pointerdown", down); b.addEventListener("pointerup", up); b.addEventListener("pointercancel", up); b.addEventListener("pointerleave", up); b.addEventListener("contextmenu", e => e.preventDefault()); });
 // bảng 8 skill của một nhân vật (trang chơi: chạm để ra chiêu; trang hướng dẫn: để tra)
 function spellHTML(ci, tap) { return `<div class="spg">` + CH[ci].sp.map((s, i) => `<button class="sp t${s.t}" ${tap ? `data-sp="${i}"` : "disabled"}><span class="ks">${kshow(s.k, " › ")} · ${TIER[s.t].mp} MP</span><b>${s.n}</b><small>${s.b ? (s.m ? s.m + " × " : "") + Math.round((s.fixed ? s.b : s.b * TIER[s.t].k) * CUT[s.t]) + " sát thương · " : ""}${s.d}</small></button>`).join("") + "</div>"; }
 $("guideSpells").innerHTML = CH.map((c, i) => `<h3 style="color:${c.col}">${c.name} · ${c.role}</h3><p>${c.tag}. Đòn S: ${c.F.n}. Đòn D: ${c.G.n}.</p>` + spellHTML(i, false)).join("");

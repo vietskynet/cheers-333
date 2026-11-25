@@ -219,22 +219,33 @@
   <p>Chọn một trong mười ba nhân vật của agency. Đánh cho đối thủ hết máu trước là thắng hiệp. Hết hiệp, cả hai đầy máu và đấu tiếp; tỉ số ghi ở giữa màn hình.</p>
   <h3>Điều khiển</h3>
   <div class="keys">
-    <b>← →</b><span>Di chuyển. Luôn cách đối thủ ít nhất 100 px.</span>
+    <b>← →</b><span>Di chuyển. Áp sát được tới sát người đối thủ.</span>
     <b>↑</b><span>Nhảy: né đòn chạy sát mặt sàn.</span>
-    <b>↓ (giữ)</b><span>Cúi: né đòn cơ bản bay ngang ngực.</span>
-    <b>S</b><span>Đòn nhanh, 4 sát thương. Mỗi nhân vật ném một thứ khác nhau.</span>
-    <b>D</b><span>Đòn nặng, 8 sát thương. Khi đấu đôi, đòn D chạy sát sàn nên phải nhảy mới né được.</span>
-    <b>Q</b><span>Nạp năng lượng: đứng yên 0,65 giây, hồi MP rất nhanh.</span>
-    <b>W</b><span>Khiên: chặn mọi đòn trong 0,85 giây (trừ skill Tối thượng; muốn đỡ Tối thượng thì dùng E).</span>
-    <b>E</b><span>Vòng đỡ toàn diện: mở 0,5 giây, chặn hết mọi đòn thường và skill. Skill Tối thượng trúng lúc vòng đang mở chỉ còn 30% sát thương và không bị khống chế. Hồi 1,6 giây, nên phải bấm đúng lúc.</span>
+    <b>↓ (giữ)</b><span>Cúi: né đòn thường đánh ngang ngực.</span>
+    <b>S</b><span>Đòn nhanh, 4 sát thương, tầm ngắn: phải đứng gần mới trúng.</span>
+    <b>D</b><span>Đòn nặng, 8 sát thương, tầm dài hơn S một chút. Khi đấu đôi, đòn D đi sát sàn nên phải nhảy mới né được.</span>
+    <b>Q</b><span>Đứng nạp nộ: 0,65 giây được khoảng 10 điểm, trong lúc nạp không đỡ được.</span>
+    <b>W</b><span>Khiên 0,85 giây: chặn hết đòn thường, còn skill vẫn lọt 20% sát thương (Tối thượng thì xuyên hẳn). Mỗi lần đỡ hao thanh sức khiên (vạch nhỏ dưới thanh máu); hết thanh thì vỡ khiên và choáng 1,2 giây.</span>
+    <b>E</b><span>Vòng đỡ toàn diện: mở 0,5 giây, chặn trọn mọi đòn thường và skill, không hao sức khiên. Tối thượng trúng lúc vòng đang mở chỉ còn 30% và không bị khống chế. Hồi 1,6 giây, nên phải bấm đúng lúc.</span>
   </div>
-  <p style="margin-top:8px">Trên điện thoại có nút cảm ứng ngay dưới sân đấu. MP (thanh xanh) tự hồi 7 điểm mỗi giây. Bảng skill dưới sân chỉ để xem tổ hợp phím, không bấm được; ô nào sáng là đủ MP để ra chiêu đó. MP đầy 100 mà để quá 3 giây không dùng sẽ tuột về 40.</p>
+  <p style="margin-top:8px"><b style="color:#ffd84a">Thanh nộ</b> (thanh xanh dưới tên) không tự hồi. Nộ tăng khi bạn đánh trúng (đòn S +6, đòn D +9, skill cộng theo sát thương), khi bị đánh trúng, hoặc khi đứng nạp bằng Q. Mỗi hiệp bắt đầu với 25 nộ. Nộ đầy 100 mà để quá 3 giây không dùng sẽ tuột về 40.</p>
   <p style="margin-top:8px">Nhạc nền 16-bit tự bật sau lần chạm hoặc bấm phím đầu tiên: một bài cho màn chính, một bài nhanh hơn cho trận đấu. Nút "Âm thanh" trong trận tắt cả nhạc lẫn tiếng động.</p>
-  <h3>Ra skill</h3>
-  <p>Ra chiêu bằng năm phím Q W E và S D. Bấm các phím liền nhau, mỗi phím cách phím trước dưới nửa giây. Tám skill của mọi nhân vật dùng chung tám chuỗi phím, nên học một lần là chơi được hết. Chuỗi càng dài, skill càng mạnh và càng tốn MP. Thiếu MP thì hiện "NO MP". Skill không né được bằng cúi hay nhảy; phải dùng khiên W hoặc vòng đỡ E.</p>
+  <h3>Ra skill: hướng + nút</h3>
+  <p>Ra skill kiểu máy arcade: bấm lần lượt các phím hướng rồi kết bằng một nút S, D hoặc E, mỗi lần bấm cách lần trước dưới 0,4 giây. "Tới" là hướng về phía đối thủ, "lui" là hướng ngược lại; bảng dưới sân đã vẽ sẵn mũi tên đúng theo phía bạn đứng. Tám skill của mọi nhân vật dùng chung tám tổ hợp:</p>
+  <div class="keys">
+    <b>↓ tới S</b><span>Skill 1 · 10 nộ</span>
+    <b>↓ lui S</b><span>Skill 2 · 10 nộ</span>
+    <b>↓ ↓ D</b><span>Skill 3 · 10 nộ</span>
+    <b>tới ↓ tới S</b><span>Skill 4 · 20 nộ</span>
+    <b>lui ↓ lui D</b><span>Skill 5 · 20 nộ</span>
+    <b>lui tới D</b><span>Skill 6 · 35 nộ</span>
+    <b>tới lui tới S</b><span>Skill 7 · 35 nộ</span>
+    <b>↓ tới ↓ tới E</b><span>Tối thượng · 55 nộ</span>
+  </div>
+  <p style="margin-top:8px">Bảng skill dưới sân chỉ để xem, không bấm được; ô nào sáng là đủ nộ. Thiếu nộ thì hiện "THIẾU NỘ". Ra skill xong nhân vật đứng hình một lúc (0,3 giây với skill nhỏ, tới 1 giây với Tối thượng): đánh trượt hoặc bị đỡ là hở cho đối thủ phản đòn. Skill không né được bằng cúi hay nhảy; phải dùng khiên W hoặc vòng đỡ E.</p>
   <h3>Ba chế độ</h3>
   <div class="keys">
-    <b>Test nhân vật</b><span>Chọn nhân vật của bạn và một đối thủ để tập skill. MP hồi rất nhanh và không tuột. Đối thủ là bao cát đứng yên (300 HP) hoặc biết đánh trả.</span>
+    <b>Test nhân vật</b><span>Chọn nhân vật của bạn và một đối thủ để tập skill. Nộ tự hồi rất nhanh và không tuột, để tập tổ hợp phím. Đối thủ là bao cát đứng yên (300 HP) hoặc biết đánh trả.</span>
     <b>Tournament</b><span>Đấu đơn. Chọn một nhân vật rồi đấu lần lượt 12 nhân vật còn lại theo thứ tự ngẫu nhiên, mỗi trận một hiệp. Trận sau khó hơn trận trước: máy nhiều máu hơn, đánh nhanh và đau hơn, biết áp sát, lùi ra, nhảy, cúi né đòn, đánh dồn 2–3 phát; từ trận 2 ra skill, từ trận 5 ra cả Tối thượng và biết mở vòng đỡ. Thắng trận thứ N được N × 100 điểm cộng số máu còn lại; điểm cao nhất của mỗi người lên bảng xếp hạng. Thua thì đấu lại trận đó (điểm còn một nửa) hoặc làm lại giải.</span>
     <b>Đấu đôi</b><span>Hai người, hai máy. Một người tạo phòng và gửi mã 4 ký tự, người kia nhập mã.</span>
   </div>
