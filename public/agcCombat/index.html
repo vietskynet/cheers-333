@@ -117,11 +117,11 @@
   .stage{position:relative;justify-self:center;width:min(100%,calc((100dvh - 330px) * 16 / 9));min-width:min(100%,300px)}
   #netBar{position:absolute;left:0;right:0;bottom:0;margin:0}
   #spells{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;width:100%;max-width:980px;justify-self:center}
-  .sk{position:relative;min-width:0;overflow-wrap:anywhere;border:2px solid #000;background:#1f1c3d;color:#fff;font:inherit;padding:3px 2px;cursor:pointer;min-height:46px;line-height:1;box-shadow:2px 2px 0 #000;touch-action:none;overflow:hidden}
-  .sk b{display:block;font-weight:400;font-size:15px;line-height:.95}.sk span{display:block;font-size:13px;color:#7fd4ff;margin-top:2px;white-space:nowrap}
+  .sk{position:relative;min-width:0;overflow-wrap:anywhere;border:2px solid #000;background:#1f1c3d;color:#fff;font:inherit;padding:3px 2px;min-height:46px;line-height:1;box-shadow:2px 2px 0 #000;touch-action:none;overflow:hidden;text-align:center;user-select:none;-webkit-user-select:none}
+  .sk b{display:block;font-weight:400;font-size:14px;line-height:.95;margin-top:2px}.sk span{display:block;font-size:19px;color:#7fd4ff;white-space:nowrap;letter-spacing:1px;padding-top:6px}
   .sk i{position:absolute;top:0;right:1px;font-style:normal;font-size:11px;color:#9a94c2}.sk.t2 b{color:#ffd84a}.sk.t3 b{color:#ff9d3c}.sk.t4{border-color:#39ff6a}.sk.t4 b{color:#39ff6a}
   .sk:not(.no){background:#2f2a78;box-shadow:0 0 0 1px #ffd84a,0 0 8px #ffd84a88,2px 2px 0 #000}.sk.t4:not(.no){box-shadow:0 0 0 1px #39ff6a,0 0 10px #39ff6aaa,2px 2px 0 #000}
-  .sk:active{transform:translate(2px,2px);background:#3b3766}.sk.no{opacity:.38;filter:grayscale(1);border-color:#333}
+  .sk.no{opacity:.38;filter:grayscale(1);border-color:#333}
   #game .pad{margin:0;align-self:center;align-items:center;width:100%;max-width:560px;justify-self:center}
   @media not all and (pointer:coarse){.pad{display:none}#game.on{grid-template-rows:auto auto auto}.stage{width:min(100%,calc((100dvh - 120px) * 16 / 9))}#spells{grid-template-columns:repeat(8,1fr)}}
   /* điện thoại cầm ngang: sân ở giữa, nút hai bên, skill một hàng dưới đáy */
@@ -131,7 +131,7 @@
     .stage{grid-column:2;grid-row:2;width:min(calc((100dvh - 100px) * 16 / 9),calc(100vw - 350px));min-width:0;align-self:center}
     .dpad,.acts{grid-template-columns:repeat(3,50px);grid-template-rows:repeat(2,50px);gap:4px}.acts{grid-template-columns:repeat(6,23px) !important}.pad button{font-size:24px}
     #game .pad{display:contents}.dpad{grid-column:1;grid-row:2;align-self:end;justify-self:start}.acts{grid-column:3;grid-row:2;align-self:end;justify-self:end}
-    #spells{grid-column:1/4;grid-row:3;grid-template-columns:repeat(8,1fr);max-width:none}.sk{min-height:40px}.sk b{font-size:13px}.sk span{font-size:12px}
+    #spells{grid-column:1/4;grid-row:3;grid-template-columns:repeat(8,1fr);max-width:none}.sk{min-height:40px}.sk b{font-size:12px}.sk span{font-size:16px;padding-top:4px}
   }
   @media (max-width:420px){h1{font-size:38px}.dpad,.acts{grid-template-columns:repeat(3,54px);grid-template-rows:repeat(2,54px)}.acts{grid-template-columns:repeat(6,25px) !important}.mode b{font-size:19px}.mode small{font-size:13px}}
 </style>
@@ -228,7 +228,7 @@
     <b>W</b><span>Khiên: chặn mọi đòn trong 0,85 giây (trừ skill Tối thượng; muốn đỡ Tối thượng thì dùng E).</span>
     <b>E</b><span>Vòng đỡ toàn diện: mở 0,5 giây, chặn hết mọi đòn thường và skill. Skill Tối thượng trúng lúc vòng đang mở chỉ còn 30% sát thương và không bị khống chế. Hồi 1,6 giây, nên phải bấm đúng lúc.</span>
   </div>
-  <p style="margin-top:8px">Trên điện thoại có nút cảm ứng ngay dưới sân đấu. MP (thanh xanh) tự hồi 7 điểm mỗi giây. Nút skill chỉ sáng lên khi đủ MP. MP đầy 100 mà để quá 3 giây không dùng sẽ tuột về 40.</p>
+  <p style="margin-top:8px">Trên điện thoại có nút cảm ứng ngay dưới sân đấu. MP (thanh xanh) tự hồi 7 điểm mỗi giây. Bảng skill dưới sân chỉ để xem tổ hợp phím, không bấm được; ô nào sáng là đủ MP để ra chiêu đó. MP đầy 100 mà để quá 3 giây không dùng sẽ tuột về 40.</p>
   <h3>Ra skill</h3>
   <p>Ra chiêu bằng năm phím Q W E và S D. Bấm các phím liền nhau, mỗi phím cách phím trước dưới nửa giây. Tám skill của mọi nhân vật dùng chung tám chuỗi phím, nên học một lần là chơi được hết. Chuỗi càng dài, skill càng mạnh và càng tốn MP. Thiếu MP thì hiện "NO MP". Skill không né được bằng cúi hay nhảy; phải dùng khiên W hoặc vòng đỡ E.</p>
   <h3>Ba chế độ</h3>

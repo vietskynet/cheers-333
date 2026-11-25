@@ -368,9 +368,8 @@ function newF(i) {
 function startMatch(mode, lvl, chars, sub) {
   G.mode = mode; G.lvl = lvl || 0; G.sub = mode === "ai" ? sub || "" : ""; G.lvo = G.sub === "tour" ? tourLv(G.tour.s, G.tour.order.length) : G.sub === "test" && G.passive ? DUMMY : null; $("tourBox").className = ""; G.round = 1; G.score = [0, 0]; G.ME = mode === "pvp" && !net.host ? 1 : 0; G.chars = chars;
   show("game"); scrollTo(0, 0);
-  // thanh 8 skill ngay dưới sân đấu: chạm là ra chiêu, giữ chuột lên để đọc mô tả
-  $("spells").innerHTML = chOf(G.ME).sp.map((s, i) => `<button class="sk t${s.t}" data-sp="${i}" data-mp="${TIER[s.t].mp}" title="${s.d}"><i>${TIER[s.t].mp}</i><b>${s.n}</b><span>${kshow(s.k, "›")}</span></button>`).join("");
-  document.querySelectorAll("[data-sp]").forEach(b => b.addEventListener("pointerdown", e => { e.preventDefault(); tapSpell(+b.dataset.sp); }));
+  // bảng 8 skill ngay dưới sân đấu: chỉ để xem tổ hợp phím và tên chiêu, không bấm được; ô sáng khi đủ MP
+  $("spells").innerHTML = chOf(G.ME).sp.map((s, i) => `<div class="sk t${s.t}" data-sp="${i}" data-mp="${TIER[s.t].mp}" title="${s.d}"><i>${TIER[s.t].mp}</i><span>${kshow(s.k, " ")}</span><b>${s.n}</b></div>`).join("");
   newRound();
 }
 function newRound() {
