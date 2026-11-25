@@ -435,7 +435,7 @@ const SEQT = .38;   // mỗi lần bấm phải cách lần trước dưới 0,3
 function dirIn(k) { const p = F[G.ME]; if (!p || G.phase !== "fight") return;
   if (k === "u") {   // bấm ↑ hai lần liền (dưới 0,32 giây) là nhảy cao
     if (G.t - (p.upT || -9) < .32 && !p.hj && p.y > 0 && p.stun <= 0 && !p.ctrl && p.fly <= 0 && p.nap <= 0) { p.hj = 1; p.vy = 370; pop("NHẢY CAO!", p.x, FLOOR - 150 - p.y, "#7fd4ff", .6); beep(700, .1, "square", .04, 1200); for (let i = 0; i < 8; i++) FX.push({ k: "spark", t: 0, d: .3, x: p.x + rnd(-14, 14), y: FLOOR - p.y, vx: rnd(-40, 40), vy: rnd(20, 90), c: "#7fd4ff" }); }
-    p.upT = G.t; return; } const c = k === "d" ? "d" : (k === "r") === (p.dir > 0) ? "f" : "b"; seq.s = G.t - seq.t < SEQT ? (seq.s + c).slice(-6) : c; seq.t = G.t; G.keys.push({ k: arrow(c), t: G.t }); if (G.keys.length > 8) G.keys.shift(); }
+    p.upT = G.t; p.jq = G.t + .15; return; } const c = k === "d" ? "d" : (k === "r") === (p.dir > 0) ? "f" : "b"; seq.s = G.t - seq.t < SEQT ? (seq.s + c).slice(-6) : c; seq.t = G.t; G.keys.push({ k: arrow(c), t: G.t }); if (G.keys.length > 8) G.keys.shift(); }
 addEventListener("keydown", e => { if (!$("game").classList.contains("on")) return; if (KMAP[e.code] || AMAP[e.code]) e.preventDefault(); if (e.repeat) return; if (KMAP[e.code]) { KEY[KMAP[e.code]] = 1; dirIn(KMAP[e.code]); } if (AMAP[e.code]) press(AMAP[e.code]); });
 addEventListener("keyup", e => { if (KMAP[e.code]) KEY[KMAP[e.code]] = 0; });
 const canAct = p => !p.ko && G.phase === "fight" && p.stun <= 0 && !p.ctrl && p.lock <= 0 && p.charge <= 0 && p.fly <= 0 && p.nap <= 0;
@@ -556,7 +556,7 @@ function stepLocal(p, dt) {
   const mv = (KEY.r ? 1 : 0) - (KEY.l ? 1 : 0);
   if (mv) { p.x += mv * 125 * dt; p.moving = true; p.walk += dt; }
   p.x = p.i === 0 ? clamp(p.x, 36, o.x - GAP) : clamp(p.x, o.x + GAP, 444);
-  if (KEY.u && p.y === 0) { p.vy = 340; beep(500, .08, "square", .04, 800); }
+  if ((KEY.u || p.jq > G.t) && p.y === 0) { p.jq = 0; p.vy = 340; beep(500, .08, "square", .04, 800); }
 }
 function stepAI(p, dt) {
   const o = lv(), a = p.ai, pl = F[0], c = chOf(1); p.moving = false; p.crouch = false;
