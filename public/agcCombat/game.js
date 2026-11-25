@@ -384,6 +384,40 @@ function newRound() {
 let AC = null;
 function beep(f, d = .08, type = "square", vol = .06, slide = 0) { if (!G.sound) return; try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === "suspended") AC.resume(); const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain(); o.type = type; o.frequency.setValueAtTime(f, t); if (slide) o.frequency.exponentialRampToValueAtTime(slide, t + d); g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t + d + .02); } catch {} }
 
+/* ======================= NHẠC NỀN 16-BIT (tự phát bằng Web Audio, không dùng file nhạc) ======================= */
+// Hai bài tự soạn: "menu" cho các màn ngoài trận, "fight" cho trận đấu. Mỗi bài 8 ô nhịp, lặp vô hạn.
+// ch = hợp âm từng ô (nốt MIDI), lead = giai điệu 8 nốt móc đơn mỗi ô (0 = nghỉ).
+const SONGS = {
+  menu: { bpm: 112, ch: [[60, 64, 67], [57, 60, 64], [53, 57, 60], [55, 59, 62], [60, 64, 67], [57, 60, 64], [53, 57, 60], [55, 59, 62]],
+    lead: [72, 0, 76, 79, 0, 76, 72, 0, 69, 0, 72, 76, 0, 72, 69, 0, 65, 0, 69, 72, 0, 77, 76, 0, 67, 0, 71, 74, 0, 79, 0, 0, 84, 0, 79, 76, 0, 79, 84, 0, 81, 0, 76, 72, 0, 76, 81, 0, 77, 0, 81, 84, 0, 81, 77, 0, 79, 0, 74, 71, 74, 79, 83, 0] },
+  fight: { bpm: 152, ch: [[57, 60, 64], [53, 57, 60], [60, 64, 67], [55, 59, 62], [57, 60, 64], [53, 57, 60], [52, 56, 59], [52, 56, 59]],
+    lead: [76, 0, 72, 69, 72, 0, 76, 0, 77, 0, 76, 72, 69, 0, 72, 0, 79, 0, 76, 72, 76, 0, 79, 0, 74, 0, 71, 74, 79, 0, 74, 0, 81, 0, 76, 81, 84, 0, 81, 76, 77, 0, 81, 84, 81, 0, 77, 0, 76, 0, 80, 83, 88, 0, 86, 83, 80, 0, 83, 0, 76, 76, 80, 83] },
+};
+const MUS = { cur: "", step: 0, next: 0, out: null, nz: null }, hz = m => 440 * Math.pow(2, (m - 69) / 12);
+function musNote(m, t, d, type, vol) { const o = AC.createOscillator(), g = AC.createGain(); o.type = type; o.frequency.setValueAtTime(hz(m), t); g.gain.setValueAtTime(vol, t); g.gain.setValueAtTime(vol, t + d * .7); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(g); g.connect(MUS.out); o.start(t); o.stop(t + d + .02); }
+function musDrum(t, d, vol, hp) { const n = AC.createBufferSource(), g = AC.createGain(), f = AC.createBiquadFilter(); n.buffer = MUS.nz; f.type = "highpass"; f.frequency.value = hp; g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + d); n.connect(f); f.connect(g); g.connect(MUS.out); n.start(t, Math.random() * .5, d + .02); }
+function musKick(t) { const o = AC.createOscillator(), g = AC.createGain(); o.type = "triangle"; o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(45, t + .11); g.gain.setValueAtTime(.3, t); g.gain.exponentialRampToValueAtTime(.0001, t + .13); o.connect(g); g.connect(MUS.out); o.start(t); o.stop(t + .15); }
+function musTick() {
+  if (!AC || AC.state !== "running" || !MUS.out) return;
+  MUS.out.gain.value = G.sound && !document.hidden ? .55 : 0;
+  const name = $("game").classList.contains("on") ? "fight" : "menu", S = SONGS[name], sl = 60 / S.bpm / 4, now = AC.currentTime;
+  if (name !== MUS.cur || MUS.next < now - .3) { MUS.cur = name; MUS.step = 0; MUS.next = now + .06; }
+  while (MUS.next < now + .25) {
+    const st = MUS.step, t = MUS.next, bar = st >> 4, b16 = st & 15, ch = S.ch[bar], fight = name === "fight";
+    if (!(st & 1)) { const m = S.lead[st >> 1]; if (m) { let len = 1; while (len < 4 && ((st >> 1) + len) % 8 && !S.lead[(st >> 1) + len]) len++; musNote(m, t, sl * 2 * len * .92, "square", .05); } }   // giai điệu
+    musNote(ch[[0, 1, 2, 1][b16 & 3]] + 12, t, sl * .85, "square", .016);                                                                                         // rải hợp âm
+    if (!(b16 & 1)) musNote(ch[0] - 24 + ((b16 >> 1) % 4 === 3 ? 12 : (b16 >> 1) % 4 === 2 ? 7 : 0), t, sl * 1.8, "triangle", .13);                               // bass
+    if (b16 % 8 === 0 || (fight && b16 === 10)) musKick(t);                                                                                                       // trống
+    if (b16 % 8 === 4) musDrum(t, .12, .09, 1400);
+    if (fight ? !(b16 & 1) : b16 % 4 === 2) musDrum(t, .03, .035, 6500);
+    if (fight && bar === 7 && b16 >= 12) musDrum(t, .07, .08, 1800);
+    MUS.step = (st + 1) % 128; MUS.next += sl;
+  }
+}
+// trình duyệt chỉ cho phát tiếng sau khi người chơi chạm hoặc bấm phím lần đầu
+function musUnlock() { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === "suspended") AC.resume(); if (!MUS.out) { MUS.out = AC.createGain(); MUS.out.gain.value = 0; MUS.out.connect(AC.destination); const b = AC.createBuffer(1, AC.sampleRate, AC.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; MUS.nz = b; setInterval(musTick, 50); } } catch {} }
+addEventListener("pointerdown", musUnlock); addEventListener("keydown", musUnlock);
+
 /* ======================= ĐIỀU KHIỂN ======================= */
 const KMAP = { ArrowLeft: "l", ArrowRight: "r", ArrowUp: "u", ArrowDown: "d" }, AMAP = { KeyS: "F", KeyD: "G", KeyW: "C", KeyE: "V", KeyQ: "B" };
 /* mã đòn bên trong vẫn là F G B C V; phím thật và chữ hiển thị là S D Q W E */
@@ -949,4 +983,4 @@ document.querySelectorAll("[data-k]").forEach(b => { const k = b.dataset.k, down
 // bảng 8 skill của một nhân vật (trang chơi: chạm để ra chiêu; trang hướng dẫn: để tra)
 function spellHTML(ci, tap) { return `<div class="spg">` + CH[ci].sp.map((s, i) => `<button class="sp t${s.t}" ${tap ? `data-sp="${i}"` : "disabled"}><span class="ks">${kshow(s.k, " › ")} · ${TIER[s.t].mp} MP</span><b>${s.n}</b><small>${s.b ? (s.m ? s.m + " × " : "") + Math.round((s.fixed ? s.b : s.b * TIER[s.t].k) * CUT[s.t]) + " sát thương · " : ""}${s.d}</small></button>`).join("") + "</div>"; }
 $("guideSpells").innerHTML = CH.map((c, i) => `<h3 style="color:${c.col}">${c.name} · ${c.role}</h3><p>${c.tag}. Đòn S: ${c.F.n}. Đòn D: ${c.G.n}.</p>` + spellHTML(i, false)).join("");
-window.__wz = { G, CH, doCast, get F() { return F; }, get ATK() { return ATK; }, press, tapSpell, startMatch, startTour, openRank, lv, net, setReady, KEY, pick };
+window.__wz = { G, CH, doCast, get F() { return F; }, get ATK() { return ATK; }, press, tapSpell, startMatch, startTour, openRank, lv, MUS, net, setReady, KEY, pick };
