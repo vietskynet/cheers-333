@@ -162,10 +162,10 @@ const rnd = (a, b) => a + Math.random() * (b - a), clamp = (v, a, b) => Math.max
    Nếu site chưa có file thì lấy tạm từ kho ảnh Higgsfield. */
 const CDN = "https://d2ol7oe51mr4n9.cloudfront.net/user_2vybgglAYZMtuRPV18Aqg7zS5iW/";
 function loadImg(local, cdn) { const im = new Image(); im.onerror = () => { if (!im._f) { im._f = 1; im.src = CDN + cdn; } }; im.onload = () => document.documentElement.style.setProperty(local === "./sprites.webp" ? "--spr" : "--bg", `url("${im.src}")`); im.src = local; return im; }
-const SPR = loadImg("./sprites.webp", "9cc8f3dc-4bbd-4edd-84f0-5cef4ffb854c.webp"), BG = loadImg("./bg.png", "073e9582-2bbe-44d6-98ac-5cf73662bbb0.png");
+const SPR = loadImg("./sprites.webp", "9f9f9011-fa39-45b3-aa17-eb6f1184eeb2.webp"), BG = loadImg("./bg.png", "073e9582-2bbe-44d6-98ac-5cf73662bbb0.png");
 const POST = new Image(); POST.onload = () => { document.documentElement.style.setProperty("--post", `url("${POST.src}")`); document.body.classList.add("hasPost"); }; POST.onerror = () => { if (!POST._f) { POST._f = 1; POST.src = CDN + "92f73c8b-8bc5-402e-b17b-5c4452fd557f.webp"; } }; POST.src = "./posters.webp";
 const ok = im => im.complete && im.naturalWidth > 0;
-const IC = { phone: 0, mail: 1, folder: 2, chat: 3, car: 4, table: 5, coin: 6, cal: 7, bulb: 8, marker: 9, cat1: 10, cat2: 11, dumb: 12, frame: 13, easel: 14, wind: 15, splat: 16, brush: 17, scis: 18, cig: 19, smoke: 20, shrimp: 21, layers: 22, pen: 23, mag: 24, report: 25, funnel: 26, book: 27, trophy: 28, chart: 29, venn: 30, stamp: 31, paw: 32, wig: 33, buffet: 34, menu: 35, pho: 36, banhmi: 37, roll: 38, cake: 39, tea: 40, chicken: 41, redpen: 42, hand: 43, news: 44, sushi: 45, pizza: 46, quote: 47, mega: 48, vali: 49, plane: 50, ticket: 51, passport: 52, pencil: 53, ghost: 54, bat: 55, moon: 56, shand: 57, fire: 58, globe: 59, photo: 60, world: 61, shades: 62, scrib: 63, bike: 64, phin: 65, cdrop: 66, rose: 67, spark: 68, heart: 69, cloud: 70, note: 71, crown: 72, mirror: 73, zap: 74, bean: 75, clock: 76, laurel: 77, warn: 78, callbtn: 79, tee: 80, jeans: 81, egg: 82, chick: 83, plate: 84, duck: 85, barbell: 86, shaker: 87, glasses: 88, tmirror: 89, matcha: 90, tote: 91, vinyl: 92, earph: 93, camera: 94, obook: 95, hand7: 96, robot: 97, bheart: 98, fheart: 99, tear: 100, mic: 101, speaker: 102, arch: 103, melon: 104, crow: 105, cricket: 106, popper: 107, note2: 108, aistar: 109, rings: 110, tissue: 111, tabi: 112, bag: 113, hanger: 114, glove: 115, gframe: 116, rope: 117, phonecam: 118, bandaid: 119, goat: 120, anger: 121, fshades: 122, beret: 123, scarf: 124, sring: 125, manne: 126, papcam: 127, ringlight: 128, eye: 129, polaroid: 130, tripod: 131, easel2: 132, palette: 133, puddle: 134, lipstick: 135, compact: 136, halo: 137, column: 138, petals: 139, pearls: 140, perfume: 141, pedestal: 142, fan: 143, lowbat: 144, sneaker: 145, vacuum: 146, bus: 147, tomboy: 148, shplate: 149, clipper: 150, hair: 151, pine: 152, sign: 153, dust: 154, palm: 155, chomp: 156, bandana: 157, berry: 158, fog: 159, isle1: 160, isle2: 161, spike: 162, rscarf: 163, beanie: 164, yarn: 165, tank: 166, flag: 167, lstick: 168, truss: 169, nonla: 170, gstar: 171, drum: 172, firework: 173, lotus: 174, trumpet: 175, xoi: 176, thaitea: 177, net: 178, fish: 179, elephant: 180, tuktuk: 181, mglove: 182, chili: 183, durian: 184, inhaler: 185, vapor: 186, fans: 187, hi: 188, temple: 189, tomyum: 190, coconut: 191 };
+const IC = { phone: 0, mail: 1, folder: 2, chat: 3, car: 4, table: 5, coin: 6, cal: 7, bulb: 8, marker: 9, cat1: 10, cat2: 11, dumb: 12, frame: 13, easel: 14, wind: 15, splat: 16, brush: 17, scis: 18, cig: 19, smoke: 20, shrimp: 21, layers: 22, pen: 23, mag: 24, report: 25, funnel: 26, book: 27, trophy: 28, chart: 29, venn: 30, stamp: 31, paw: 32, wig: 33, buffet: 34, menu: 35, pho: 36, banhmi: 37, roll: 38, cake: 39, tea: 40, chicken: 41, redpen: 42, hand: 43, news: 44, sushi: 45, pizza: 46, quote: 47, mega: 48, vali: 49, plane: 50, ticket: 51, passport: 52, pencil: 53, ghost: 54, bat: 55, moon: 56, shand: 57, fire: 58, globe: 59, photo: 60, world: 61, shades: 62, scrib: 63, bike: 64, phin: 65, cdrop: 66, rose: 67, spark: 68, heart: 69, cloud: 70, note: 71, crown: 72, mirror: 73, zap: 74, bean: 75, clock: 76, laurel: 77, warn: 78, callbtn: 79, tee: 80, jeans: 81, egg: 82, chick: 83, plate: 84, duck: 85, barbell: 86, shaker: 87, glasses: 88, tmirror: 89, matcha: 90, tote: 91, vinyl: 92, earph: 93, camera: 94, obook: 95, hand7: 96, robot: 97, bheart: 98, fheart: 99, tear: 100, mic: 101, speaker: 102, arch: 103, melon: 104, crow: 105, cricket: 106, popper: 107, note2: 108, aistar: 109, rings: 110, tissue: 111, tabi: 112, bag: 113, hanger: 114, glove: 115, gframe: 116, rope: 117, phonecam: 118, bandaid: 119, goat: 120, anger: 121, fshades: 122, beret: 123, scarf: 124, sring: 125, manne: 126, papcam: 127, ringlight: 128, eye: 129, polaroid: 130, tripod: 131, easel2: 132, palette: 133, puddle: 134, lipstick: 135, compact: 136, halo: 137, column: 138, petals: 139, pearls: 140, perfume: 141, pedestal: 142, fan: 143, lowbat: 144, sneaker: 145, vacuum: 146, bus: 147, tomboy: 148, shplate: 149, clipper: 150, hair: 151, pine: 152, sign: 153, dust: 154, palm: 155, chomp: 156, bandana: 157, berry: 158, fog: 159, isle1: 160, isle2: 161, spike: 162, rscarf: 163, beanie: 164, yarn: 165, tank: 166, flag: 167, lstick: 168, truss: 169, nonla: 170, gstar: 171, drum: 172, firework: 173, lotus: 174, trumpet: 175, xoi: 176, thaitea: 177, net: 178, fish: 179, elephant: 180, tuktuk: 181, mglove: 182, chili: 183, durian: 184, inhaler: 185, vapor: 186, fans: 187, hi: 188, temple: 189, tomyum: 190, coconut: 191, racket: 192, shuttle: 193, pot: 194, xoi: 195, steam: 196, sketch: 197, scrap: 198, gpen: 199, karaoke: 200, ochair: 201, zticket: 202, blush: 203, angel: 204, halo: 205, fist: 206, sandal: 207 };
 /* Ba cấp máy */
 const LVL = [
   { n: "Thực tập sinh", hp: 100, spd: 34, dist: 170, rest: [2.4, 3.3], wind: .6, types: ["hi"], dmg: 5, bolt: 190, shield: .12, cast: 0, maxT: 0 },
@@ -174,7 +174,13 @@ const LVL = [
 ];
 const DUMMY = { ...LVL[0], n: "Bao cát", hp: 300, spd: 0, rest: [1e9, 1e9], shield: 0 };
 /* Tournament: trận s trong n trận, máy mạnh dần đều từ dễ tới khó */
-function tourLv(s, n) { const t = n > 1 ? s / (n - 1) : 1; return { n: s === n - 1 ? "Chung kết" : "Trận " + (s + 1), hp: Math.round(90 + 120 * t), spd: 34 + 20 * t, dist: 170 + 70 * t, rest: [2.4 - 1.4 * t, 3.3 - 1.6 * t], wind: .6 - .2 * t, types: t < .25 ? ["hi"] : t < .6 ? ["hi", "hi", "lo"] : ["hi", "lo", "th", "th"], dmg: Math.round(5 + 4 * t), bolt: 190 + 100 * t, shield: .1 + .4 * t, cast: t < .2 ? 0 : .15 + .25 * t, maxT: t < .2 ? 0 : t < .5 ? 2 : t < .8 ? 3 : 4 }; }
+function tourLv(s, n) {
+  const k = n > 1 ? s / (n - 1) : 1, d = 1 - (1 - k) * (1 - k);          // tăng nhanh ở nửa đầu: tới trận 6 đã ở khoảng 70% độ khó tối đa
+  return { n: s === n - 1 ? "Chung kết" : "Trận " + (s + 1), hp: Math.round(100 + 150 * d), spd: 40 + 60 * d, dist: 230, rest: [2.2 - 1.6 * d, 3 - 2 * d], wind: .55 - .25 * d,
+    types: d < .2 ? ["hi"] : d < .5 ? ["hi", "hi", "lo"] : ["hi", "lo", "lo", "th"], dmg: Math.round(5 + 6 * d), bolt: 200 + 140 * d, shield: .1 + .45 * d,
+    cast: d < .15 ? 0 : .15 + .35 * d, maxT: d < .15 ? 0 : d < .4 ? 2 : d < .65 ? 3 : 4, sk: .5 + .4 * d,
+    roam: Math.max(.25, d), dodge: d < .15 ? 0 : .15 + .6 * d, ward: d < .5 ? 0 : .2 + .5 * d, burst: .1 + .6 * d, punish: d > .3 };
+}
 const lv = () => G.lvo || LVL[G.lvl];
 /* 8 ô skill dùng chung phím cho cả 4 nhân vật */
 const KEYS = ["FG", "GF", "BF", "FFV", "GGF", "FFFV", "BBBF", "VBGCF"], TOF = [1, 1, 1, 2, 2, 3, 3, 4];
@@ -246,17 +252,19 @@ const CH = [
       { n: "Giơ Tay Ý Kiến", b: 36, d: "Giơ tay phát biểu, bão comment đổ xuống đè đối thủ", mk: (c, D) => [{ wait: 1.2, dmg: D, fx: "rain", ic: IC.chat, top: IC.hand, say: "EM CÓ Ý KIẾN!" }] },
       { n: "Mèo Khổng Lồ", b: 90, fixed: 1, d: "Bàn chân mèo xám trắng mũm mĩm khổng lồ đập xuống. Xuyên khiên", mk: (c, D) => [{ wait: .8, dmg: D, pierce: 1, fx: "drop", ic: IC.paw, sc: 2.6, gnd: 1, on: { ctrl: ["flat", 1.8, 0, "BẸP!"] }, say: "MEOOO!" }] },
     ] },
-  { id: "khoa", name: "Khoa Đặng", role: "Sr Art Director", col: "#8b5cf6", tag: "Bóng tối, nói nhiều, bịa chuyện, đi du lịch, vẽ chuyện",
-    F: { n: "Bla bla", ic: -4 }, G: { n: "Vali kéo", ic: IC.vali }, th: { n: "Quà lưu niệm rơi", ic: IC.globe },
+  { id: "khoa", name: "Khoa Đặng", role: "Sr Art Director", col: "#8b5cf6", tag: "Nói nhiều, cầu lông, karaoke, vé 0 đồng, thần vẽ và bịa chuyện",
+    F: { n: "Nói nhiều", ic: -4 }, G: { n: "Nói to hơn", ic: IC.mega }, th: { n: "Quà lưu niệm rơi", ic: IC.globe },
     sp: [
-      { n: "Nói Nhiều", b: 18, d: "Bắc loa nói không ngừng, đối thủ ù tai đứng hình", mk: (c, D) => [{ p: 1, v: 300, ic: IC.mega, sc: .8, wave: 1, dmg: D, col: "#c4b5fd", on: { stun: 1 }, say: "BLA BLA BLA!" }] },
-      { n: "Bịa Chuyện", b: 9, m: 4, d: "Bốn câu chuyện không có thật tự tìm tới đối thủ", mk: (c, D) => four({ ic: -3, bub: 1, dmg: D, col: "#c4b5fd" }, ["Hồi đó anh…", "Thiệt luôn!", "Tin anh đi", "100% real"]) },
-      { n: "Xin Nghỉ Đi Du Lịch", b: 0, d: "Vé máy bay rơi như mưa: xoá mọi đòn đang bay, hồi 15 HP", self: c => healClear(c, IC.ticket) },
-      { n: "Tắt Đèn", b: 25, d: "Cả văn phòng tối thui, đối thủ chỉ còn hai con mắt và đứng im", mk: (c, D) => [{ wait: .25, dmg: D, on: { ctrl: ["dark", 2.6, 0, "AI TẮT ĐÈN VẬY?"] } }] },
-      { n: "Vẽ Chuyện", b: 13, m: 3, d: "Vẽ thêm ba nét bút chì nguệch ngoạc lên người đối thủ", mk: (c, D) => [0, 1, 2].map(i => ({ wait: .15 + i * .2, dmg: D, fx: "slash", pcl: 1, n: i, say: ["VẼ THÊM!", "VẼ NỮA!", "VẼ HOÀI!"][i] })) },
-      { n: "Chuyến Bay Giá Rẻ", b: 45, d: "Máy bay giá rẻ lao xuyên qua đối thủ", mk: (c, D) => [{ wait: .55, dmg: D, fx: "dash", ic: IC.plane, sc: 1.7, col: "#c4b5fd", say: "DELAY 3 TIẾNG!" }] },
-      { n: "Kể Chuyện Ma", b: 36, d: "Trời tối sầm, ma và dơi bay ra từ câu chuyện", mk: (c, D) => [{ wait: 1.2, dmg: D, fx: "rain", ic: IC.ghost, ic2: IC.bat, top: IC.fire, say: "HÙUU!" }] },
-      { n: "Bóng Tối Nuốt Chửng", b: 90, fixed: 1, d: "Bàn tay bóng tối trồi lên từ sàn kéo đối thủ xuống. Xuyên khiên", mk: (c, D) => [{ wait: 1.0, dmg: D, pierce: 1, fx: "rise", ic: IC.shand, sc: 2.2, on: { ctrl: ["dark", 1.8, 0, "TỐI THUI!"] }, say: "ỰC!" }] },
+      { n: "Book Vé 0 Đồng", b: 9, m: 4, d: "Bốn tấm vé 0 đồng tự tìm tới, đối thủ đỏ mặt xấu hổ", mk: (c, D) => four({ ic: IC.zticket, sc: .5, dmg: D, col: "#fde68a", on: { ctrl: ["blush", .7, 0, "XẤU HỔ QUÁ…"] } }, ["0 ĐỒNG!", "Chưa thuế phí", "Bay 2 giờ sáng", "Không hành lý"]) },
+      { n: "Bão Cầu Lông", b: 2, m: 10, d: "Nhảy lên, vung vợt đập mười quả cầu vào đối thủ", self: c => { if (c.y === 0) c.vy = 330; FX.push({ k: "icon", ic: IC.racket, t: 0, d: .9, x: c.x + c.dir * 22, y: FLOOR - 150, vx: c.dir * 30, vy: -20, sc: .8 }); },
+        mk: (c, D) => Array.from({ length: 10 }, (u, i) => ({ p: 1, v: 400, hom: 1, h: 190 - (i % 5) * 14, wait: .2 + i * .07, ic: IC.shuttle, sc: .32, spin: 1, dmg: D, col: "#ffffff", say: i % 3 ? "" : "BỐP!" })) },
+      { n: "Tắt Đèn", b: 18, d: "Cả văn phòng tối thui, đối thủ chỉ còn hai con mắt và đứng im", mk: (c, D) => [{ wait: .25, dmg: D, on: { ctrl: ["dark", 2, 0, "AI TẮT ĐÈN VẬY?"] } }] },
+      { n: "Cầu Nguyện", b: 9, m: 3, d: "Quỳ xuống cầu nguyện, ba thiên thần từ trời bay xuống bắn tên", self: c => { c.smoke = 1.25; c.ride = -9; }, mk: (c, D) => [0, 1, 2].map(i => ({ wait: .7 + i * .22, dmg: D, fx: "pray", n: i, say: ["AMEN!", "PHẬP!", "PHẬP!"][i] })) },
+      { n: "Nấu Xói", b: 28, d: "Bỏ đối thủ vào nồi rồi Nấu Xói bằng Nói Xấu, chín từ từ", mk: (c, D) => [{ wait: .3, dmg: D * .4, on: { ctrl: ["cook", 2.4, D * .6, "NẤU XÓI = NÓI XẤU"] }, say: "VÔ NỒI!" }] },
+      { n: "Đụng Là Hát", b: 45, d: "Lao tới, kéo ghế ngồi, lôi dàn karaoke ra hát tới khi đối thủ kiệt sức", self: c => { c.smoke = 2.9; c.ride = -9; },
+        mk: (c, D) => [{ wait: .5, dmg: D * .4, on: { ctrl: ["kara", 2.2, 0, "TẮT GIÙM ĐI…"] }, say: "MỘT HAI BA!" }, { wait: 2.7, dmg: D * .6, fx: "kara", say: "KIỆT SỨC!" }] },
+      { n: "Thần Vẽ", b: 40, d: "Hoá vị thần cầm bút, sketch đối thủ lên một trang giấy rồi xé tan", self: c => { c.smoke = 1.6; c.ride = -9; }, mk: (c, D) => [{ wait: 1.4, dmg: D, fx: "sketch", say: "XOẸT!" }] },
+      { n: "Bịa Chuyện", b: 90, fixed: 1, d: "Vẽ ra drama đánh ghen, đám đông ập vào đánh hội đồng. Xuyên khiên", mk: (c, D) => [{ wait: 1.2, dmg: D, pierce: 1, fx: "mob", on: { ctrl: ["mob", 2, 0, "KHÔNG PHẢI EM!"] }, say: "CHÍNH NÓ ĐÓ!" }] },
     ] },
   { id: "bao", name: "Bao Tu", role: "The Performative", col: "#2563eb", tag: "Đẹp trai, gương vô cực, hai trứng, squat và trình diễn",
     F: { n: "Áo thun trắng", ic: IC.tee }, G: { n: "Quần jean", ic: IC.jeans }, th: { n: "Trứng luộc rơi", ic: IC.egg },
@@ -413,7 +421,7 @@ function doBasic(i, k, local) {
 function doCast(i, si, local) {
   const p = F[i], s = chOf(i).sp[si], T = TIER[s.t], tg = F[1 - i];
   if (local) { p.mp -= T.mp; if (G.mode === "pvp") send({ t: "c", s: si }); }
-  const wait = s.t >= 3 ? .6 : .42, weak = (p.ai ? .55 : 1) * CUT[s.t];                 // máy ra skill yếu hơn người
+  const wait = s.t >= 3 ? .6 : .42, weak = (p.ai ? lv().sk || .55 : 1) * CUT[s.t];                 // máy ra skill yếu hơn người
   p.lock = wait + .15; p.act = "wind"; p.actT = wait; G.cine = { n: s.n, t: 0, d: wait + .25, tier: s.t, i }; beep(200, wait, "sawtooth", .05, 900); aiReact(i, 1);
   p.q.push({ t: wait, fn: () => {
     p.act = s.t >= 3 ? "heavy" : "cast"; p.actT = .3; beep(1200, .15, "square", .07, 300);
@@ -496,22 +504,35 @@ function stepLocal(p, dt) {
   if (KEY.u && p.y === 0) { p.vy = 340; beep(500, .08, "square", .04, 800); }
 }
 function stepAI(p, dt) {
-  const o = lv(), a = p.ai, pl = F[0], c = chOf(1); p.moving = false;
-  if (p.ko || G.phase !== "fight" || p.ctrl || p.stun > 0) { a.wind = 0; return; }
+  const o = lv(), a = p.ai, pl = F[0], c = chOf(1); p.moving = false; p.crouch = false;
+  if (p.ko || G.phase !== "fight" || p.ctrl || p.stun > 0) { a.wind = 0; a.duck = 0; return; }
   if (p.lock > 0 || p.fly > 0 || p.nap > 0) return;
+  // Tournament: nhìn đòn đang bay tới để né (cúi tránh đòn cao, nhảy qua đòn sát sàn) và mở vòng đỡ đúng lúc trước skill Tối thượng
+  if (o.dodge) for (const k of ATK) {
+    if (k.to !== 1 || k.age < (k.wait || 0) - .3) continue;
+    if (k.pierce) { if (k.aiW === undefined) k.aiW = Math.random() < (o.ward || 0); if (k.aiW && p.parry <= 0 && (k.p ? Math.abs(k.x - p.x) < 60 : k.wait - k.age < .28)) p.parry = WARD; continue; }
+    if (!k.p || k.sp || k.aiS || Math.abs(k.x - p.x) > 46 + o.dodge * 40) continue;
+    k.aiS = 1; if (Math.random() < o.dodge && a.fire <= 0) { a.wind = 0; if (k.low) { if (p.y === 0) p.vy = 340; } else a.duck = .38; }
+  }
+  if (a.duck > 0) { a.duck -= dt; if (p.y === 0) { p.crouch = true; return; } }
   if (a.fire > 0) { a.fire -= dt; return; }
-  if (a.wind > 0) { a.wind -= dt; p.act = "wind"; p.actT = .1; if (a.wind <= 0) { a.fire = .32; p.act = "cast"; p.actT = .32; a.rest = rnd(...o.rest); beep(240, .15, "sawtooth", .06, 120);
+  if (a.wind > 0) { a.wind -= dt; p.act = "wind"; p.actT = .1; if (a.wind <= 0) { a.fire = .32; p.act = "cast"; p.actT = .32; beep(240, .15, "sawtooth", .06, 120);
+      // đánh dồn: bắn xong có thể bồi ngay 1–2 phát nữa
+      if (a.chain > 0) a.chain--; else a.chain = Math.random() < (o.burst || 0) ? 1 + (Math.random() < o.burst ? 1 : 0) : 0;
+      a.rest = a.chain > 0 ? .12 : rnd(...o.rest);
       if (a.type === "th") spawn(1, { wait: .8, dmg: o.dmg, cond: 1, tx: pl.x, fx: "drop", ic: c.th.ic, sc: .9, quick: 1, col: c.col });
       else if (a.type === "lo") spawn(1, { p: 1, v: o.bolt * .85, dmg: o.dmg, col: c.col, ic: c.G.ic, sc: .55, wob: 1, low: 1, h: 16 });
       else spawn(1, { p: 1, v: o.bolt, dmg: o.dmg, col: c.col, ic: c.F.ic, sc: .45 }); } return; }
   if (p.shield > 0) return;
-  const want = pl.x + o.dist, dx = want - p.x;
+  // di chuyển: máy thường giữ một khoảng cách; máy Tournament áp sát, lùi ra và thỉnh thoảng nhảy
+  if (o.roam) { a.mvT = (a.mvT || 0) - dt; if (a.mvT <= 0) { a.mvT = rnd(.5, 1.4); a.goal = Math.random() < .25 + .35 * o.roam ? rnd(104, 150) : rnd(150, o.dist); if (p.y === 0 && Math.random() < .22 * o.roam) p.vy = 340; } }
+  const want = pl.x + (o.roam ? a.goal || o.dist : o.dist), dx = want - p.x;
   if (Math.abs(dx) > 14) { p.x += Math.sign(dx) * o.spd * dt; p.moving = true; p.walk += dt; }
   p.x = clamp(p.x, pl.x + 100, 448);
-  a.rest -= dt;
+  a.rest -= dt * (o.punish && (pl.stun > 0 || pl.ctrl || pl.charge > 0) ? 2.5 : 1);     // thấy người chơi choáng hoặc đang nạp thì ra đòn sớm hơn
   if (a.rest <= 0) {
-    if (p.mute <= 0 && Math.random() < o.cast) { const okSp = c.sp.map((s, i) => i).filter(i => TOF[i] <= o.maxT && (TOF[i] < 4 || Math.random() < .35)); a.rest = rnd(...o.rest) + 1.2; return doCast(1, okSp[Math.floor(Math.random() * okSp.length)], false); }
-    a.type = o.types[Math.floor(Math.random() * o.types.length)]; a.wind = o.wind;
+    if (p.mute <= 0 && !a.chain && Math.random() < o.cast) { const okSp = c.sp.map((s, i) => i).filter(i => TOF[i] <= o.maxT && (TOF[i] < 4 || Math.random() < .35)); a.rest = rnd(...o.rest) + 1.2; return doCast(1, okSp[Math.floor(Math.random() * okSp.length)], false); }
+    a.type = a.chain > 0 && a.type === "hi" && o.types.includes("lo") ? "lo" : a.chain > 0 && a.type === "lo" ? "hi" : o.types[Math.floor(Math.random() * o.types.length)]; a.wind = o.wind * (a.chain > 0 ? .6 : 1);
   }
 }
 function stepAttacks(dt) {
@@ -527,7 +548,7 @@ function stepAttacks(dt) {
     } else if (!a.done) {
       a.done = 1; a.hitAt = a.age; a.hx = a.cond ? a.tx : T.x;
       if (own(a.to)) { const res = resolve(a, T); if (res) { showRes(res, a); if (G.mode === "pvp") send({ t: "res", res, aid: a.id }); } }
-      if (a.fx === "world" || a.fx === "rain" || a.fx === "nobg" || a.fx === "orbit" || a.fx === "rise" || a.fx === "tornado" || a.fx === "aura" || a.fx === "zoom" || a.fx === "call" || a.fx === "butt" || a.fx === "perf" || a.fx === "prompt" || a.fx === "wedding" || a.fx === "cry" || a.fx === "shame" || a.fx === "runway" || a.fx === "goat" || a.fx === "glare" || a.fx === "paint" || a.fx === "filter" || a.fx === "goddess" || a.fx === "bus" || a.fx === "guides" || a.fx === "shave" || a.fx === "parade" || a.fx === "bkk" || a.fx === "fans" || a.fx === "inhale" || (a.fx === "drop" && a.sc > 1.2)) { G.flash = Math.max(G.flash, .5); G.shake = Math.max(G.shake, 9); beep(70, .35, "sawtooth", .1, 35); }
+      if (a.fx === "world" || a.fx === "rain" || a.fx === "nobg" || a.fx === "orbit" || a.fx === "rise" || a.fx === "tornado" || a.fx === "aura" || a.fx === "zoom" || a.fx === "call" || a.fx === "butt" || a.fx === "perf" || a.fx === "prompt" || a.fx === "wedding" || a.fx === "cry" || a.fx === "shame" || a.fx === "runway" || a.fx === "goat" || a.fx === "glare" || a.fx === "paint" || a.fx === "filter" || a.fx === "goddess" || a.fx === "bus" || a.fx === "guides" || a.fx === "shave" || a.fx === "parade" || a.fx === "bkk" || a.fx === "fans" || a.fx === "inhale" || a.fx === "sketch" || a.fx === "mob" || (a.fx === "drop" && a.sc > 1.2)) { G.flash = Math.max(G.flash, .5); G.shake = Math.max(G.shake, 9); beep(70, .35, "sawtooth", .1, 35); }
     } else if (a.age - a.hitAt > .6) ATK.splice(j, 1);
   }
 }
@@ -638,6 +659,10 @@ function drawFighter(p) {
   else if (c.k === "net") { const jx = Math.sin(t * 30) * 2; spr(ci, f, px + jx, bot, flip, { tint }); prop(IC.net, px, FLOOR - 62, 1.9, false, .95); x.strokeStyle = "rgba(255,255,255,.55)"; x.lineWidth = 1; for (let i = -3; i <= 3; i++) { x.beginPath(); x.moveTo(px + i * 12, FLOOR - 124); x.lineTo(px + i * 16, FLOOR); x.stroke(); } prop(IC.fish, px + 30, FLOOR - 14 - Math.abs(Math.sin(t * 12)) * 12, .5, false, 1, Math.sin(t * 12)); prop(IC.fish, px - 34, FLOOR - 10 - Math.abs(Math.cos(t * 10)) * 10, .4, true, 1, Math.cos(t * 10)); }
   else if (c.k === "minty") { const jx = Math.sin(t * 50) * 2.5; spr(ci, f, px + jx, bot, flip, { tint: "rgba(110,231,183,.5)" }); prop(IC.inhaler, px + p.dir * 16, FLOOR - 104 + Math.sin(t * 20) * 2, .9, false, 1, p.dir * -.9); for (let i = 0; i < 5; i++) prop(IC.vapor, px + Math.cos(t * 3 + i * 1.3) * 26, FLOOR - 120 - ((t * 30 + i * 14) % 50), .5 + .1 * i, false, .7); for (let i = 0; i < 4; i++) text("❄", px - 26 + i * 17, FLOOR - 60 + Math.sin(t * 9 + i) * 20, "#d1fae5", 12, "center"); }
   else if (c.k === "duck") { prop(IC.duck, px, FLOOR - 30 - Math.abs(Math.sin(t * 8)) * 6, 1.25, p.dir < 0); }
+  else if (c.k === "blush") { spr(ci, f, px, bot, flip, { tint: "rgba(255,60,90,.4)" }); prop(IC.blush, px, FLOOR - 142 + Math.sin(t * 9) * 2, .5); }
+  else if (c.k === "cook") { spr(ci, 10, px + Math.sin(t * 22) * 2, bot - 30, flip, { s: .8, tint: "rgba(255,80,40,.35)" }); prop(IC.pot, px, FLOOR - 30, 1.9); for (let i = 0; i < 3; i++) prop(IC.steam, px - 24 + i * 24, FLOOR - 92 - ((t * 44 + i * 17) % 44), .45, false, .8); text(["nghe nói nó…", "thiệt hả?!", "còn nữa nè…", "đừng kể ai nha"][Math.floor(t * 1.7) % 4], clamp(px + p.dir * 64, 60, W - 60), FLOOR - 124, "#fde68a", 14, "center"); }
+  else if (c.k === "kara") { spr(ci, f, px + Math.sin(t * 5) * 2, bot, flip, { sy: .86, tint: "rgba(80,120,255,.35)" }); for (let i = 0; i < 3; i++) text("♪", px - 16 + i * 16, FLOOR - 118 - ((t * 30 + i * 11) % 24), "#93c5fd", 15, "center"); }
+  else if (c.k === "mob") { spr(ci, 10, px + Math.sin(t * 44) * 3, bot, flip, { tint: "rgba(255,40,40,.3)" }); for (let i = 0; i < 6; i++) { const sd = i % 2 ? 1 : -1; prop(IC.fist, px + sd * (26 + Math.abs(Math.sin(t * 18 + i * 1.3)) * 30), FLOOR - 26 - i * 17, .5, sd > 0); } for (let i = 0; i < 3; i++) prop(IC.sandal, (t * 320 + i * 170) % (W + 60) - 30, FLOOR - 120 + Math.sin(t * 5 + i * 2) * 22, .4, false, 1, t * 11 + i); for (let i = 0; i < 4; i++) text("✸", px + Math.cos(t * 9 + i * 1.57) * 26, FLOOR - 70 + Math.sin(t * 9 + i * 1.57) * 34, "#ffe14a", 16, "center"); }
   else if (c.k === "flat") spr(ci, f, px, bot, flip, { sy: .22, tint });
   else if (c.k === "hair") { const sx = Math.sin(t * 40) * 3; spr(ci, f, px + sx, bot, flip, { tint }); prop(IC.wig, px + sx, FLOOR - 108, 1.05); if (Math.floor(t * 4) % 2) text("!?", px + 26, FLOOR - 120, "#ffe14a", 18); }
   else if (c.k === "meet") { spr(ci, f, px, bot, flip, { tint }); prop(IC.table, px + p.dir * 14, FLOOR - 30, 1.5, p.dir < 0); text("z", px + 10, FLOOR - 96 - (t * 20 % 16), "#fff", 14); text("Z", px + 18, FLOOR - 108 - (t * 20 % 16), "#fff", 18); }
@@ -739,6 +764,18 @@ function drawAttack(a) {
     prop(IC.flag, a.cx - a.dir * 26, FLOOR - 104, 1.7, a.dir < 0, al); for (let i = 0; i < 6; i++) prop(IC.firework, 40 + i * 80, 50 + (i % 2) * 34, .8 + .5 * Math.abs(Math.sin(t * 3 + i)), false, al * Math.abs(Math.sin(t * 3 + i)));
     for (let i = 2; i >= 0; i--) { const X = lead - a.dir * i * 104; prop(IC.tank, X, FLOOR - 30 + Math.sin(t * 30 + i) * 1.5, 1.7, a.dir < 0, al); prop(IC.flag, X - a.dir * 10, FLOOR - 78, .6, a.dir < 0, al); prop(IC.dust, X - a.dir * 78, FLOOR - 6, .6, false, al * .8); }
     spr(ci, 0, a.cx, FLOOR, a.from === 1, { a: al }); prop(IC.drum, a.cx + a.dir * 34, FLOOR - 16 - Math.abs(Math.sin(t * 16)) * 4, .6, false, al); if (!a.done || post < .5) text("★ DIỄU BINH ★", W / 2, 74, "#fde047", 26, "center"); }
+  else if (a.fx === "pray") { const ci = G.chars[a.from];
+    if (a.n === 2 && !a.done) { spr(ci, 8, a.cx, FLOOR, a.from === 1, {}); prop(IC.halo, a.cx, FLOOR - 100 + Math.sin(t * 6) * 2, .6); text("xin trời…", a.cx, FLOOR - 118, "#fde68a", 13, "center"); x.save(); x.globalCompositeOperation = "lighter"; x.fillStyle = "rgba(255,240,170,.2)"; x.beginPath(); x.moveTo(TX - 14, 0); x.lineTo(TX + 14, 0); x.lineTo(TX + 50, FLOOR); x.lineTo(TX - 50, FLOOR); x.fill(); x.restore(); }
+    const sd = a.n % 2 ? 1 : -1, AX = TX + sd * (150 - 96 * k), AY = -20 + (FLOOR - 150 + a.n * 16) * k; if (!a.done) prop(IC.angel, AX, AY, .8, sd > 0); else if (post < .3) { prop(IC.angel, TX + sd * 54, FLOOR - 170 + a.n * 16, .8, sd > 0, 1 - post * 3); x.save(); x.globalCompositeOperation = "lighter"; bolt(TX + sd * 44, FLOOR - 160 + a.n * 16, TX, FLOOR - 70, "#ffe9a8", 3); x.restore(); } }
+  else if (a.fx === "kara") { if (!a.done) { const ci = G.chars[a.from], sx = TX - a.dir * 48, u = clamp(a.age / .4, 0, 1), X = a.cx + (sx - a.cx) * u; prop(IC.ochair, X, FLOOR - 24, .78, a.dir < 0); spr(ci, 8, X, FLOOR - 12, a.from === 1, {});
+      if (u >= 1) { prop(IC.karaoke, X - a.dir * 36, FLOOR - 32, .95, a.dir < 0); prop(IC.mic, X + a.dir * 16, FLOOR - 64 + Math.sin(t * 10) * 2, .3, a.dir < 0); for (let i = 0; i < 6; i++) text("♪♫"[i % 2], X + a.dir * (20 + ((t * 70 + i * 28) % 110)), FLOOR - 84 - (i % 3) * 12 + Math.sin(t * 7 + i) * 6, ["#f472b6", "#facc15", "#22d3ee"][i % 3], 17, "center"); text(["LA LÁ LA~", "Ố Ồ Ô~", "HÁT NỮA NÈ!", "BÀI CUỐI… CHƯA!"][Math.floor(a.age * 1.6) % 4], clamp(X, 60, W - 60), FLOOR - 126, "#fff", 14, "center"); } } }
+  else if (a.fx === "sketch") { const ci = G.chars[a.from], GX = clamp(a.cx, 70, W - 70), PX2 = clamp(TX - a.dir * 50, 60, W - 60), PY2 = FLOOR - 150;
+    if (!a.done) { x.fillStyle = `rgba(20,10,50,${.45 * Math.min(1, a.age * 4)})`; x.fillRect(-10, -10, W + 20, H + 20); x.save(); x.globalCompositeOperation = "lighter"; x.fillStyle = "rgba(255,230,150,.16)"; x.beginPath(); x.arc(GX, FLOOR - 120, 96 + Math.sin(t * 5) * 6, 0, 6.283); x.fill(); x.restore();
+      spr(ci, 5, GX, FLOOR, a.from === 1, { s: 1.55, tint: "rgba(255,225,130,.3)" }); prop(IC.halo, GX, FLOOR - 236, 1); prop(IC.gpen, GX + a.dir * 66, FLOOR - 150 + Math.sin(t * 16) * 6, 1.1, a.dir < 0, 1, Math.sin(t * 16) * .3);
+      x.save(); x.translate(Math.round(PX2), PY2); x.rotate(-.06); x.fillStyle = "#000"; x.fillRect(-33, -43, 66, 86); x.fillStyle = "#f8f5e6"; x.fillRect(-31, -41, 62, 82); if (ok(SPR)) { x.globalAlpha = Math.min(1, k * 1.3); x.filter = "grayscale(1) contrast(1.6)"; x.drawImage(SPR, 190 * 0 + 60, G.chars[a.to] * CHH + 14, 70, 136, -18, -38, 39, 76); x.filter = "none"; x.globalAlpha = 1; } x.fillStyle = "#f8f5e6"; x.fillRect(-31, -41 + 82 * Math.min(1, k * 1.25), 62, 82 * (1 - Math.min(1, k * 1.25))); x.restore(); text("đứng yên, vẽ xíu!", PX2, PY2 - 50, "#fde68a", 13, "center"); }
+    else { const u = post / .6; [-1, 1].forEach(sd => { x.save(); x.translate(Math.round(PX2 + sd * (10 + u * 46)), PY2 + u * u * 70); x.rotate(sd * u * 1.2); x.globalAlpha = 1 - u; x.fillStyle = "#000"; x.fillRect(-17, -43, 34, 86); x.fillStyle = "#f8f5e6"; x.fillRect(-15, -41, 30, 82); x.restore(); }); for (let i = 0; i < 6; i++) prop(IC.scrap, TX + Math.cos(i * 1.05) * u * 70, FLOOR - 80 + Math.sin(i * 1.05) * u * 50 + u * u * 40, .4, false, 1 - u, i + u * 6); x.save(); x.globalCompositeOperation = "lighter"; bolt(TX - 30, FLOOR - 140, TX + 30, FLOOR - 10, "#fff", 4 * (1 - u)); x.restore(); } }
+  else if (a.fx === "mob") { if (!a.done) { const al = Math.min(1, a.age * 4); x.fillStyle = `rgba(50,0,10,${.5 * al})`; x.fillRect(-10, -10, W + 20, H + 20); const C2 = F[a.from], lines = ["Mọi người ơi…", "…nó giật chồng đó!", "CÓ CLIP LUÔN!"], li = Math.min(2, Math.floor(k * 3)); x.font = FONT(15); const bw = x.measureText(lines[li]).width + 14, bx = clamp(C2.x + C2.dir * 20, bw / 2 + 4, W - bw / 2 - 4); x.fillStyle = "#000"; x.fillRect(bx - bw / 2 - 1, FLOOR - 161, bw + 2, 24); x.fillStyle = "#fff"; x.fillRect(bx - bw / 2, FLOOR - 160, bw, 22); x.textAlign = "center"; x.fillStyle = "#7f1d1d"; x.fillText(lines[li], bx, FLOOR - 144);
+      prop(IC.pencil, C2.x + C2.dir * 26, FLOOR - 112 + Math.sin(t * 14) * 3, .4, C2.dir < 0); for (let i = 0; i < 8; i++) { const sd = i % 2 ? 1 : -1, sx2 = sd > 0 ? W + 40 + i * 14 : -40 - i * 14, X = sx2 + (TX + sd * (34 + (i >> 1) * 14) - sx2) * k * k; prop(i % 4 === 3 ? IC.sandal : IC.fist, X, FLOOR - 30 - (i >> 1) * 22 - Math.abs(Math.sin(t * 12 + i)) * 6, .55, sd > 0, al); } text("⚠ DRAMA ĐÁNH GHEN ⚠", W / 2, 76, Math.floor(t * 6) % 2 ? "#ff5a5a" : "#fff", 20, "center"); } }
   else if (a.fx === "knee") { const ci = G.chars[a.from], near = a.age - a.wait; if (near > -.22 && near < .2) { const u = clamp((near + .22) / .22, 0, 1), X = TX - a.dir * (70 - 44 * u), Y = FLOOR - 40 * Math.sin(u * Math.PI * .5) - (near > 0 ? near * 60 : 0); spr(ci, 9, X, Y, a.from === 1, { rot: a.dir * .25 }); if (near > 0 && near < .12) { prop(IC.mglove, TX, FLOOR - 92, .7, a.dir < 0); x.strokeStyle = "#fff"; x.lineWidth = 2; for (let i = 0; i < 6; i++) { const an = i * 1.05; x.beginPath(); x.moveTo(TX + Math.cos(an) * 12, FLOOR - 84 + Math.sin(an) * 12); x.lineTo(TX + Math.cos(an) * 26, FLOOR - 84 + Math.sin(an) * 26); x.stroke(); } } } }
   else if (a.fx === "tea") { const sx2 = a.cx + a.dir * 40, sy2 = FLOOR - 92, al = a.done ? Math.max(0, 1 - post * 3) : 1, len = a.done ? 1 : clamp(a.age / a.wait, 0, 1); prop(IC.thaitea, a.cx + a.dir * 30, FLOOR - 100, .7, a.dir < 0, al); x.strokeStyle = `rgba(251,146,60,${al})`; x.lineWidth = 12; x.lineCap = "round"; x.beginPath(); x.moveTo(sx2, sy2); x.quadraticCurveTo((sx2 + TX) / 2, sy2 - 40, sx2 + (TX - sx2) * len, sy2 + 14 * len); x.stroke(); x.strokeStyle = `rgba(255,237,213,${al})`; x.lineWidth = 4; x.stroke(); x.lineCap = "butt"; if (a.done) for (let i = 0; i < 8; i++) { x.fillStyle = i % 2 ? "#fb923c" : "#ffedd5"; x.globalAlpha = al; x.fillRect(TX + Math.cos(i * .8) * post * 120, FLOOR - 80 + Math.sin(i * .8) * post * 90 + post * post * 160, 4, 4); } }
   else if (a.fx === "netthrow") { if (!a.done) { const X = a.cx + (TX - a.cx) * k, Y = FLOOR - 70 - Math.sin(k * Math.PI) * 70; prop(IC.net, X, Y, .6 + k * 1.2, false, 1, a.age * 6); prop(IC.nonla, a.cx + a.dir * 2, FLOOR - 134, .7); x.strokeStyle = "rgba(255,255,255,.7)"; x.lineWidth = 1; x.beginPath(); x.moveTo(a.cx + a.dir * 30, FLOOR - 90); x.lineTo(X, Y); x.stroke(); } }
@@ -756,7 +793,7 @@ function hud() {
     text(G.names[i].toUpperCase().slice(0, 26), i ? W - 14 : 14, 35, i === G.ME ? "#ffe680" : "#fff", 14, i ? "right" : "left");
     if (!p.ai) { x.fillStyle = "#000"; x.fillRect(i ? W - 14 - 122 : 12, 39, 124, 7); x.fillStyle = "#0d2440"; x.fillRect(i ? W - 14 - 120 : 14, 41, 120, 3); const full = p.mp >= 100; x.fillStyle = full ? (Math.floor(G.t * 8) % 2 ? "#ffe14a" : "#fff") : "#3aa0ff"; const mw = 120 * p.mp / 100; x.fillRect(i ? W - 14 - mw : 14, 41, mw, 3); if (i === G.ME) text(full ? (G.sub === "test" ? "MP ĐẦY" : "MP ĐẦY! DÙNG NGAY " + Math.max(0, FULL_HOLD - (p.fullT || 0)).toFixed(1) + "s") : "MP " + Math.floor(p.mp), i ? W - 14 : 14, 56, full ? "#ffe14a" : "#7fd4ff", 12, i ? "right" : "left"); } });
   x.fillStyle = "#000"; x.fillRect(W / 2 - 17, 9, 34, 18); x.fillStyle = "#c81e1e"; x.fillRect(W / 2 - 15, 11, 30, 14); text("KO", W / 2, 23, "#fff", 16, "center");
-  text(G.sub === "tour" ? `TRẬN ${G.tour.s + 1}/${G.tour.order.length}` : G.sub === "test" ? "TẬP LUYỆN" : `HIỆP ${G.round}  ${G.score[0]}-${G.score[1]}`, W / 2, 50, "#fff", 13, "center");
+  text(G.sub === "tour" ? `TRẬN ${G.tour.s + 1}/${G.tour.order.length} · ${G.tour.score}đ` : G.sub === "test" ? "TẬP LUYỆN" : `HIỆP ${G.round}  ${G.score[0]}-${G.score[1]}`, W / 2, 50, "#fff", 13, "center");
   if (G.hits > 1) text(G.hits + " HIT", G.ME ? W - 20 : 20, 78, "#ffe14a", 22, G.ME ? "right" : "left");
   const ks = G.keys.filter(k => G.t - k.t < 1.6).map(k => LB[k.k] || k.k).join(" › "); if (ks) text(ks, 10, H - 6, "#9fd8ff", 14);
 }
@@ -841,20 +878,36 @@ function banner(t, sub) { $("lobbyErr").textContent = t + (sub ? " – " + sub :
 /* ======================= LƯU KẾT QUẢ (trên máy này) ======================= */
 function goHome() { show("home"); G.mode = ""; G.sub = ""; F = []; $("tourBox").className = ""; $("homeStats").textContent = statLine(); }
 function tourBox(title, sub, btns) { G.phase = "end"; const el = $("tourBox"); el.innerHTML = `<h2>${title}</h2><p>${sub}</p>` + btns.map((b, i) => `<button class="btn${i ? " b3" : ""}">${b[0]}</button>`).join(""); el.querySelectorAll("button").forEach((b, i) => b.onclick = btns[i][1]); el.className = "on"; }
-function startTour(ci) { const order = CH.map((c, i) => i).filter(i => i !== ci); for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; } G.tour = { me: ci, order, s: 0 }; startMatch("ai", 0, [ci, order[0]], "tour"); }
+function startTour(ci) { const order = CH.map((c, i) => i).filter(i => i !== ci); for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; } G.tour = { me: ci, order, s: 0, score: 0, t0: Date.now() }; startMatch("ai", 0, [ci, order[0]], "tour"); }
 function tourNext() {
   const T = G.tour, n = T.order.length, again = ["Đấu giải mới", () => startTour(T.me)], out = ["Thoát", goHome];
-  if (G.loser === 0) return tourBox("GAME OVER", `Dừng ở trận ${T.s + 1}/${n}, thua ${chOf(1).name}.`, [["Đấu lại trận này", () => startMatch("ai", 0, [T.me, T.order[T.s]], "tour")], again, out]);
-  T.s++; try { const k = "hmwiz-stats", s = JSON.parse(localStorage.getItem(k) || "{}"); s.tour = s.tour || { best: 0, champ: 0 }; s.tour.best = Math.max(s.tour.best, T.s); if (T.s >= n) s.tour.champ++; localStorage.setItem(k, JSON.stringify(s)); } catch {}
-  if (T.s >= n) { T.s = n - 1; return tourBox("VÔ ĐỊCH!", `${CH[T.me].name} thắng cả ${n} trận.`, [again, out]); }
+  const rank = ["Bảng xếp hạng", () => openRank()];
+  if (G.loser === 0) { sendScore(false); const sc = T.score; return tourBox("GAME OVER", `Thua ${chOf(1).name} ở trận ${T.s + 1}/${n} · ${sc} điểm. Đấu lại thì còn nửa điểm.`, [["Đấu lại trận này", () => { T.score = Math.floor(sc / 2); startMatch("ai", 0, [T.me, T.order[T.s]], "tour"); }], again, rank, out]); }
+  T.score += 100 * (T.s + 1) + Math.round(F[0].hp); T.s++; try { const k = "hmwiz-stats", s = JSON.parse(localStorage.getItem(k) || "{}"); s.tour = s.tour || { best: 0, champ: 0 }; s.tour.best = Math.max(s.tour.best, T.s); if (T.s >= n) s.tour.champ++; localStorage.setItem(k, JSON.stringify(s)); } catch {}
+  if (T.s >= n) { sendScore(true); T.s = n - 1; return tourBox("VÔ ĐỊCH!", `${CH[T.me].name} thắng cả ${n} trận. Điểm: ${T.score}.`, [rank, again, out]); }
   startMatch("ai", 0, [T.me, T.order[T.s]], "tour");
+}
+/* ======================= BẢNG XẾP HẠNG TOURNAMENT ======================= */
+function myPid() { try { let p = localStorage.getItem("agc-pid"); if (!p) { p = Array.from(crypto.getRandomValues(new Uint8Array(10)), b => b.toString(16).padStart(2, "0")).join(""); localStorage.setItem("agc-pid", p); } return p; } catch { return "anon-" + Math.random().toString(36).slice(2, 12); } }
+function sendScore(champ) {
+  const T = G.tour, wins = champ ? T.order.length : T.s, row = { n: me.name || "Vô danh", c: T.me, score: T.score, wins, champ: champ ? 1 : 0, dur: Math.round((Date.now() - T.t0) / 1000) };
+  if (!row.score) return;
+  try { const l = JSON.parse(localStorage.getItem("agc-top") || "[]"); l.push({ ...row, at: Date.now() }); l.sort((a, b) => b.score - a.score); localStorage.setItem("agc-top", JSON.stringify(l.slice(0, 20))); } catch {}
+  fetch("/api/agc/scores", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ pid: myPid(), ...row }) }).catch(() => {});
+}
+async function openRank() {
+  show("rank"); scrollTo(0, 0); const el = $("rankBody"), esc = t => String(t).replace(/[<>&]/g, "");
+  const draw = (rows, note) => { el.innerHTML = (note ? `<p class="muted">${note}</p>` : "") + (rows.length ? `<table><tr><th>#</th><th>Người chơi</th><th>Nhân vật</th><th>Điểm</th><th>Thắng</th></tr>` + rows.map((r, i) => `<tr${r.me ? ' class="me"' : ""}><td>${i + 1}</td><td>${esc(r.name)}</td><td>${CH[r.ch] ? CH[r.ch].name : "?"}</td><td><b>${r.score}</b></td><td>${r.champ ? "🏆 " : ""}${r.wins}/${CH.length - 1}</td></tr>`).join("") + "</table>" : `<p class="muted">Chưa có ai ghi điểm. Vào Tournament để mở bảng.</p>`); };
+  el.innerHTML = `<p class="muted">Đang tải…</p>`;
+  try { const r = await fetch("/api/agc/leaderboard?pid=" + myPid(), { cache: "no-store" }), j = await r.json(); if (!j.ok) throw 0; draw(j.rows, ""); }
+  catch { let l = []; try { l = JSON.parse(localStorage.getItem("agc-top") || "[]"); } catch {} draw(l.map(r => ({ name: r.n, ch: r.c, score: r.score, wins: r.wins, champ: r.champ, me: 1 })), "Chưa gọi được máy chủ. Dưới đây là điểm lưu trên máy này."); }
 }
 function saveResult(win) { if (G.mode === "ai") return; try { const k = "hmwiz-stats", s = JSON.parse(localStorage.getItem(k) || "{}"), key = G.mode === "ai" ? "lv" + (G.lvl + 1) : "pvp"; s[key] = s[key] || { w: 0, l: 0 }; s[key][win ? "w" : "l"]++; localStorage.setItem(k, JSON.stringify(s)); } catch {} }
 function statLine() { try { const s = JSON.parse(localStorage.getItem("hmwiz-stats") || "{}"), t = s.tour, p = s.pvp; return `Tournament: ${t ? "xa nhất " + t.best + " trận thắng · vô địch " + t.champ + " lần" : "chưa đấu"} · Đấu đôi: ${p ? p.w + " thắng / " + p.l + " thua" : "chưa đấu"}`; } catch { return ""; } }
 
 /* ======================= GIAO DIỆN ======================= */
 try { me.name = localStorage.getItem("hmwiz-name") || ""; me.ch = clamp(+localStorage.getItem("hmwiz-ch") || 0, 0, CH.length - 1); } catch {}
-$("inName").value = me.name; $("inName").oninput = () => { me.name = $("inName").value.trim().slice(0, 12); try { localStorage.setItem("hmwiz-name", me.name); } catch {} };
+document.querySelectorAll(".inName").forEach(el => { el.value = me.name; el.oninput = () => { me.name = el.value.trim().slice(0, 12); document.querySelectorAll(".inName").forEach(o => { if (o !== el) o.value = el.value; }); try { localStorage.setItem("hmwiz-name", me.name); } catch {} }; });
 $("homeStats").textContent = statLine();
 const FACE = [98, 98, 97, 96, 96, 96, 97, 98, 97, 94, 96, 93, 101];   // tâm khuôn mặt (x) trong khung đứng yên của từng nhân vật
 const card = (c, i) => `<button class="chr" data-c="${i}" style="--c:${c.col}"><i style="background-position:calc(var(--t) * ${-((FACE[i] || 96) - 17) / 34}) calc(var(--t) * ${-(i * 150 + 19) / 34})"></i><b>${c.name.split(" ")[0]}</b><em></em></button>`;
@@ -869,12 +922,13 @@ function drawPick() {
   if (tour) { $("postB").querySelector("b").textContent = n + " ĐỐI THỦ"; $("postB").querySelector("small").textContent = "khó dần từng trận"; }
   $("pickTip").textContent = pick.a < 0 ? "Chạm để chọn nhân vật của BẠN" : tour ? `Bạn là ${CH[pick.a].name}. Đấu lần lượt ${n} nhân vật còn lại, thứ tự ngẫu nhiên, trận sau khó hơn trận trước` : pick.b < 0 ? `Bạn là ${CH[pick.a].name}. Giờ chọn nhân vật làm ĐỐI THỦ` : `${CH[pick.a].name} đấu ${CH[pick.b].name}. Chạm nhân vật bất kỳ để chọn lại`;
   $("pickInfo").innerHTML = pick.a < 0 ? "" : `<b style="color:${CH[pick.a].col}">${CH[pick.a].name}</b> · ${CH[pick.a].tag}<br>S: ${CH[pick.a].F.n} · D: ${CH[pick.a].G.n} · Tối thượng: ${CH[pick.a].sp[7].n}`;
-  $("lvPick").style.display = tour ? "none" : ""; document.querySelectorAll("#lvPick button").forEach((b, i) => b.classList.toggle("on", (i === 0) === pick.passive));
+  $("lvPick").style.display = tour ? "none" : ""; $("tourName").style.display = tour ? "" : "none"; document.querySelectorAll("#lvPick button").forEach((b, i) => b.classList.toggle("on", (i === 0) === pick.passive));
   $("bFight").disabled = pick.a < 0 || (!tour && pick.b < 0); $("bFight").textContent = tour ? "VÀO GIẢI" : "VÀO TẬP";
 }
 document.querySelectorAll("#pickGrid .chr").forEach(b => b.onclick = () => { const i = +b.dataset.c < 0 ? Math.floor(Math.random() * CH.length) : +b.dataset.c; if (pick.mode === "tour" || pick.a < 0 || pick.b >= 0) { pick.a = i; pick.b = -1; } else pick.b = i; drawPick(); });
 $("lvPick").innerHTML = `<button><b>Bao cát</b><small>Đối thủ đứng yên, 300 HP</small></button><button><b>Đánh trả</b><small>Đối thủ đánh như Senior</small></button>`;
 document.querySelectorAll("#lvPick button").forEach((b, i) => b.onclick = () => { pick.passive = i === 0; drawPick(); });
+$("bRank").onclick = openRank;
 const openPick = m => { pick.mode = m; pick.a = -1; pick.b = -1; drawPick(); show("pick"); scrollTo(0, 0); };
 $("bTest").onclick = () => openPick("test"); $("bTour").onclick = () => openPick("tour");
 $("bDuo").onclick = () => { $("duoBox").hidden = !$("duoBox").hidden; $("bDuo").classList.toggle("on", !$("duoBox").hidden); };
@@ -896,4 +950,4 @@ document.querySelectorAll("[data-k]").forEach(b => { const k = b.dataset.k, down
 // bảng 8 skill của một nhân vật (trang chơi: chạm để ra chiêu; trang hướng dẫn: để tra)
 function spellHTML(ci, tap) { return `<div class="spg">` + CH[ci].sp.map((s, i) => `<button class="sp t${s.t}" ${tap ? `data-sp="${i}"` : "disabled"}><span class="ks">${kshow(s.k, " › ")} · ${TIER[s.t].mp} MP</span><b>${s.n}</b><small>${s.b ? (s.m ? s.m + " × " : "") + Math.round((s.fixed ? s.b : s.b * TIER[s.t].k) * CUT[s.t]) + " sát thương · " : ""}${s.d}</small></button>`).join("") + "</div>"; }
 $("guideSpells").innerHTML = CH.map((c, i) => `<h3 style="color:${c.col}">${c.name} · ${c.role}</h3><p>${c.tag}. Đòn S: ${c.F.n}. Đòn D: ${c.G.n}.</p>` + spellHTML(i, false)).join("");
-window.__wz = { G, CH, doCast, get F() { return F; }, get ATK() { return ATK; }, press, tapSpell, startMatch, startTour, net, setReady, KEY, pick };
+window.__wz = { G, CH, doCast, get F() { return F; }, get ATK() { return ATK; }, press, tapSpell, startMatch, startTour, openRank, lv, net, setReady, KEY, pick };

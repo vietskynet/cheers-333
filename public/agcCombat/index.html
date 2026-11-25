@@ -53,7 +53,7 @@
   .sp .ks{color:#7fd4ff;font-size:19px}.sp b{display:block;font-weight:400;font-size:22px;color:#fff}.sp small{display:block;font-size:16px;color:#9a94c2;line-height:1.1}
   .sp.t2 b{color:#ffd84a}.sp.t3 b{color:#ff9d3c}.sp.t4{border-color:#39ff6a}.sp.t4 b{color:#39ff6a}
   details{margin-top:12px;border:2px solid #3b3766;padding:6px 10px;background:#100e20}summary{cursor:pointer;color:#ffd84a;font-size:22px}
-  table{width:100%;border-collapse:collapse;font-size:18px;margin-top:8px}th,td{border:1px solid #3b3766;padding:4px 6px;text-align:center}th{background:#15132a;color:#ffd84a;cursor:pointer;font-weight:400}td:first-child,th:first-child{text-align:left}
+  table{width:100%;border-collapse:collapse;font-size:18px;margin-top:8px}th,td{border:1px solid #3b3766;padding:4px 6px;text-align:center}tr.me td{background:#3a3200;color:#ffd84a}th{background:#15132a;color:#ffd84a;cursor:pointer;font-weight:400}td:first-child,th:first-child{text-align:left}
 
   /* màn mở đầu kiểu arcade */
   .hero{position:relative;overflow:hidden;border:3px solid #000;box-shadow:0 0 0 2px #ffd84a;padding:10px 0 8px;text-align:center;background:linear-gradient(#070616cc,#12103acc 55%,#070616),var(--bg) center/cover;image-rendering:pixelated}
@@ -148,7 +148,7 @@
     <div class="blink">▼ INSERT COIN · CHỌN CHẾ ĐỘ ▼</div>
   </div>
   <div class="col">
-    <input id="inName" maxlength="12" placeholder="Tên của bạn" autocomplete="off">
+    <input id="inName" class="inName" maxlength="12" placeholder="Tên của bạn" autocomplete="off">
     <div class="modes">
       <button class="mode m1" id="bTest"><b>TEST</b><small>Tập skill từng nhân vật</small></button>
       <button class="mode m2" id="bTour"><b>TOURNAMENT</b><small>Đấu đơn, khó dần</small></button>
@@ -156,7 +156,8 @@
     </div>
     <div id="duoBox" hidden><div class="row"><button class="btn b2" id="bCreate">Tạo phòng</button><input id="inCode" maxlength="4" placeholder="MÃ" autocomplete="off" autocapitalize="characters"><button class="btn b2" id="bJoin">Vào</button></div></div>
     <div class="err" id="lobbyErr"></div>
-    <div class="links"><button class="btn b3" data-go="guide">Hướng dẫn · Skill</button><a class="btn b3" href="/">← HandMagination</a></div>
+    <div class="links"><button class="btn b3" id="bRank">🏆 Xếp hạng</button><button class="btn b3" data-go="guide">Hướng dẫn</button></div>
+    <a class="btn b3" href="/" style="font-size:18px;padding:6px">← HandMagination</a>
   </div>
   <p class="muted" id="homeStats"></p>
 </section>
@@ -174,6 +175,7 @@
   <p class="err" id="pickTip" style="color:#7fd4ff;margin-top:8px"></p>
   <p id="pickInfo"></p>
   <div id="lvPick"></div>
+  <div id="tourName" class="col" style="margin-top:6px"><input class="inName" maxlength="12" placeholder="Tên của bạn (hiện trên bảng xếp hạng)" autocomplete="off" style="font-size:20px"></div>
   <div class="col" style="margin-top:8px"><button class="btn" id="bFight" disabled>VÀO TRẬN</button><button class="btn b3" data-go="home">← Quay lại</button></div>
 </section>
 
@@ -203,6 +205,14 @@
   <div id="endBox" style="display:none"></div>
 </section>
 
+<!-- ============ BẢNG XẾP HẠNG ============ -->
+<section class="scr" id="rank">
+  <h2>🏆 Bảng xếp hạng Tournament</h2>
+  <p>Mỗi người chơi lấy lượt điểm cao nhất. Thắng trận thứ N được N × 100 điểm cộng số máu còn lại. Thua mà đấu lại trận đó thì điểm còn một nửa.</p>
+  <div id="rankBody"></div>
+  <div class="col"><button class="btn" data-go="home">← Về màn hình chính</button></div>
+</section>
+
 <!-- ============ HƯỚNG DẪN ============ -->
 <section class="scr" id="guide">
   <h2>Hướng dẫn</h2>
@@ -224,7 +234,7 @@
   <h3>Ba chế độ</h3>
   <div class="keys">
     <b>Test nhân vật</b><span>Chọn nhân vật của bạn và một đối thủ để tập skill. MP hồi rất nhanh và không tuột. Đối thủ là bao cát đứng yên (300 HP) hoặc biết đánh trả.</span>
-    <b>Tournament</b><span>Đấu đơn. Chọn một nhân vật rồi đấu lần lượt 12 nhân vật còn lại theo thứ tự ngẫu nhiên, mỗi trận một hiệp. Trận sau khó hơn trận trước: máy nhiều máu hơn, đánh nhanh hơn, từ trận 4 bắt đầu ra skill, mấy trận cuối ra cả Tối thượng. Thua thì đấu lại trận đó hoặc làm lại giải.</span>
+    <b>Tournament</b><span>Đấu đơn. Chọn một nhân vật rồi đấu lần lượt 12 nhân vật còn lại theo thứ tự ngẫu nhiên, mỗi trận một hiệp. Trận sau khó hơn trận trước: máy nhiều máu hơn, đánh nhanh và đau hơn, biết áp sát, lùi ra, nhảy, cúi né đòn, đánh dồn 2–3 phát; từ trận 2 ra skill, từ trận 5 ra cả Tối thượng và biết mở vòng đỡ. Thắng trận thứ N được N × 100 điểm cộng số máu còn lại; điểm cao nhất của mỗi người lên bảng xếp hạng. Thua thì đấu lại trận đó (điểm còn một nửa) hoặc làm lại giải.</span>
     <b>Đấu đôi</b><span>Hai người, hai máy. Một người tạo phòng và gửi mã 4 ký tự, người kia nhập mã.</span>
   </div>
   <p style="margin-top:8px">Đốm sáng trước mặt máy báo trước độ cao của đòn sắp ra. Skill của máy yếu hơn của bạn khoảng một nửa.</p>

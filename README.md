@@ -280,3 +280,9 @@ Game đối kháng phép thuật 16-bit, chơi bằng bàn phím hoặc nút c�
 - Màn chọn nhân vật: ô mặt lớn (lưới 5 cột), cắt đúng trọn khuôn mặt theo bảng `FACE`; trên điện thoại hai poster nằm trên, lưới nằm dưới.
 - Nguyên Cô Đơn: danh hiệu đổi thành "Đang tìm người yêu". Đức Phan: tối thượng là "Cuộc Gọi Tử Thần" (trước là skill đầu "Cuộc Gọi Deadline"); "Meeting Gấp" xuống ô skill đầu, bản nhẹ.
 - Kết quả lưu trên máy: Tournament ghi số trận thắng xa nhất và số lần vô địch.
+
+### Cập nhật 25/11 (lần 14): Tournament khó hơn, bảng xếp hạng, bộ skill mới của Khoa Đặng
+
+- **Máy trong Tournament** (`tourLv` + `stepAI`): độ khó tăng nhanh ở nửa đầu (trận 6 ≈ 70% mức tối đa). Máy biết áp sát / lùi ra / nhảy (`roam`), cúi né đòn cao và nhảy qua đòn sát sàn (`dodge`), mở vòng đỡ trước skill Tối thượng (`ward`), đánh dồn 2–3 phát (`burst`), ra đòn sớm khi người chơi choáng hoặc đang nạp (`punish`); skill của máy mạnh dần từ ×0,5 lên ×0,9 (`sk`).
+- **Điểm và bảng xếp hạng:** thắng trận thứ N được N × 100 + máu còn lại; đấu lại trận vừa thua thì điểm còn một nửa. Điểm gửi lên `POST /api/agc/scores` (hàm `netlify/functions/agc.mjs`, bảng `agc_scores`, migration `20261125000100`), xem ở `GET /api/agc/leaderboard` và màn "🏆 Xếp hạng" trong game. Mỗi người chơi (mã ngẫu nhiên `agc-pid` lưu trên máy) lấy lượt cao nhất. Không gọi được máy chủ thì game hiện điểm lưu trên máy (`agc-top`).
+- **Khoa Đặng** đổi bộ skill: Book Vé 0 Đồng, Bão Cầu Lông, Tắt Đèn (giữ lại cho đủ 8 ô), Cầu Nguyện, Nấu Xói, Đụng Là Hát, Thần Vẽ, tối thượng Bịa Chuyện (drama đánh ghen). Đòn thường: Nói nhiều / Nói to hơn. `sprites.webp` thêm hàng đạo cụ thứ 13 (ô 192–207), cao 3036 px.
