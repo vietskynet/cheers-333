@@ -1,7 +1,14 @@
 /* AGENCY COMBAT – game.js (toàn bộ game nằm trong file này)
    Phần 1: kết nối 2 máy (dùng chung với các game khác của HandMagination). Phần 2: game. */
 const $ = id => document.getElementById(id);
-const show = id => document.querySelectorAll(".scr").forEach(s => s.classList.toggle("on", s.id === id));
+const show = id => { document.querySelectorAll(".scr").forEach(s => s.classList.toggle("on", s.id === id)); document.documentElement.classList.toggle("playing", id === "game"); keepAwake(id === "game"); };
+/* Điện thoại: trong trận khoá cuộn, khoá zoom, không bôi đen chữ, không hiện menu giữ-lâu, giữ màn hình luôn sáng */
+let wakeLock = null;
+function keepAwake(on) { try { if (on && !wakeLock && navigator.wakeLock) navigator.wakeLock.request("screen").then(l => { wakeLock = l; l.addEventListener("release", () => { wakeLock = null; }); }).catch(() => {}); else if (!on && wakeLock) { wakeLock.release(); wakeLock = null; } } catch {} }
+document.addEventListener("visibilitychange", () => { if (!document.hidden && document.documentElement.classList.contains("playing")) keepAwake(true); });
+const inPlay = e => document.documentElement.classList.contains("playing") && !(e.target.closest && e.target.closest(".topbar, #tourBox"));
+["touchstart", "touchmove", "touchend"].forEach(t => document.addEventListener(t, e => { if (inPlay(e) && e.cancelable) e.preventDefault(); }, { passive: false }));   // chặn zoom chạm đôi, cuộn và kính lúp; nút trong trận dùng pointer event nên vẫn nhận
+["gesturestart", "gesturechange", "dblclick", "contextmenu", "selectstart"].forEach(t => document.addEventListener(t, e => { if (document.documentElement.classList.contains("playing")) e.preventDefault(); }));
 
 /* ======================= MẠNG ======================= */
 // Ưu tiên WebRTC P2P (PeerJS): kênh "state" không gửi lại cho vị trí, kênh "event" chắc chắn cho đòn đánh.
@@ -425,7 +432,10 @@ const KMAP = { ArrowLeft: "l", ArrowRight: "r", ArrowUp: "u", ArrowDown: "d" }, 
 /* mã đòn bên trong vẫn là F G B C V; phím thật và chữ hiển thị là S D Q W E */
 const LB = { F: "S", G: "D", B: "Q", C: "W", V: "E" }, arrow = c => c === "d" ? "↓" : (c === "f") === (!F[G.ME] || F[G.ME].dir > 0) ? "→" : "←", kshow = (k, sep) => k.split("").map(c => LB[c] || arrow(c)).join(sep);
 const SEQT = .38;   // mỗi lần bấm phải cách lần trước dưới 0,38 giây
-function dirIn(k) { const p = F[G.ME]; if (!p || G.phase !== "fight" || k === "u") return; const c = k === "d" ? "d" : (k === "r") === (p.dir > 0) ? "f" : "b"; seq.s = G.t - seq.t < SEQT ? (seq.s + c).slice(-6) : c; seq.t = G.t; G.keys.push({ k: arrow(c), t: G.t }); if (G.keys.length > 8) G.keys.shift(); }
+function dirIn(k) { const p = F[G.ME]; if (!p || G.phase !== "fight") return;
+  if (k === "u") {   // bấm ↑ hai lần liền (dưới 0,32 giây) là nhảy cao
+    if (G.t - (p.upT || -9) < .32 && !p.hj && p.y > 0 && p.stun <= 0 && !p.ctrl && p.fly <= 0 && p.nap <= 0) { p.hj = 1; p.vy = 370; pop("NHẢY CAO!", p.x, FLOOR - 150 - p.y, "#7fd4ff", .6); beep(700, .1, "square", .04, 1200); for (let i = 0; i < 8; i++) FX.push({ k: "spark", t: 0, d: .3, x: p.x + rnd(-14, 14), y: FLOOR - p.y, vx: rnd(-40, 40), vy: rnd(20, 90), c: "#7fd4ff" }); }
+    p.upT = G.t; return; } const c = k === "d" ? "d" : (k === "r") === (p.dir > 0) ? "f" : "b"; seq.s = G.t - seq.t < SEQT ? (seq.s + c).slice(-6) : c; seq.t = G.t; G.keys.push({ k: arrow(c), t: G.t }); if (G.keys.length > 8) G.keys.shift(); }
 addEventListener("keydown", e => { if (!$("game").classList.contains("on")) return; if (KMAP[e.code] || AMAP[e.code]) e.preventDefault(); if (e.repeat) return; if (KMAP[e.code]) { KEY[KMAP[e.code]] = 1; dirIn(KMAP[e.code]); } if (AMAP[e.code]) press(AMAP[e.code]); });
 addEventListener("keyup", e => { if (KMAP[e.code]) KEY[KMAP[e.code]] = 0; });
 const canAct = p => !p.ko && G.phase === "fight" && p.stun <= 0 && !p.ctrl && p.lock <= 0 && p.charge <= 0 && p.fly <= 0 && p.nap <= 0;
@@ -537,7 +547,7 @@ function stepFighter(p, dt) {
     if (p.mp >= 100 && G.sub !== "test") { p.fullT = (p.fullT || 0) + dt; if (p.fullT >= FULL_HOLD && own(p.i) && G.phase === "fight") { p.mp = FULL_DROP; p.fullT = 0; pop("TUỘT NỘ!", p.x, FLOOR - 150, "#7fd4ff", 1, 1.2); beep(500, .25, "sawtooth", .05, 120); } } else p.fullT = 0; }
   if (p.ctrl) { p.ctrl.t -= dt; if (p.ctrl.t <= 0) { const e = p.ctrl.end; p.ctrl = null; if (e && own(p.i) && !p.ko) { p.hp = Math.max(0, p.hp - Math.round(e)); const res = { id: "c", to: p.i, r: "hit", dmg: Math.round(e), x: p.x, h: 60, ko: p.hp <= 0 ? 1 : 0 }; showRes(res, null); if (G.mode === "pvp") send({ t: "res", res }); } p.stun = .3; } }
   if (p.shield <= 0) p.guard = Math.min(100, p.guard + 14 * dt);
-  p.vy -= 900 * dt; p.y += p.vy * dt; if (p.y <= 0) { p.y = 0; p.vy = 0; }
+  p.vy -= 900 * dt; p.y += p.vy * dt; if (p.y <= 0) { p.y = 0; p.vy = 0; p.hj = 0; }
 }
 function stepLocal(p, dt) {
   const o = F[1 - p.i]; p.moving = false; p.crouch = false;
