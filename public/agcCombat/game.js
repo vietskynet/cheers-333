@@ -162,10 +162,10 @@ const rnd = (a, b) => a + Math.random() * (b - a), clamp = (v, a, b) => Math.max
    Nếu site chưa có file thì lấy tạm từ kho ảnh Higgsfield. */
 const CDN = "https://d2ol7oe51mr4n9.cloudfront.net/user_2vybgglAYZMtuRPV18Aqg7zS5iW/";
 function loadImg(local, cdn) { const im = new Image(); im.onerror = () => { if (!im._f) { im._f = 1; im.src = CDN + cdn; } }; im.onload = () => document.documentElement.style.setProperty(local === "./sprites.webp" ? "--spr" : "--bg", `url("${im.src}")`); im.src = local; return im; }
-const SPR = loadImg("./sprites.webp", "eb4d661a-2500-4dd5-9b7e-3d93fdb24bd4.webp"), BG = loadImg("./bg.png", "073e9582-2bbe-44d6-98ac-5cf73662bbb0.png");
-const POST = new Image(); POST.onload = () => { document.documentElement.style.setProperty("--post", `url("${POST.src}")`); document.body.classList.add("hasPost"); }; POST.onerror = () => { if (!POST._f) { POST._f = 1; POST.src = CDN + "306ac9d9-e059-4205-8426-94f1b9939333.webp"; } }; POST.src = "./posters.webp";
+const SPR = loadImg("./sprites.webp", "33bb02af-342e-48fe-a985-7b7a4725d290.webp"), BG = loadImg("./bg.png", "073e9582-2bbe-44d6-98ac-5cf73662bbb0.png");
+const POST = new Image(); POST.onload = () => { document.documentElement.style.setProperty("--post", `url("${POST.src}")`); document.body.classList.add("hasPost"); }; POST.onerror = () => { if (!POST._f) { POST._f = 1; POST.src = CDN + "58cfffcf-43bf-4dfd-a72b-87a4b30a5efe.webp"; } }; POST.src = "./posters.webp";
 const ok = im => im.complete && im.naturalWidth > 0;
-const IC = { phone: 0, mail: 1, folder: 2, chat: 3, car: 4, table: 5, coin: 6, cal: 7, bulb: 8, marker: 9, cat1: 10, cat2: 11, dumb: 12, frame: 13, easel: 14, wind: 15, splat: 16, brush: 17, scis: 18, cig: 19, smoke: 20, shrimp: 21, layers: 22, pen: 23, mag: 24, report: 25, funnel: 26, book: 27, trophy: 28, chart: 29, venn: 30, stamp: 31, paw: 32, wig: 33, buffet: 34, menu: 35, pho: 36, banhmi: 37, roll: 38, cake: 39, tea: 40, chicken: 41, redpen: 42, hand: 43, news: 44, sushi: 45, pizza: 46, quote: 47, mega: 48, vali: 49, plane: 50, ticket: 51, passport: 52, pencil: 53, ghost: 54, bat: 55, moon: 56, shand: 57, fire: 58, globe: 59, photo: 60, world: 61, shades: 62, scrib: 63, bike: 64, phin: 65, cdrop: 66, rose: 67, spark: 68, heart: 69, cloud: 70, note: 71, crown: 72, mirror: 73, zap: 74, bean: 75, clock: 76, laurel: 77, warn: 78, callbtn: 79, tee: 80, jeans: 81, egg: 82, chick: 83, plate: 84, duck: 85, barbell: 86, shaker: 87, glasses: 88, tmirror: 89, matcha: 90, tote: 91, vinyl: 92, earph: 93, camera: 94, obook: 95, hand7: 96, robot: 97, bheart: 98, fheart: 99, tear: 100, mic: 101, speaker: 102, arch: 103, melon: 104, crow: 105, cricket: 106, popper: 107, note2: 108, aistar: 109, rings: 110, tissue: 111 };
+const IC = { phone: 0, mail: 1, folder: 2, chat: 3, car: 4, table: 5, coin: 6, cal: 7, bulb: 8, marker: 9, cat1: 10, cat2: 11, dumb: 12, frame: 13, easel: 14, wind: 15, splat: 16, brush: 17, scis: 18, cig: 19, smoke: 20, shrimp: 21, layers: 22, pen: 23, mag: 24, report: 25, funnel: 26, book: 27, trophy: 28, chart: 29, venn: 30, stamp: 31, paw: 32, wig: 33, buffet: 34, menu: 35, pho: 36, banhmi: 37, roll: 38, cake: 39, tea: 40, chicken: 41, redpen: 42, hand: 43, news: 44, sushi: 45, pizza: 46, quote: 47, mega: 48, vali: 49, plane: 50, ticket: 51, passport: 52, pencil: 53, ghost: 54, bat: 55, moon: 56, shand: 57, fire: 58, globe: 59, photo: 60, world: 61, shades: 62, scrib: 63, bike: 64, phin: 65, cdrop: 66, rose: 67, spark: 68, heart: 69, cloud: 70, note: 71, crown: 72, mirror: 73, zap: 74, bean: 75, clock: 76, laurel: 77, warn: 78, callbtn: 79, tee: 80, jeans: 81, egg: 82, chick: 83, plate: 84, duck: 85, barbell: 86, shaker: 87, glasses: 88, tmirror: 89, matcha: 90, tote: 91, vinyl: 92, earph: 93, camera: 94, obook: 95, hand7: 96, robot: 97, bheart: 98, fheart: 99, tear: 100, mic: 101, speaker: 102, arch: 103, melon: 104, crow: 105, cricket: 106, popper: 107, note2: 108, aistar: 109, rings: 110, tissue: 111, tabi: 112, bag: 113, hanger: 114, glove: 115, gframe: 116, rope: 117, phonecam: 118, bandaid: 119, goat: 120, anger: 121, fshades: 122, beret: 123, scarf: 124, sring: 125, manne: 126, papcam: 127 };
 /* Ba cấp máy */
 const LVL = [
   { n: "Thực tập sinh", hp: 100, spd: 34, dist: 170, rest: [2.4, 3.3], wind: .6, types: ["hi"], dmg: 5, bolt: 190, shield: .12, cast: 0, maxT: 0 },
@@ -278,6 +278,18 @@ const CH = [
       { n: "Nhiệt Huyết", b: 36, d: "Trái tim bốc cháy lao xuyên qua đối thủ", mk: (c, D) => [{ wait: .55, dmg: D, fx: "dash", ic: IC.fheart, sc: 1.7, col: "#ff5a3c", on: { paint: 0 }, say: "CHÁY HẾT MÌNH!" }] },
       { n: "Yêu Đơn Phương", b: 90, fixed: 1, d: "Ngồi xuống khóc, nước mắt và trái tim vỡ rơi khắp sân, đối thủ gục ngã. Xuyên khiên", self: c => { c.smoke = 2; c.ride = -9; }, mk: (c, D) => [{ wait: 1.6, dmg: D, pierce: 1, fx: "cry", on: { ctrl: ["swoon", 2.2, 0, "ĐAU LÒNG QUÁ…"] }, say: "HU HU HU!" }] },
     ] },
+  { id: "thang", name: "Thẳng Tính", role: "Fashionista", col: "#d4d4d8", tag: "Ném đồ hiệu, tạo dáng, chọc cho đối thủ tự thua",
+    F: { n: "Ném phụ kiện", ic: IC.fshades }, G: { n: "Túi hiệu bay", ic: IC.bag }, th: { n: "Móc áo rơi", ic: IC.hanger },
+    sp: [
+      { n: "Giày Móng Ngựa", b: 18, d: "Ném chiếc giày móng ngựa xoay tít vào đầu đối thủ", mk: (c, D) => [{ p: 1, v: 320, ic: IC.tabi, sc: .8, spin: 1, dmg: D, col: "#e5e5e5", on: { stun: .9 }, say: "CỘP!" }] },
+      { n: "Ăn Cắp", b: 9, m: 4, d: "Bốn bàn tay găng trắng tự tìm tới đối thủ, mỗi tay chôm 8 MP về cho mình", mk: (c, D) => four({ ic: IC.glove, sc: .55, dmg: D, col: "#fff", on: { steal: 8 } }, ["CỦA TUI!", "XIN NHA!", "MƯỢN XÍU!", "CẢM ƠN!"]) },
+      { n: "Giấu Đồ", b: 0, d: "Giấu hết đồ nghề của đối thủ: xoá mọi đòn đang bay, đối thủ không ra được skill trong 5 giây", self: c => { clearAttacksOn(c.i); }, mk: () => [{ wait: .3, dmg: 0, fx: "hide", on: { mute: 5 }, say: "ĐỒ ĐÂU RỒI?" }] },
+      { n: "Đi Triển Lãm", b: 25, d: "Treo đối thủ lên tường thành một bức tranh, có dây chắn và bảng tên", mk: (c, D) => [{ wait: .25, dmg: D, on: { ctrl: ["art", 2.6, 0, ""] }, say: "TÁC PHẨM!" }] },
+      { n: "Chọc Chửi", b: 13, m: 3, d: "Tạo dáng trêu ngươi; đối thủ tức quá chửi ba tràng, hụt hơi rồi ngất", mk: (c, D) => [0, 1, 2].map(i => ({ wait: .5 + i * .45, dmg: D, fx: "curse", n: i, on: i === 2 ? { stun: 1.4 } : {}, say: ["HỤT HƠI!", "TỨC NGỰC!", "XỈU…"][i] })) },
+      { n: "Chọc Bạo Hành", b: 45, d: "Lăn ra ăn vạ, dán băng cá nhân, cả văn phòng giơ điện thoại quay; đối thủ xấu hổ mất máu", self: c => { c.smoke = 1.9; c.ride = -9; }, mk: (c, D) => [{ wait: 1.4, dmg: D, fx: "shame", on: { stun: 1 }, say: "XẤU HỔ QUÁ!" }] },
+      { n: "Sàn Diễn", b: 36, d: "Sải bước catwalk xuyên qua đối thủ giữa ánh đèn flash", self: c => { c.smoke = 1.2; c.ride = -9; }, mk: (c, D) => [{ wait: .8, dmg: D, fx: "runway", say: "SLAY!" }] },
+      { n: "Dê Xồm", b: 50, fixed: 1, d: "Cưỡi con dê xồm lao tới ôm chặt đối thủ không buông (20 + 16). Xuyên khiên", self: c => { c.smoke = 3.4; c.ride = -9; }, mk: (c, D, K) => [{ wait: 1.0, dmg: D, pierce: 1, fx: "goat", on: { ctrl: ["cling", 2.3, 40, "BUÔNG RA!"] }, say: "BE BE!" }] },
+    ] },
 ];
 const SR = CH.length;          // hàng khung hình đặc biệt: 0 = Bao Tu cởi áo khoe cơ, 1 = Bao Tu dang tay ôm
 const PY = (CH.length + 1) * CHH;   // đạo cụ nằm ngay dưới các hàng nhân vật
@@ -291,7 +303,7 @@ const chOf = i => CH[G.chars[i]];
 
 function newF(i) {
   const o = G.mode === "ai" && i === 1 ? LVL[G.lvl] : null;
-  return { i, dir: i ? -1 : 1, x: i ? 372 : 110, y: 0, vy: 0, hp: o ? o.hp : 100, max: o ? o.hp : 100, lag: 1, mp: 60, stun: 0, inv: 0, shield: 0, parry: 0, charge: 0, big: 0, bigK: 0, giant: 0, nap: 0, smoke: 0, fly: 0, ride: null, paint: 0, lock: 0, ctrl: null, crouch: false, walk: 0, moving: false, act: "", actT: 0, cd: {}, ko: false, q: [], ai: o ? { rest: rnd(...o.rest), wind: 0, type: "", fire: 0 } : null };
+  return { i, dir: i ? -1 : 1, x: i ? 372 : 110, y: 0, vy: 0, hp: o ? o.hp : 100, max: o ? o.hp : 100, lag: 1, mp: 60, stun: 0, inv: 0, shield: 0, parry: 0, charge: 0, big: 0, bigK: 0, giant: 0, nap: 0, mute: 0, smoke: 0, fly: 0, ride: null, paint: 0, lock: 0, ctrl: null, crouch: false, walk: 0, moving: false, act: "", actT: 0, cd: {}, ko: false, q: [], ai: o ? { rest: rnd(...o.rest), wind: 0, type: "", fire: 0 } : null };
 }
 function startMatch(mode, lvl, chars) {
   G.mode = mode; G.lvl = lvl || 0; G.round = 1; G.score = [0, 0]; G.ME = mode === "pvp" && !net.host ? 1 : 0; G.chars = chars;
@@ -324,10 +336,11 @@ function press(k) {
   if (!canAct(p)) return;
   const SP = chOf(G.ME).sp; let best = null;                       // combo dài nhất khớp với phần cuối chuỗi phím
   for (const s of SP) if (seq.s.endsWith(s.k) && (!best || s.k.length > best.k.length)) best = s;
+  if (best && p.mute > 0) { best = null; pop("ĐỒ ĐÂU RỒI?", p.x, FLOOR - 150, "#d4d4d8", .8); }
   if (best) { if (p.mp >= TIER[best.t].mp) { seq.s = ""; return doCast(G.ME, SP.indexOf(best), true); } pop("NO MP", p.x, FLOOR - 150, "#7fd4ff", .8); beep(140, .12, "sawtooth"); }
   doBasic(G.ME, k, true);
 }
-function tapSpell(i) { const p = F[G.ME]; if (!p || !canAct(p)) return; if (p.mp < TIER[TOF[i]].mp) { pop("NO MP", p.x, FLOOR - 150, "#7fd4ff", .8); return; } doCast(G.ME, i, true); }
+function tapSpell(i) { const p = F[G.ME]; if (!p || !canAct(p)) return; if (p.mute > 0) { pop("ĐỒ ĐÂU RỒI?", p.x, FLOOR - 150, "#d4d4d8", .8); return; } if (p.mp < TIER[TOF[i]].mp) { pop("NO MP", p.x, FLOOR - 150, "#7fd4ff", .8); return; } doCast(G.ME, i, true); }
 
 /* ======================= ĐÒN CƠ BẢN & SKILL ======================= */
 const CD = { F: .3, G: .65, C: .5, V: 1.6, B: .7 }, WARD = .5;   // V: vòng đỡ toàn diện, mở 0,5 giây, hồi 1,6 giây
@@ -349,7 +362,7 @@ function doCast(i, si, local) {
   p.q.push({ t: wait, fn: () => {
     p.act = s.t >= 3 ? "heavy" : "cast"; p.actT = .3; beep(1200, .15, "square", .07, 300);
     if (s.self) s.self(p);
-    if (s.mk) { const D = (s.fixed ? s.b : s.b * T.k) * weak; s.mk(p, D, T.k * weak, Math.abs(tg.x - p.x)).forEach(a => spawn(i, { ...a, sp: 1 })); }
+    if (s.mk) { const D = (s.fixed ? s.b : s.b * T.k) * weak; s.mk(p, D, T.k * weak, Math.abs(tg.x - p.x)).forEach(a => { if (s.fixed && a.on && a.on.ctrl && a.on.ctrl[2]) a.on.ctrl[2] *= weak; spawn(i, { ...a, sp: 1 }); }); }
   } });
 }
 /* tạo một "đòn": đạn bay (p:1) hoặc đòn hẹn giờ (wait). Hai máy tạo cùng thứ tự nên cùng mã id */
@@ -380,7 +393,7 @@ function resolve(a, T) {
     const on = a.on || {};
     if (res.dmg > 0) { if (!T.ctrl) { T.stun = T.ai ? .25 : .34; T.x = clamp(T.x - T.dir * 10, 36, 448); } if (!T.ai) T.inv = .55; T.charge = 0; if (T.ai) T.ai.wind = 0; }
     if (T.ctrl && T.ctrl.k === "sleep" && res.dmg > 0) { T.ctrl = null; res.wake = 1; }   // đang ngủ mà bị đánh thì tỉnh
-    if (on.stun) T.stun = on.stun; if (on.push) T.x = clamp(T.x - T.dir * on.push, 36, 448); if (on.paint) res.paint = on.paint;
+    if (on.stun) T.stun = on.stun; if (on.mute) T.mute = on.mute; if (on.steal) { const n = T.ai ? on.steal : Math.min(on.steal, T.mp); if (!T.ai) T.mp -= n; res.steal = n; } if (on.push) T.x = clamp(T.x - T.dir * on.push, 36, 448); if (on.paint) res.paint = on.paint;
     if (on.ctrl) { T.ctrl = mkCtrl(on.ctrl); T.shield = 0; T.y = 0; T.vy = 0; }
   }
   T.hp = Math.max(0, T.hp - res.dmg);
@@ -394,7 +407,7 @@ function showRes(res, a) {
     if (res.dmg > 0) { pop("-" + res.dmg, X + rnd(-8, 8), Y - 20, res.r === "guard" ? "#9fd8ff" : "#ffe14a", .9); G.stop = Math.max(G.stop, .06); G.shake = Math.max(G.shake, a?.sp ? 7 : 3.5); G.flash = Math.max(G.flash, a?.sp ? .3 : .12); burst(X, Y, col, a?.sp ? 24 : 12); beep(res.r === "guard" ? 300 : 160, .1, "sawtooth", .08, 60);
       if ((a ? a.from : 1 - res.to) === G.ME) { G.hits++; G.hitT = 2.4; } }
     if (res.r === "hit" && a?.say) pop(a.say, clamp(X, 50, W - 50), Y - 42, "#fff", 1.1, 1.25);
-    if (res.paint && T) T.paint = res.paint; if (res.wake) pop("GIẬT MÌNH!", X, Y - 60, "#fff", .8);
+    if (res.paint && T) T.paint = res.paint; if (res.steal) { const fr = F[a ? a.from : 1 - res.to]; if (fr && own(fr.i) && !fr.ai) fr.mp = Math.min(100, fr.mp + res.steal); pop("+" + res.steal + " MP", fr.x, FLOOR - 150, "#7fd4ff", .8); } if (res.wake) pop("GIẬT MÌNH!", X, Y - 60, "#fff", .8);
   } else if (res.r === "block") { pop("CHẶN!", X, Y - 24, "#7fd4ff", .7); burst(X, Y, "#7fd4ff", 8); beep(900, .06, "triangle"); }
   else if (res.r === "ward") { pop(res.dmg ? "ĐỠ ĐƯỢC! -" + res.dmg : "ĐỠ TRỌN!", clamp(X, 50, W - 50), Y - 24, "#ffe14a", 1, 1.2); burst(X, Y, "#ffe14a", 16); G.stop = Math.max(G.stop, .08); beep(1400, .12, "square"); if (res.dmg && (a ? a.from : 1 - res.to) === G.ME) { G.hits++; G.hitT = 2.4; } }
   else if (res.r === "miss" && a && !a.p) pop("TRƯỢT", X, Y - 24, "#bbb", .6);
@@ -407,7 +420,7 @@ function doKO(loser) {
 /* ======================= CẬP NHẬT ======================= */
 function stepFighter(p, dt) {
   for (let k in p.cd) p.cd[k] -= dt;
-  ["stun", "inv", "shield", "parry", "big", "smoke", "lock", "actT", "fly", "paint", "giant", "nap"].forEach(k => { if (p[k] > 0) p[k] = Math.max(0, p[k] - dt); });
+  ["stun", "inv", "shield", "parry", "big", "smoke", "lock", "actT", "fly", "paint", "giant", "nap", "mute"].forEach(k => { if (p[k] > 0) p[k] = Math.max(0, p[k] - dt); });
   if (p.smoke <= 0 && own(p.i)) p.ride = null;
   for (let j = p.q.length - 1; j >= 0; j--) { p.q[j].t -= dt; if (p.q[j].t <= 0) { const e = p.q.splice(j, 1)[0]; if (!p.ko) e.fn(); } }
   if (p.charge > 0) { p.charge -= dt; p.mp = Math.min(100, p.mp + 48 * dt); if (Math.random() < .5) FX.push({ k: "mote", t: 0, d: .4, x: p.x + rnd(-30, 30), y: FLOOR - rnd(10, 110), tx: p.x + p.dir * 40, ty: FLOOR - HIGH, c: "#7fd4ff" }); }
@@ -441,7 +454,7 @@ function stepAI(p, dt) {
   p.x = clamp(p.x, pl.x + 100, 448);
   a.rest -= dt;
   if (a.rest <= 0) {
-    if (Math.random() < o.cast) { const okSp = c.sp.map((s, i) => i).filter(i => TOF[i] <= o.maxT && (TOF[i] < 4 || Math.random() < .35)); a.rest = rnd(...o.rest) + 1.2; return doCast(1, okSp[Math.floor(Math.random() * okSp.length)], false); }
+    if (p.mute <= 0 && Math.random() < o.cast) { const okSp = c.sp.map((s, i) => i).filter(i => TOF[i] <= o.maxT && (TOF[i] < 4 || Math.random() < .35)); a.rest = rnd(...o.rest) + 1.2; return doCast(1, okSp[Math.floor(Math.random() * okSp.length)], false); }
     a.type = o.types[Math.floor(Math.random() * o.types.length)]; a.wind = o.wind;
   }
 }
@@ -458,7 +471,7 @@ function stepAttacks(dt) {
     } else if (!a.done) {
       a.done = 1; a.hitAt = a.age; a.hx = a.cond ? a.tx : T.x;
       if (own(a.to)) { const res = resolve(a, T); if (res) { showRes(res, a); if (G.mode === "pvp") send({ t: "res", res, aid: a.id }); } }
-      if (a.fx === "world" || a.fx === "rain" || a.fx === "nobg" || a.fx === "orbit" || a.fx === "rise" || a.fx === "tornado" || a.fx === "aura" || a.fx === "zoom" || a.fx === "call" || a.fx === "butt" || a.fx === "perf" || a.fx === "prompt" || a.fx === "wedding" || a.fx === "cry" || (a.fx === "drop" && a.sc > 1.2)) { G.flash = Math.max(G.flash, .5); G.shake = Math.max(G.shake, 9); beep(70, .35, "sawtooth", .1, 35); }
+      if (a.fx === "world" || a.fx === "rain" || a.fx === "nobg" || a.fx === "orbit" || a.fx === "rise" || a.fx === "tornado" || a.fx === "aura" || a.fx === "zoom" || a.fx === "call" || a.fx === "butt" || a.fx === "perf" || a.fx === "prompt" || a.fx === "wedding" || a.fx === "cry" || a.fx === "shame" || a.fx === "runway" || a.fx === "goat" || (a.fx === "drop" && a.sc > 1.2)) { G.flash = Math.max(G.flash, .5); G.shake = Math.max(G.shake, 9); beep(70, .35, "sawtooth", .1, 35); }
     } else if (a.age - a.hitAt > .6) ATK.splice(j, 1);
   }
 }
@@ -484,7 +497,7 @@ const tmp = document.createElement("canvas"), tx = tmp.getContext("2d"); tmp.wid
 function frameOf(p) {
   if (p.ko) return 11;
   if (p.nap > 0) return 8;
-  if (p.ctrl) return p.ctrl.k === "swoon" ? 11 : p.ctrl.k === "sleep" ? 8 : p.ctrl.k === "shrimp" || p.ctrl.k === "meet" ? 8 : 10;
+  if (p.ctrl) return p.ctrl.k === "swoon" ? 11 : p.ctrl.k === "art" ? 0 : p.ctrl.k === "sleep" ? 8 : p.ctrl.k === "shrimp" || p.ctrl.k === "meet" ? 8 : 10;
   if (p.stun > 0) return 10;
   if (p.shield > 0 || p.big > 0 || p.parry > 0) return 7;
   if (p.actT > 0) return p.act === "wind" ? 4 : p.act === "heavy" ? 6 : 5;
@@ -552,6 +565,11 @@ function drawFighter(p) {
   else if (c.k === "shrimp") { spr(ci, f, px, bot + 14, flip, { rot: -p.dir * (.75 + Math.sin(t * 10) * .04), tint }); prop(IC.shrimp, px - p.dir * 6, FLOOR - 104 + Math.sin(t * 6) * 3, 1, p.dir < 0); }
   else if (c.k === "hug") { const jx = Math.sin(t * 45) * 2; spr(ci, f, px + jx, bot, flip, { tint: `rgba(120,80,255,${.25 + .2 * Math.sin(t * 6)})` }); spr(SR, 1, px + p.dir * 26 - jx, bot, !flip, {}); for (let i = 0; i < 3; i++) text("♥", px + p.dir * 10 - 14 + i * 14, FLOOR - 128 - ((t * 24 + i * 9) % 22), "#ff7ab6", 14, "center"); }
   else if (c.k === "awk") { spr(ci, f, px, bot, flip, { tint }); text("…", px, FLOOR - 138, "#fff", 30, "center"); prop(IC.crow, (t * 130) % (W + 80) - 40, 70 + Math.sin(t * 6) * 5, .6); prop(IC.cricket, px + 34, FLOOR - 8 - Math.abs(Math.sin(t * 9)) * 6, .35); }
+  else if (c.k === "art") { const fy = 34, fw = 96, fh = 128, fx0 = clamp(px, 70, W - 70) - fw / 2; x.save(); x.globalCompositeOperation = "lighter"; x.fillStyle = "rgba(255,244,200,.22)"; x.beginPath(); x.moveTo(fx0 + fw / 2 - 6, 0); x.lineTo(fx0 + fw / 2 + 6, 0); x.lineTo(fx0 + fw + 20, fy + fh); x.lineTo(fx0 - 20, fy + fh); x.fill(); x.restore();
+    x.fillStyle = "#3b2a12"; x.fillRect(fx0 - 7, fy - 7, fw + 14, fh + 14); x.fillStyle = "#d4a017"; x.fillRect(fx0 - 5, fy - 5, fw + 10, fh + 10); x.fillStyle = "#f6d55c"; x.fillRect(fx0 - 3, fy - 3, fw + 6, fh + 6); x.fillStyle = "#ece6d8"; x.fillRect(fx0, fy, fw, fh);
+    x.save(); x.beginPath(); x.rect(fx0, fy, fw, fh); x.clip(); spr(ci, f, fx0 + fw / 2, fy + fh + 14 + Math.sin(t * 3), flip, { tint }); x.restore();
+    x.fillStyle = "#fff"; x.fillRect(fx0 + fw / 2 - 34, fy + fh + 10, 68, 12); x.fillStyle = "#000"; x.font = FONT(11); x.textAlign = "center"; x.fillText("“ĐỐI THỦ”, 2026", fx0 + fw / 2, fy + fh + 19); prop(IC.rope, fx0 + fw / 2, FLOOR - 16, 1.3); }
+  else if (c.k === "cling") { const jx = Math.sin(t * 45) * 2, o = 1 - p.i; spr(ci, f, px + jx, bot, flip, { tint: `rgba(255,120,160,${.2 + .15 * Math.sin(t * 6)})` }); spr(G.chars[o], 6, px + p.dir * 44 - jx, bot, o === 1, {}); prop(IC.goat, px - p.dir * 34, FLOOR - 26 - Math.abs(Math.sin(t * 9)) * 10, .95, p.dir > 0); for (let i = 0; i < 3; i++) prop(IC.heart, px - 16 + i * 16, FLOOR - 126 - ((t * 24 + i * 9) % 22), .25); }
   else if (c.k === "duck") { prop(IC.duck, px, FLOOR - 30 - Math.abs(Math.sin(t * 8)) * 6, 1.25, p.dir < 0); }
   else if (c.k === "flat") spr(ci, f, px, bot, flip, { sy: .22, tint });
   else if (c.k === "hair") { const sx = Math.sin(t * 40) * 3; spr(ci, f, px + sx, bot, flip, { tint }); prop(IC.wig, px + sx, FLOOR - 108, 1.05); if (Math.floor(t * 4) % 2) text("!?", px + 26, FLOOR - 120, "#ffe14a", 18); }
@@ -562,6 +580,7 @@ function drawFighter(p) {
   if (p.big > 0 && p.bigK !== 1) { x.save(); x.strokeStyle = "#bfe6ff"; x.lineWidth = 2; x.globalAlpha = .6 + .3 * Math.sin(t * 20); x.beginPath(); x.arc(px, FLOOR, 66, Math.PI, 0); x.stroke(); x.fillStyle = "rgba(127,212,255,.14)"; x.fill();
     if (p.bigK === 2) { x.beginPath(); x.moveTo(px, FLOOR); x.lineTo(px, FLOOR - 66); x.moveTo(px - 57, FLOOR - 33); x.lineTo(px + 57, FLOOR - 33); x.stroke(); x.globalAlpha = 1; "SWOT".split("").forEach((l, i) => text(l, px + (i % 2 ? 22 : -22), FLOOR - (i < 2 ? 40 : 10), "#fff", 20, "center")); } x.restore(); }
   else if (p.shield > 0) { x.save(); x.globalCompositeOperation = "lighter"; x.strokeStyle = "#7fd4ff"; x.lineWidth = 2; x.globalAlpha = .6 + .3 * Math.sin(t * 20); x.beginPath(); x.ellipse(px + p.dir * 30, FLOOR - 70, 9, 50, 0, 0, 6.283); x.stroke(); x.fillStyle = "rgba(127,212,255,.15)"; x.fill(); x.restore(); }
+  if (p.mute > 0 && !c) { prop(IC.manne, px, FLOOR - 150 + Math.sin(t * 5) * 2, .4); text("mất đồ " + p.mute.toFixed(0) + "s", px, FLOOR - 136, "#d4d4d8", 12, "center"); }
   if (p.parry > 0) { const k = p.parry / WARD; x.save(); x.globalCompositeOperation = "lighter"; x.strokeStyle = "#ffe14a"; x.lineWidth = 3; x.globalAlpha = .5 + .5 * k; x.beginPath(); x.ellipse(px, FLOOR - 66, 44 + (1 - k) * 8, 74 + (1 - k) * 8, 0, 0, 6.283); x.stroke(); x.fillStyle = "rgba(255,225,74,.16)"; x.fill(); x.strokeStyle = "#fff"; x.lineWidth = 1; x.beginPath(); x.ellipse(px, FLOOR - 66, 38, 68, 0, t * 9, t * 9 + 2.2); x.stroke(); x.restore(); }
   if (p.ai && p.ai.wind > 0) { x.save(); x.globalCompositeOperation = "lighter"; x.fillStyle = chOf(1).col; const r = 4 + (1 - p.ai.wind / LVL[G.lvl].wind) * 6; x.beginPath(); x.arc(px - 44, FLOOR - (p.ai.type === "lo" ? 14 : p.ai.type === "th" ? 150 : HIGH), r, 0, 6.283); x.fill(); x.restore(); }
 }
@@ -570,7 +589,7 @@ function drawAttack(a) {
   const T = F[a.to], C = F[a.from], col = a.col || chOf(a.from).col, t = G.t;
   if (a.p) {
     if (a.age < a.wait) return; const X = a.x, Y = FLOOR - a.h, d = Math.sign(a.v);
-    if (a.ic >= 0) { x.save(); x.globalCompositeOperation = "lighter"; x.fillStyle = col; x.globalAlpha = .35; x.beginPath(); x.ellipse(X - d * 10, Y, 20 * (a.sc || .5) * 2, 7, 0, 0, 6.283); x.fill(); x.restore(); prop(a.egg && a.age - a.wait < .3 ? IC.egg : a.ic, X, Y, a.sc || .5, d < 0, 1, a.wob ? Math.sin(a.age * 22) * .25 : 0); if (a.wave) { x.strokeStyle = col; x.lineWidth = 2; for (let i = 1; i < 4; i++) { x.beginPath(); x.arc(X + d * 18, Y, 10 + i * 9 + (a.age * 40 % 9), -0.7 + (d < 0 ? Math.PI : 0), .7 + (d < 0 ? Math.PI : 0)); x.stroke(); } } }
+    if (a.ic >= 0) { x.save(); x.globalCompositeOperation = "lighter"; x.fillStyle = col; x.globalAlpha = .35; x.beginPath(); x.ellipse(X - d * 10, Y, 20 * (a.sc || .5) * 2, 7, 0, 0, 6.283); x.fill(); x.restore(); prop(a.egg && a.age - a.wait < .3 ? IC.egg : a.ic, X, Y, a.sc || .5, d < 0, 1, a.spin ? a.age * 16 * d : a.wob ? Math.sin(a.age * 22) * .25 : 0); if (a.wave) { x.strokeStyle = col; x.lineWidth = 2; for (let i = 1; i < 4; i++) { x.beginPath(); x.arc(X + d * 18, Y, 10 + i * 9 + (a.age * 40 % 9), -0.7 + (d < 0 ? Math.PI : 0), .7 + (d < 0 ? Math.PI : 0)); x.stroke(); } } }
     else if (a.ic === -2) text("ABCĐÊÔƠƯ"[(+a.id.split(":")[1]) % 8], X, Y + 7, col, 22, "center");
     else if (a.ic === -3) { if (a.bub) { x.font = FONT(15); const w = x.measureText(a.say).width + 10; x.fillStyle = "#000"; x.fillRect(X - w / 2 - 1, Y - 11, w + 2, 20); x.fillStyle = "#fff"; x.fillRect(X - w / 2, Y - 10, w, 18); x.textAlign = "center"; x.fillStyle = "#1f1147"; x.fillText(a.say, X, Y + 4); } else text(a.say, X, Y + 6, "#fff", 18, "center"); }
     else if (a.ic === -4) text((chOf(a.from).F.words || ["bla", "BLA", "bla~"])[(+a.id.split(":")[1]) % 3], X, Y + 6, col, 18, "center");
@@ -620,6 +639,14 @@ function drawAttack(a) {
     prop(IC.arch, a.cx, FLOOR - 78, 2.3, false, al); prop(IC.mic, a.cx + a.dir * 30, FLOOR - 100, .5, a.dir < 0, al); prop(IC.rings, a.cx, FLOOR - 162 + Math.sin(t * 5) * 3, .5, false, al); [-1, 1].forEach(s => prop(IC.speaker, TX + s * 62, FLOOR - 40, 1.1 * bz, s > 0, al)); if (k > .5 || a.done) { [-1, 1].forEach(s => prop(IC.popper, TX + s * 30, FLOOR - 120, .9, s > 0, al)); for (let i = 0; i < 24; i++) { x.fillStyle = ["#f472b6", "#facc15", "#60a5fa", "#a3e635", "#fff"][i % 5]; x.globalAlpha = al; x.fillRect(TX - 90 + (i * 53) % 180, ((i * 31 + a.age * 160) % 190) + 30, 3, 5); } } if (!a.done) text("♪ TIỆC CƯỚI BẮT ĐẦU ♪", W / 2, 74, "#fde68a", 20, "center"); }
   else if (a.fx === "cry") { const al = a.done ? Math.max(0, 1 - post * 2) : Math.min(1, a.age * 3), ci = G.chars[a.from]; x.fillStyle = `rgba(6,12,50,${.72 * al})`; x.fillRect(-10, -10, W + 20, H + 20); spr(ci, 8, a.cx, FLOOR, a.from === 1, { a: al }); x.strokeStyle = `rgba(96,165,250,${al})`; x.lineWidth = 2; [-1, 1].forEach(s => { x.beginPath(); x.moveTo(a.cx + s * 4, FLOOR - 62); x.quadraticCurveTo(a.cx + s * 34, FLOOR - 100 - Math.sin(t * 12) * 8, a.cx + s * 52, FLOOR - 6); x.stroke(); }); prop(IC.tissue, a.cx - a.dir * 30, FLOOR - 12, .5, false, al); x.fillStyle = `rgba(96,165,250,${.5 * al})`; x.beginPath(); x.ellipse(a.cx, FLOOR + 2, 30 + k * 40, 5, 0, 0, 6.283); x.fill();
     for (let i = 0; i < 18; i++) prop(i % 3 ? IC.tear : IC.bheart, (i * 67 + 20) % W, ((i * 41 + a.age * (150 + i * 9)) % (FLOOR + 30)) - 20, i % 3 ? .3 : .42, false, al * .95, i % 3 ? 0 : Math.sin(t * 4 + i) * .4); if (!a.done || post < .4) { text("♪ người ta đâu có biết ♪", W / 2, 70, "#bfdbfe", 16, "center"); if (a.done) prop(IC.bheart, TX, FLOOR - 80, 2 - post * 2, false, 1 - post * 2); } }
+  else if (a.fx === "hide") { const al = a.done ? Math.max(0, 1 - post * 1.6) : Math.min(1, a.age * 5); prop(IC.manne, TX, FLOOR - 150 + Math.sin(t * 6) * 3, .6, false, al); for (let i = 0; i < 5; i++) { const an = t * 5 + i * 1.26, r = a.done ? 30 + post * 160 : 30; prop([IC.hanger, IC.bag, IC.scarf, IC.beret, IC.sring][i], TX + Math.cos(an) * r, FLOOR - 80 + Math.sin(an) * r * .6 - (a.done ? post * 90 : 0), .4, false, al, an); } }
+  else if (a.fx === "curse") { const al = a.done ? Math.max(0, 1 - post * 2.5) : 1, C2 = F[a.from], sy = ["#@$%!", "&*#@!!", "%$#…"][a.n]; if (a.n === 2 && !a.done) { spr(G.chars[a.from], 9, C2.x, FLOOR, a.from === 1, { a: .0 }); prop(IC.fshades, C2.x + C2.dir * 8, FLOOR - 150 + Math.sin(t * 8) * 3, .5); text("lêu lêu~", C2.x, FLOOR - 162, "#fff", 13, "center"); }
+    if (a.age > a.wait - .35) { const by = FLOOR - 150 - a.n * 4, w2 = 62; x.globalAlpha = al; x.fillStyle = "#000"; x.fillRect(TX - w2 / 2 - 2, by - 14, w2 + 4, 24); x.fillStyle = "#fff"; x.fillRect(TX - w2 / 2, by - 12, w2, 20); x.fillStyle = "#e11d48"; x.font = FONT(18); x.textAlign = "center"; x.fillText(sy, TX + Math.sin(t * 50) * 1.5, by + 3); prop(IC.anger, TX + 26, FLOOR - 128, .45 + .1 * Math.sin(t * 20), false, al); } }
+  else if (a.fx === "shame") { const al = a.done ? Math.max(0, 1 - post * 2) : Math.min(1, a.age * 4), ci = G.chars[a.from]; spr(ci, 11, a.cx, FLOOR, a.from === 1, { a: al }); prop(IC.bandaid, a.cx - a.dir * 20, FLOOR - 22, .45, false, al); for (let i = 0; i < 3; i++) text("★", a.cx - a.dir * 30 + Math.cos(t * 6 + i * 2.1) * 14, FLOOR - 34 + Math.sin(t * 6 + i * 2.1) * 5, "#ffd84a", 12, "center"); if (!a.done) text(["Ui da…", "Đánh người!", "Có ai thấy không?!"][Math.min(2, Math.floor(k * 3))], clamp(a.cx, 70, W - 70), FLOOR - 50, "#fff", 14, "center");
+    if (k > .3) { for (let i = 0; i < 6; i++) { const X = 40 + i * 80, fl = Math.floor(t * 9 + i * 3) % 4 === 0; prop(i % 2 ? IC.phonecam : IC.papcam, X, 150 + (i % 2) * 14, .5, X > TX, al); if (fl) { x.save(); x.globalCompositeOperation = "lighter"; x.fillStyle = `rgba(255,255,255,${.5 * al})`; x.beginPath(); x.arc(X, 146, 16, 0, 6.283); x.fill(); x.restore(); } } x.fillStyle = `rgba(255,60,90,${.35 * al})`; x.beginPath(); x.ellipse(TX + F[a.to].dir * 6, FLOOR - 108, 10, 5, 0, 0, 6.283); x.fill(); } }
+  else if (a.fx === "runway") { const ci = G.chars[a.from], al = a.done ? Math.max(0, 1 - post * 2.5) : 1, kk = clamp(a.age / (a.wait + .35), 0, 1), X = a.cx + (TX + a.dir * 70 - a.cx) * kk; x.fillStyle = `rgba(0,0,0,${.5 * al})`; x.fillRect(-10, -10, W + 20, H + 20); x.fillStyle = `rgba(255,255,255,${.85 * al})`; x.fillRect(0, FLOOR - 2, W, 6); for (let i = 0; i < 12; i++) { x.fillStyle = Math.floor(t * 10 + i) % 3 ? `rgba(255,255,255,${.3 * al})` : `rgba(255,236,150,${al})`; x.fillRect(i * 42 + 6, FLOOR + 6, 10, 4); }
+    x.save(); x.globalCompositeOperation = "lighter"; x.fillStyle = `rgba(255,255,255,${.2 * al})`; x.beginPath(); x.moveTo(X - 6, 0); x.lineTo(X + 6, 0); x.lineTo(X + 44, FLOOR); x.lineTo(X - 44, FLOOR); x.fill(); x.restore(); spr(ci, 2 + Math.floor(a.age * 9) % 2, X, FLOOR, a.from === 1, { s: 1.2, a: al }); for (let i = 0; i < 5; i++) if (Math.floor(t * 12 + i * 5) % 5 === 0) prop(IC.spark, 30 + i * 100, 60 + (i % 2) * 40, .7, false, al); }
+  else if (a.fx === "goat") { if (!a.done) { const ci = G.chars[a.from], X = a.cx + (TX - a.dir * 44 - a.cx) * k * k, hop = Math.abs(Math.sin(a.age * 12)) * 10; x.strokeStyle = "rgba(255,255,255,.7)"; x.lineWidth = 1; for (let i = 0; i < 5; i++) { x.beginPath(); x.moveTo(X - a.dir * 40, FLOOR - 10 - i * 12); x.lineTo(X - a.dir * (70 + i * 6), FLOOR - 10 - i * 12); x.stroke(); } prop(IC.goat, X, FLOOR - 28 - hop, 1.3, a.dir < 0); spr(ci, 9, X - a.dir * 4, FLOOR - 40 - hop, a.from === 1, {}); for (let i = 0; i < 3; i++) prop(IC.heart, X - a.dir * (30 + i * 16), FLOOR - 90 - i * 10 + Math.sin(t * 9 + i) * 4, .3); } }
   else if (a.fx === "nobg") { x.strokeStyle = "#000"; x.lineWidth = 1; x.setLineDash([4, 4]); x.lineDashOffset = -t * 24; x.strokeRect(TX - 34.5, FLOOR - 134.5, 68, 136); x.setLineDash([]); if (!a.done || post < .5) { x.fillStyle = "#1f2937"; x.fillRect(W / 2 - 78, 62, 156, 18); text("REMOVE BACKGROUND " + Math.round(k * 100) + "%", W / 2, 76, "#fff", 14, "center"); } }
   else if (a.fx === "slash" && post >= 0 && post < .28) { const o = (a.n - 1) * 16, x0 = TX - 40 + o, y0 = FLOOR - 126, x1 = TX + 40 + o, y1 = FLOOR - 14, cx1 = TX + 50 + o, cy1 = FLOOR - 120; x.strokeStyle = "#000"; x.lineWidth = 5; x.beginPath(); x.moveTo(x0, y0); x.quadraticCurveTo(cx1, cy1, x1, y1); x.stroke(); x.strokeStyle = a.red ? "#ff3b30" : "#fff"; x.lineWidth = a.red ? 3 : 2; x.stroke(); if (a.red) prop(IC.redpen, x1 + 8, y1 - 8, .45); if (a.pcl) { x.strokeStyle = "#111"; x.lineWidth = 2; x.beginPath(); for (let i = 0; i <= 12; i++) x.lineTo(x0 + (x1 - x0) * i / 12 + Math.sin(i * 2.1 + a.n) * 12, y0 + (y1 - y0) * i / 12 + Math.cos(i * 1.7) * 8); x.stroke(); prop(IC.pencil, x1 + 8, y1 - 8, .5); } if (a.pen) { x.strokeStyle = "#38bdf8"; x.lineWidth = 1; x.beginPath(); x.moveTo(x0, y0); x.lineTo(cx1, cy1); x.stroke(); [[x0, y0], [x1, y1], [cx1, cy1]].forEach(q => { x.fillStyle = "#fff"; x.fillRect(q[0] - 3, q[1] - 3, 6, 6); x.strokeRect(q[0] - 3.5, q[1] - 3.5, 7, 7); }); prop(IC.pen, x1 + 8, y1 - 6, .4); } }
   x.restore();
@@ -680,8 +707,8 @@ function loop(now) {
   if (!$("game").classList.contains("on") || !F.length) return;
   if (G.stop > 0) { G.stop -= dt; dt = 0; }
   if (dt > 0) update(dt);
-  if (now - lastUi > 150) { lastUi = now; const mp = F[G.ME].mp; document.querySelectorAll("#spells .sk").forEach(b => b.classList.toggle("no", mp < +b.dataset.mp)); }
-  if (G.mode === "pvp" && now - lastSend > 33) { lastSend = now; const p = F[G.ME]; send({ t: "s", x: Math.round(p.x), y: Math.round(p.y), hp: p.hp, mp: Math.round(p.mp), f: frameOf(p), sh: +p.shield.toFixed(2), bg: +p.big.toFixed(2), bk: p.bigK, gi: +p.giant.toFixed(2), np: +p.nap.toFixed(2), sm: +p.smoke.toFixed(2), rd: p.ride, fx: p.flyX == null ? null : Math.round(p.flyX), iv: p.inv > 0 ? 1 : 0, cr: p.crouch ? 1 : 0, c: p.ctrl ? [p.ctrl.k, +p.ctrl.t.toFixed(2), 0, p.ctrl.lb, p.ctrl.ic] : null, ko: p.ko ? 1 : 0 }, false); }
+  if (now - lastUi > 150) { lastUi = now; const mp = F[G.ME].mute > 0 ? -1 : F[G.ME].mp; document.querySelectorAll("#spells .sk").forEach(b => b.classList.toggle("no", mp < +b.dataset.mp)); }
+  if (G.mode === "pvp" && now - lastSend > 33) { lastSend = now; const p = F[G.ME]; send({ t: "s", x: Math.round(p.x), y: Math.round(p.y), hp: p.hp, mp: Math.round(p.mp), f: frameOf(p), sh: +p.shield.toFixed(2), bg: +p.big.toFixed(2), bk: p.bigK, gi: +p.giant.toFixed(2), np: +p.nap.toFixed(2), mu: +p.mute.toFixed(1), sm: +p.smoke.toFixed(2), rd: p.ride, fx: p.flyX == null ? null : Math.round(p.flyX), iv: p.inv > 0 ? 1 : 0, cr: p.crouch ? 1 : 0, c: p.ctrl ? [p.ctrl.k, +p.ctrl.t.toFixed(2), 0, p.ctrl.lb, p.ctrl.ic] : null, ko: p.ko ? 1 : 0 }, false); }
   render();
 }
 requestAnimationFrame(loop);
@@ -695,7 +722,7 @@ function onMsg(m) {
   if (m.t === "ready") { G.oppReady = true; if (m.name) G.oppName = String(m.name).slice(0, 12); G.oppCh = clamp(m.ch | 0, 0, CH.length - 1); (net.host ? $("p2St") : $("p1St")).textContent = "Sẵn sàng ✓ · " + CH[G.oppCh].name; return maybeStart(); }
   if (m.t === "go") return startMatch("pvp", 0, m.ch);
   const o = F[1 - G.ME]; if (!o || G.mode !== "pvp") return;
-  if (m.t === "s") { o.x += (m.x - o.x) * .6; o.y = m.y; o.hp = m.hp; o.mp = m.mp; o.rf = m.f; o.shield = m.sh; o.big = m.bg; o.bigK = m.bk; o.giant = m.gi || 0; o.nap = m.np || 0; o.smoke = m.sm; o.ride = m.rd; o.flyX = m.fx; o.fly = m.fx == null ? 0 : .1; o.inv = m.iv ? .1 : 0; o.crouch = !!m.cr; o.ctrl = m.c ? mkCtrl(m.c) : null; return; }
+  if (m.t === "s") { o.x += (m.x - o.x) * .6; o.y = m.y; o.hp = m.hp; o.mp = m.mp; o.rf = m.f; o.shield = m.sh; o.big = m.bg; o.bigK = m.bk; o.giant = m.gi || 0; o.nap = m.np || 0; if (m.mu !== undefined) o.mute = m.mu; o.smoke = m.sm; o.ride = m.rd; o.flyX = m.fx; o.fly = m.fx == null ? 0 : .1; o.inv = m.iv ? .1 : 0; o.crouch = !!m.cr; o.ctrl = m.c ? mkCtrl(m.c) : null; return; }
   if (m.t === "b") return doBasic(1 - G.ME, m.k, false);
   if (m.t === "c") return doCast(1 - G.ME, m.s, false);
   if (m.t === "res") { const j = ATK.findIndex(a => a.id === m.aid), a = j >= 0 ? ATK[j] : null; if (a && a.p) ATK.splice(j, 1); if (m.res.to === undefined) m.res.to = 1 - G.ME; showRes(m.res, a); return; }
@@ -726,7 +753,7 @@ const pick = { a: -1, b: -1, lvl: 0 };
 $("pickGrid").innerHTML = CH.map(card).join("") + `<button class="chr rnd" data-c="-1"><i></i><b>Ngẫu nhiên</b><em></em></button>`;
 function drawPick() {
   document.querySelectorAll("#pickGrid .chr").forEach((b, i) => { b.classList.toggle("p1", i === pick.a); b.classList.toggle("p2", i === pick.b); b.querySelector("em").textContent = (i === pick.a ? "BẠN" : "") + (i === pick.a && i === pick.b ? " + " : "") + (i === pick.b ? "MÁY" : ""); });
-  [["postA", pick.a], ["postB", pick.b]].forEach(([id, ci]) => { const el = $(id); el.classList.toggle("empty", ci < 0); el.style.setProperty("--c", ci < 0 ? "#555" : CH[ci].col); el.querySelector("i").style.backgroundPosition = ci < 0 ? "0 9999px" : `-40px ${-ci * 150}px`; el.querySelector("u").style.backgroundPosition = ci < 0 ? "0 9999px" : `${ci * 100 / (CH.length - 1)}% 0`; el.querySelector("b").textContent = ci < 0 ? "?" : CH[ci].name.toUpperCase(); el.querySelector("small").textContent = ci < 0 ? "" : CH[ci].role; });
+  [["postA", pick.a], ["postB", pick.b]].forEach(([id, ci]) => { const el = $(id); el.classList.toggle("empty", ci < 0); el.style.setProperty("--c", ci < 0 ? "#555" : CH[ci].col); el.querySelector("i").style.backgroundPosition = ci < 0 ? "0 9999px" : `-40px ${-ci * 150}px`; el.querySelector("u").style.backgroundPosition = ci < 0 ? "0 9999px" : `${ci * 100 / (CH.length - 1)}% 0`; el.querySelector("b").textContent = ci < 0 ? "?" : CH[ci].name.toUpperCase(); el.querySelector("b").style.fontSize = ci >= 0 && CH[ci].name.length > 10 ? "15px" : ""; el.querySelector("small").textContent = ci < 0 ? "" : CH[ci].role; });
   $("pickTip").textContent = pick.a < 0 ? "Chạm để chọn nhân vật của BẠN" : pick.b < 0 ? `Bạn là ${CH[pick.a].name}. Giờ chọn nhân vật cho MÁY` : `${CH[pick.a].name} đấu ${CH[pick.b].name}. Chạm nhân vật bất kỳ để chọn lại`;
   $("pickInfo").innerHTML = pick.a < 0 ? "" : `<b style="color:${CH[pick.a].col}">${CH[pick.a].name}</b> · ${CH[pick.a].tag}<br>F: ${CH[pick.a].F.n} · G: ${CH[pick.a].G.n} · Tối thượng: ${CH[pick.a].sp[7].n}`;
   $("bFight").disabled = pick.a < 0 || pick.b < 0; document.querySelectorAll("#lvPick button").forEach((b, i) => b.classList.toggle("on", i === pick.lvl));

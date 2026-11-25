@@ -246,3 +246,9 @@ Game đối kháng phép thuật 16-bit, chơi bằng bàn phím hoặc nút c�
 - Thêm Nguyên Cô Đơn (AI Designer): Thánh AI, Đơn Phương Crush, Ngồi Ngủ, Chúa Rớt Miếng, Lạc Tone, Ông Hoàng Tiệc Cưới, Nhiệt Huyết, Yêu Đơn Phương.
 - "Ngồi Ngủ": người ra chiêu ngủ 3 giây và không dính đòn (`nap`); đối thủ ngủ 5 giây, bị đánh thì tỉnh.
 - `sprites.webp`: 8 hàng nhân vật, hàng đặc biệt, rồi đạo cụ từ y = 1350 (7 hàng × 16 ô). `posters.webp`: 8 poster, CSS `background-size:800%`.
+
+### Cập nhật 25/11 (lần 9): nhân vật thứ 9
+
+- Thêm Thẳng Tính (Fashionista): Giày Móng Ngựa, Ăn Cắp (chôm MP), Giấu Đồ (khoá skill đối thủ 5 giây, trường `mute`), Đi Triển Lãm, Chọc Chửi, Chọc Bạo Hành, Sàn Diễn, Dê Xồm.
+- `sprites.webp`: 9 hàng nhân vật, hàng đặc biệt, đạo cụ từ y = 1500 (8 hàng × 16 ô). `posters.webp`: 9 poster, CSS `background-size:900%`.
+- Tên dài trên poster ở màn chọn nhân vật tự thu nhỏ chữ.
