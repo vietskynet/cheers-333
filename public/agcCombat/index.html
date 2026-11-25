@@ -110,7 +110,8 @@
   .sk{position:relative;min-width:0;overflow-wrap:anywhere;border:2px solid #000;background:#1f1c3d;color:#fff;font:inherit;padding:3px 2px;cursor:pointer;min-height:46px;line-height:1;box-shadow:2px 2px 0 #000;touch-action:none;overflow:hidden}
   .sk b{display:block;font-weight:400;font-size:15px;line-height:.95}.sk span{display:block;font-size:13px;color:#7fd4ff;margin-top:2px;white-space:nowrap}
   .sk i{position:absolute;top:0;right:1px;font-style:normal;font-size:11px;color:#9a94c2}.sk.t2 b{color:#ffd84a}.sk.t3 b{color:#ff9d3c}.sk.t4{border-color:#39ff6a}.sk.t4 b{color:#39ff6a}
-  .sk:active{transform:translate(2px,2px);box-shadow:none;background:#3b3766}.sk.no{opacity:.4}
+  .sk:not(.no){background:#2f2a78;box-shadow:0 0 0 1px #ffd84a,0 0 8px #ffd84a88,2px 2px 0 #000}.sk.t4:not(.no){box-shadow:0 0 0 1px #39ff6a,0 0 10px #39ff6aaa,2px 2px 0 #000}
+  .sk:active{transform:translate(2px,2px);background:#3b3766}.sk.no{opacity:.38;filter:grayscale(1);border-color:#333}
   #game .pad{margin:0;align-self:center;align-items:center;width:100%;max-width:560px;justify-self:center}
   @media not all and (pointer:coarse){.pad{display:none}#game.on{grid-template-rows:auto auto auto}.stage{width:min(100%,calc((100dvh - 120px) * 16 / 9))}#spells{grid-template-columns:repeat(8,1fr)}}
   /* điện thoại cầm ngang: sân ở giữa, nút hai bên, skill một hàng dưới đáy */
@@ -185,7 +186,7 @@
   <div id="spells"></div>
   <div class="pad">
     <div class="dpad"><span></span><button data-k="u">↑<small>nhảy</small></button><span></span><button data-k="l">←</button><button data-k="d">↓<small>cúi</small></button><button data-k="r">→</button></div>
-    <div class="acts"><button class="f" data-k="F">F<small>nhanh</small></button><button class="g" data-k="G">G<small>nặng</small></button><button class="b" data-k="B">B<small>nạp</small></button><button class="c" data-k="C">C<small>khiên</small></button><button class="v" data-k="V">V<small>phản</small></button><span></span></div>
+    <div class="acts"><button class="f" data-k="F">F<small>nhanh</small></button><button class="g" data-k="G">G<small>nặng</small></button><button class="b" data-k="B">B<small>nạp</small></button><button class="c" data-k="C">C<small>khiên</small></button><button class="v" data-k="V">V<small>vòng đỡ</small></button><span></span></div>
   </div>
   <div id="endBox" style="display:none"></div>
 </section>
@@ -201,13 +202,13 @@
     <b>↓ (giữ)</b><span>Cúi: né đòn cơ bản bay ngang ngực.</span>
     <b>F</b><span>Đòn nhanh, 4 sát thương. Mỗi nhân vật ném một thứ khác nhau.</span>
     <b>G</b><span>Đòn nặng, 8 sát thương. Khi đấu 2 người, đòn G chạy sát sàn nên phải nhảy mới né được.</span>
-    <b>C</b><span>Khiên: chặn mọi đòn trong 0,85 giây (trừ skill Tối thượng).</span>
-    <b>V</b><span>Phản đòn: bị trúng trong 0,38 giây sau khi bấm thì bật ngược một tia 9 sát thương.</span>
+    <b>C</b><span>Khiên: chặn mọi đòn trong 0,85 giây (trừ skill Tối thượng; muốn đỡ Tối thượng thì dùng V).</span>
+    <b>V</b><span>Vòng đỡ toàn diện: mở 0,5 giây, chặn hết mọi đòn thường và skill. Skill Tối thượng trúng lúc vòng đang mở chỉ còn 30% sát thương và không bị khống chế. Hồi 1,6 giây, nên phải bấm đúng lúc.</span>
     <b>B</b><span>Nạp năng lượng: đứng yên 0,65 giây, hồi MP rất nhanh.</span>
   </div>
-  <p style="margin-top:8px">Trên điện thoại có nút cảm ứng ngay dưới sân đấu. MP (thanh xanh) tự hồi 7 điểm mỗi giây.</p>
+  <p style="margin-top:8px">Trên điện thoại có nút cảm ứng ngay dưới sân đấu. MP (thanh xanh) tự hồi 7 điểm mỗi giây. Nút skill chỉ sáng lên khi đủ MP. MP đầy 100 mà để quá 3 giây không dùng sẽ tuột về 40.</p>
   <h3>Ra skill</h3>
-  <p>Bấm các phím liền nhau, mỗi phím cách phím trước dưới nửa giây. Tám skill của mọi nhân vật dùng chung tám chuỗi phím, nên học một lần là chơi được hết. Chuỗi càng dài, skill càng mạnh và càng tốn MP. Thiếu MP thì hiện "NO MP". Skill không né được bằng cúi hay nhảy; phải dùng khiên C hoặc phản đòn V.</p>
+  <p>Bấm các phím liền nhau, mỗi phím cách phím trước dưới nửa giây. Tám skill của mọi nhân vật dùng chung tám chuỗi phím, nên học một lần là chơi được hết. Chuỗi càng dài, skill càng mạnh và càng tốn MP. Thiếu MP thì hiện "NO MP". Skill không né được bằng cúi hay nhảy; phải dùng khiên C hoặc vòng đỡ V.</p>
   <h3>Đấu với máy</h3>
   <div class="keys">
     <b>LV1 Thực tập sinh</b><span>100 HP, chậm, chỉ ném đòn cao.</span>

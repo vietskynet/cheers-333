@@ -235,3 +235,8 @@ Game đối kháng phép thuật 16-bit, chơi bằng bàn phím hoặc nút c�
 ### Cập nhật 25/11 (lần 6): giảm sát thương
 
 - Đòn thường F 6 → 4, G 13 → 8, phản đòn 15 → 9. Skill nhân thêm hệ số `CUT` theo bậc: cấp 1 ×0,6, cấp 2 ×0,55, cấp 3 ×0,5, tối thượng ×0,4 (90 → 36). Đòn thường của máy 8/11/14 → 5/7/9. Chỉnh trong `CUT`, `BASIC`, `LVL` ở `game.js`.
+
+### Cập nhật 25/11 (lần 7): vòng đỡ, mana
+
+- Phím V không còn là phản đòn. V là "vòng đỡ toàn diện": mở 0,5 giây (`WARD`), hồi 1,6 giây, chặn hết đòn thường và skill; skill tối thượng trúng lúc vòng đang mở chỉ còn 30% sát thương và không khống chế.
+- Nút skill chỉ sáng khi đủ MP. MP đầy 100 quá 3 giây (`FULL_HOLD`) sẽ tuột về 40 (`FULL_DROP`).
