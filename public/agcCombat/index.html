@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" class="athome">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
@@ -9,6 +9,13 @@
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{min-height:100%;background:#0b0a14;color:#e9e6f5;font-family:VT323,"Courier New",monospace;font-size:19px;-webkit-tap-highlight-color:transparent}
+  /* ảnh nền: poster nhóm 13 nhân vật. Màn mở đầu thấy rõ, các màn khác phủ tối hơn để dễ đọc, trong trận thì che hẳn */
+  body{background:transparent !important}
+  body:before{content:"";position:fixed;inset:0;z-index:-2;background:#0b0a14 var(--wallp) center top/cover no-repeat}
+  body:after{content:"";position:fixed;inset:0;z-index:-1;background:#0b0a14;opacity:.86;transition:opacity .25s}
+  html.athome body:after{opacity:1;background:linear-gradient(#0b0a1455,#0b0a1400 30%,#0b0a1400 55%,#0b0a14cc)}
+  html.playing body:after{opacity:1}
+  @media (orientation:landscape){body:before{background-image:var(--walll);background-position:center}}
   .scr{display:none;max-width:760px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 14px) 14px calc(env(safe-area-inset-bottom) + 24px)}
   .scr.on{display:block}
   h1{font-size:60px;line-height:.95;font-weight:400;text-align:center;color:#ffd84a;text-shadow:3px 3px 0 #a3261c;margin:26px 0 6px;letter-spacing:1px}
@@ -29,7 +36,7 @@
   #lvPick button,#oppPick button{border:2px solid #3b3766;background:#15132a;color:#fff;font:inherit;font-size:19px;padding:6px;cursor:pointer;text-align:left}
   #lvPick button b{color:#ffd84a}#lvPick small,#oppPick small{display:block;color:#9a94c2;font-size:17px}
   .err{color:#ff8a7a;min-height:22px;text-align:center}
-  .muted{color:#8c86b3;font-size:17px;text-align:center;margin-top:10px}
+  #home .muted{color:#e9e6f5;text-shadow:1px 1px 0 #000}.muted{color:#8c86b3;font-size:17px;text-align:center;margin-top:10px}
   .bigcode{font-size:76px;letter-spacing:12px;text-align:center;color:#a3e635;text-shadow:4px 4px 0 #000;margin:6px 0}
   .players{display:flex;gap:8px;margin:12px 0}.pl{flex:1;background:#15132a;border:2px solid #3b3766;padding:9px}.pl b{display:block;color:#ffd84a}.pl.ok{border-color:#a3e635}
   .diag{font-size:16px;color:#8c86b3;background:#15132a;padding:8px;margin-top:8px;display:none;line-height:1.3}.diag.on{display:block}.diag b{color:#fff}
@@ -56,7 +63,7 @@
   table{width:100%;border-collapse:collapse;font-size:18px;margin-top:8px}th,td{border:1px solid #3b3766;padding:4px 6px;text-align:center}tr.me td{background:#3a3200;color:#ffd84a}th{background:#15132a;color:#ffd84a;cursor:pointer;font-weight:400}td:first-child,th:first-child{text-align:left}
 
   /* màn mở đầu kiểu arcade */
-  .hero{position:relative;overflow:hidden;border:3px solid #000;box-shadow:0 0 0 2px #ffd84a;padding:10px 0 8px;text-align:center;background:linear-gradient(#070616cc,#12103acc 55%,#070616),var(--bg) center/cover;image-rendering:pixelated}
+  .hero{position:relative;overflow:hidden;border:3px solid #000;box-shadow:0 0 0 2px #ffd84a;padding:10px 0 8px;text-align:center;background:linear-gradient(#07061699,#12103a66 55%,#070616aa)}
   .hero:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,#0000 0 2px,#0003 2px 3px);pointer-events:none;z-index:3}
   .hero:after{content:"";position:absolute;left:50%;top:44%;width:520px;height:520px;margin:-260px;background:repeating-conic-gradient(#ffd84a22 0 8deg,#0000 8deg 16deg);animation:spin 18s linear infinite;pointer-events:none}
   .hero>*{position:relative;z-index:2}
@@ -64,7 +71,7 @@
   .hero h1{margin:2px 0 0;font-size:46px;line-height:.82;color:#ffd84a;text-shadow:3px 3px 0 #c81e1e,6px 6px 0 #000;transform:skewY(-4deg) rotate(-1deg);animation:pulse 1.2s ease-in-out infinite}
   .hero h1 span{display:inline-block;margin:0 4px}.hero h1 .l2{color:#fff;font-size:56px;text-shadow:3px 3px 0 #1d4ed8,6px 6px 0 #000}
   .hero .sub{margin-top:8px;font-size:16px;color:#fff;letter-spacing:1px;text-shadow:1px 1px 0 #000}
-  .rwrap{overflow:hidden;margin:8px 0 6px;border-top:2px solid #000;border-bottom:2px solid #000;background:#0008}
+  .rwrap{overflow:hidden;margin:8px 0 6px;border-top:2px solid #000;border-bottom:2px solid #000;background:#0005}
   #roster{display:flex;gap:10px;width:max-content;padding:10px 5px;animation:slide 34s linear infinite}
   .rost{position:relative;width:min(46vw,190px);aspect-ratio:3/4.62;overflow:hidden;background:var(--c);border:3px solid #000;box-shadow:0 0 0 2px var(--c),0 0 14px var(--c);flex:none}.rost:nth-child(odd){transform:rotate(-1.5deg)}.rost:nth-child(even){transform:rotate(1.5deg) translateY(4px)}
   .rost u{position:absolute;inset:0 0 34px 0;background:var(--post) no-repeat;background-size:1300% 100%;display:none}
