@@ -264,3 +264,9 @@ Game đối kháng phép thuật 16-bit, chơi bằng bàn phím hoặc nút c�
 - Thêm Thanh Hằng (Art Director · Siêu Mẫu): 10% Pin, Đánh Dập Bờ Vai, Tôm Boy, Nhăm Nhăm, Hút Bụi Liên Hồi, Tình Yêu Đà Lạt, Căn Lề Từng Pixel, Cạo Đầu.
 - Thêm Jen Smiler (Copywriter · Người Yêu Nước): Yêu Biển Đảo, Chông Gai Anh Quen Rồi, Quốc Ca, Vũ Điệu Đan Len, Triệu Hồi Concert, Tự Hào Quá, Caption Triệu Like, Diễu Binh.
 - `sprites.webp`: 12 hàng nhân vật, hàng đặc biệt `SR`, đạo cụ từ y = 1950 (11 hàng × 16 ô). `posters.webp`: 12 poster, CSS `background-size:1200%`. Lưới chọn nhân vật 4 cột.
+
+### Cập nhật 25/11 (lần 12): nhân vật thứ 13
+
+- Thêm Tuấn Huỳnh (Người Việt Gốc Thái): kính đen, hoodie rộng, quần boxing Thái, găng Muay. Skill: Quăng Xôi Xoài, Muay Thái Thần Công, Vòi Phun Trà Sữa Thái, Gã Săn Cá, Triệu Hồi Voi Thái, Đi Bangkok Liên Tục, Say Hi, Hít Dầu Thái (ultimate). Đòn thường: ném ớt hiểm (F), đấm găng (G).
+- `sprites.webp`: 13 hàng nhân vật, hàng đặc biệt `SR`, đạo cụ từ y = 2100 (12 hàng × 16 ô). `posters.webp`: 13 poster, CSS `background-size:1300%`.
+- Poster: tên dài tự thu nhỏ chữ, dòng vai trò chỉ hiện danh hiệu. "Diễu Binh": Jen đứng phía trước đoàn.
