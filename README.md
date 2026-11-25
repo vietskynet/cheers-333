@@ -219,3 +219,9 @@ Game đối kháng phép thuật 16-bit, chơi bằng bàn phím hoặc nút c�
 - Nhân Ziku: skill BBBF đổi từ "Layer Đè" sang "Tách Nền".
 - Trong trận có nút "✕ Thoát" và "↻ Đấu lại" (đấu 2 người: chủ phòng đặt lại, khách gửi yêu cầu).
 - `sprites.png` giờ có 6 hàng nhân vật (đạo cụ bắt đầu từ y = 900, 4 hàng × 16 ô); `posters.png` có 6 poster. Thêm nhân vật: thêm một mục vào `CH`, một hàng vào `sprites.png`, một ô vào `posters.png`, và sửa `background-size` (600%) trong CSS.
+
+### Cập nhật 25/11 (lần 3 và 4): skill mới và nhân vật thứ 7
+
+- Việt Đinh cầm cà phê phin; thêm Book Grab, Handsome Power, tối thượng là Brainstorm. Đức Phan: Cuộc Gọi Deadline là màn hình cuộc gọi phủ kín sân. Hiếu Thứ 3: Research Kính Lúp. Nhân Ziku: Cuốn Hút.
+- Thêm Bao Tu (The Performative): Kính Loé Sáng, Hai Trứng, Protein Shake, Con Vịt, Sức Mạnh Đẹp Trai, Powerful Squat, Muscle Man, Performative.
+- `sprites.png`: 7 hàng nhân vật, rồi 1 hàng khung hình đặc biệt (hằng `SR`: ô 0 = Bao Tu khoe cơ, ô 1 = Bao Tu dang tay ôm), rồi đạo cụ từ y = 1200 (6 hàng × 16 ô). `posters.png`: 7 poster, CSS `background-size:700%`.
