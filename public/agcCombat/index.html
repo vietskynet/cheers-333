@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>AGENCY COMBAT</title>
-<meta name="description" content="Game đối kháng 16-bit của agency: 10 nhân vật, mỗi người 8 skill, đấu với máy hoặc đấu 2 người qua mã phòng.">
+<meta name="description" content="Game đối kháng 16-bit của agency: 12 nhân vật, mỗi người 8 skill, đấu với máy hoặc đấu 2 người qua mã phòng.">
 <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
@@ -67,7 +67,7 @@
   .rwrap{overflow:hidden;margin:8px 0 6px;border-top:2px solid #000;border-bottom:2px solid #000;background:#0008}
   #roster{display:flex;gap:6px;width:max-content;padding:5px 3px;animation:slide 16s linear infinite}
   .rost{position:relative;width:96px;height:140px;overflow:hidden;background:var(--c);border:2px solid #000;flex:none}
-  .rost u{position:absolute;inset:0 0 28px 0;background:var(--post) no-repeat;background-size:1000% 100%;display:none}
+  .rost u{position:absolute;inset:0 0 28px 0;background:var(--post) no-repeat;background-size:1200% 100%;display:none}
   .rost i{position:absolute;left:50%;bottom:26px;width:110px;height:150px;margin-left:-55px;background:var(--spr) no-repeat;image-rendering:pixelated}
   .hasPost .rost u{display:block}.hasPost .rost i{display:none}
   .rost b{position:absolute;left:0;right:0;bottom:11px;background:#000;color:#ffd84a;font-weight:400;font-size:15px;line-height:1.05;white-space:nowrap}
@@ -83,19 +83,19 @@
   .post{height:300px;position:relative;overflow:hidden;--c:#555}
   .post:before{content:"";position:absolute;left:-20%;right:-20%;top:18%;bottom:0;background:var(--c);opacity:.55;transform:skewY(-12deg);border-top:3px solid #000}
   .post i{position:absolute;left:50%;bottom:44px;width:110px;height:150px;margin-left:-55px;background:var(--spr) no-repeat;image-rendering:pixelated;transform:scale(1.55);transform-origin:50% 100%}
-  .post u{position:absolute;top:0;bottom:30px;left:50%;aspect-ratio:3/4;transform:translateX(-50%);background:var(--post) no-repeat;background-size:1000% 100%;display:none}
+  .post u{position:absolute;top:0;bottom:30px;left:50%;aspect-ratio:3/4;transform:translateX(-50%);background:var(--post) no-repeat;background-size:1200% 100%;display:none}
   .hasPost .post u{display:block}.hasPost .post i{display:none}
   .post.p2 i{transform:scale(-1.55,1.55)}.post.p2 u{transform:translateX(-50%) scaleX(-1)}
   .post span{position:absolute;top:2px;left:2px;background:#000;color:#fff;font-size:15px;padding:0 5px}.post.p2 span{left:auto;right:2px}
   .post b{position:absolute;left:0;right:0;bottom:14px;font-weight:400;font-size:20px;line-height:1;white-space:nowrap;text-align:center;color:#ffd84a;background:#000;border-top:3px solid var(--c);border-bottom:3px solid var(--c);transform:skewY(-4deg);padding:2px 0;text-shadow:2px 2px 0 #a3261c}
   .post small{position:absolute;left:0;right:0;bottom:0;text-align:center;font-size:13px;white-space:nowrap;color:#fff;text-shadow:1px 1px 0 #000}
   .post.empty b{color:#888}
-  #pickGrid{display:grid;grid-template-columns:repeat(3,50px);gap:3px;background:#000;padding:4px;border:2px solid #c81e1e;align-self:center}
-  #roomGrid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:8px 0}
+  #pickGrid{display:grid;grid-template-columns:repeat(4,42px);gap:2px;background:#000;padding:4px;border:2px solid #c81e1e;align-self:center}
+  #roomGrid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin:8px 0}
   .chr{position:relative;border:2px solid #3b3766;background:#1b1a3a;padding:0 0 2px;cursor:pointer;font:inherit;color:#fff;overflow:hidden}
-  .chr i{display:block;width:46px;height:50px;margin:0 auto;background:var(--spr) no-repeat;background-size:4560px auto;image-rendering:pixelated;background-color:var(--c)}
-  .chr b{display:block;font-weight:400;font-size:12px;line-height:1;white-space:nowrap;overflow:hidden}
-  .chr.rnd i{background:#2a2550}.chr.rnd i:after{content:"?";display:block;text-align:center;font-style:normal;font-size:44px;line-height:50px;color:#ffd84a}
+  .chr i{display:block;width:40px;height:46px;margin:0 auto;background:var(--spr) no-repeat;background-size:4560px auto;image-rendering:pixelated;background-color:var(--c)}
+  .chr b{display:block;font-weight:400;font-size:11px;line-height:1;white-space:nowrap;overflow:hidden}
+  .chr.rnd i{background:#2a2550}.chr.rnd i:after{content:"?";display:block;text-align:center;font-style:normal;font-size:40px;line-height:46px;color:#ffd84a}
   .chr em{position:absolute;top:0;left:0;font-style:normal;font-size:13px;background:#ffd84a;color:#000;padding:0 3px;line-height:1.1}.chr em:empty{display:none}
   .chr.p1{border-color:#ffd84a;box-shadow:0 0 0 2px #ffd84a}.chr.p2{border-color:#ff3b30;box-shadow:0 0 0 2px #ff3b30}.chr.p2 em{background:#ff3b30;color:#fff}
   #lvPick{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:8px 0}#lvPick button.on{border-color:#ffd84a;background:#2a2550}
@@ -194,7 +194,7 @@
 <!-- ============ HƯỚNG DẪN ============ -->
 <section class="scr" id="guide">
   <h2>Hướng dẫn</h2>
-  <p>Chọn một trong mười nhân vật của agency. Đánh cho đối thủ hết máu trước là thắng hiệp. Hết hiệp, cả hai đầy máu và đấu tiếp; tỉ số ghi ở giữa màn hình.</p>
+  <p>Chọn một trong mười hai nhân vật của agency. Đánh cho đối thủ hết máu trước là thắng hiệp. Hết hiệp, cả hai đầy máu và đấu tiếp; tỉ số ghi ở giữa màn hình.</p>
   <h3>Điều khiển</h3>
   <div class="keys">
     <b>← →</b><span>Di chuyển. Luôn cách đối thủ ít nhất 100 px.</span>
@@ -216,7 +216,7 @@
     <b>LV3 Sếp tổng</b><span>210 HP, đánh dồn dập, thả đồ rơi từ trần (đi ra khỏi vòng báo), hay ra skill và dựng khiên.</span>
   </div>
   <p style="margin-top:8px">Đốm sáng trước mặt máy báo trước độ cao của đòn sắp ra. Skill của máy yếu hơn của bạn khoảng một nửa.</p>
-  <h3>Mười nhân vật và bộ skill</h3>
+  <h3>Mười hai nhân vật và bộ skill</h3>
   <div id="guideSpells"></div>
   <div class="col"><button class="btn" data-go="home">← Về màn hình chính</button></div>
 </section>

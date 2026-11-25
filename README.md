@@ -258,3 +258,9 @@ Game đối kháng phép thuật 16-bit, chơi bằng bàn phím hoặc nút c�
 - Thêm Lê Như (The Perfect Woman): Ánh Mắt Sắc Lẹm, Đẹp Không Góc Chết, Pose Dáng Điệu Đà, Quay TikTok, Snap Snap Pose Pose, Vẽ Tranh Sống Ảo, Filter Làm Đẹp, Thật Hoàn Hảo. Đòn thường là chính các dáng pose của nhân vật bay ra (`ic: -6`).
 - `sprites.webp`: 10 hàng nhân vật, hàng đặc biệt `SR` (ô 2 = tượng nữ thần của Lê Như), đạo cụ từ y = 1650 (9 hàng × 16 ô). `posters.webp`: 10 poster, CSS `background-size:1000%`.
 - Sửa ô mặt bị lệch ở lưới chọn nhân vật; điện thoại trong "Chọc Bạo Hành" to và cao hơn.
+
+### Cập nhật 25/11 (lần 11): nhân vật thứ 11 và 12
+
+- Thêm Thanh Hằng (Art Director · Siêu Mẫu): 10% Pin, Đánh Dập Bờ Vai, Tôm Boy, Nhăm Nhăm, Hút Bụi Liên Hồi, Tình Yêu Đà Lạt, Căn Lề Từng Pixel, Cạo Đầu.
+- Thêm Jen Smiler (Copywriter · Người Yêu Nước): Yêu Biển Đảo, Chông Gai Anh Quen Rồi, Quốc Ca, Vũ Điệu Đan Len, Triệu Hồi Concert, Tự Hào Quá, Caption Triệu Like, Diễu Binh.
+- `sprites.webp`: 12 hàng nhân vật, hàng đặc biệt `SR`, đạo cụ từ y = 1950 (11 hàng × 16 ô). `posters.webp`: 12 poster, CSS `background-size:1200%`. Lưới chọn nhân vật 4 cột.
