@@ -240,3 +240,9 @@ Game đối kháng phép thuật 16-bit, chơi bằng bàn phím hoặc nút c�
 
 - Phím V không còn là phản đòn. V là "vòng đỡ toàn diện": mở 0,5 giây (`WARD`), hồi 1,6 giây, chặn hết đòn thường và skill; skill tối thượng trúng lúc vòng đang mở chỉ còn 30% sát thương và không khống chế.
 - Nút skill chỉ sáng khi đủ MP. MP đầy 100 quá 3 giây (`FULL_HOLD`) sẽ tuột về 40 (`FULL_DROP`).
+
+### Cập nhật 25/11 (lần 8): nhân vật thứ 8
+
+- Thêm Nguyên Cô Đơn (AI Designer): Thánh AI, Đơn Phương Crush, Ngồi Ngủ, Chúa Rớt Miếng, Lạc Tone, Ông Hoàng Tiệc Cưới, Nhiệt Huyết, Yêu Đơn Phương.
+- "Ngồi Ngủ": người ra chiêu ngủ 3 giây và không dính đòn (`nap`); đối thủ ngủ 5 giây, bị đánh thì tỉnh.
+- `sprites.webp`: 8 hàng nhân vật, hàng đặc biệt, rồi đạo cụ từ y = 1350 (7 hàng × 16 ô). `posters.webp`: 8 poster, CSS `background-size:800%`.
