@@ -503,7 +503,7 @@ const STORY = {
   viet: ["Anh không cần slide.", "Anh chỉ cần vuốt tóc.", "Cả phòng họp nín thở."],
   nhan: ["Layout thứ 48.", "Lưng anh đã hết thẳng.", "Giờ tới lượt mày cong."],
   hieu: ["Slide 1 trên 120.", "Win khách. Win sếp. Win giải.", "Win luôn cả mày."],
-  ngan: ["Headline chưa ai duyệt.", "Nhưng mèo thì đã đói.", "Pspspsps…"],
+  ngan: ["Headline chưa ai duyệt.", "Nhưng mèo thì đã đói.", "Meo… meo… ra đây nào!"],
   khoa: ["Chuyện này anh chỉ nghe kể…", "…nhưng anh kể lại cho cả công ty.", "Thêm chút mắm muối."],
   bao: ["Tập xong chưa kịp tắm.", "Nhưng story thì phải đăng.", "Ánh sáng: hoàn hảo."],
   nguyen: ["Tin nhắn thứ 99: «Ngủ ngon nha».", "Đã xem. Không trả lời.", "Tim anh hoá thành vũ khí."],
@@ -519,7 +519,7 @@ const PFACE = [[.57, .15], [.45, .22], [.57, .14], [.48, .21], [.55, .29], [.36,
 const STROW = Object.fromEntries(CH.map((c, i) => [i, i])), FW = 512, FH = 288, STO = new Image(), FR0 = .2, FRD = .95; STO.onerror = () => { if (!STO._f) { STO._f = 1; STO.src = CDN + "87cbfa42-b82c-4628-8999-5956811edbe7.webp"; } }; STO.src = "./story.webp";   // FRD: mỗi khung hiện 0,95 giây
 /* Lồng tiếng Final Act: một file vox.mp3 chứa lần lượt các đoạn của từng nhân vật. VOX[ci] = [mốc bắt đầu trong file, dài câu 1, câu 2, câu 3, dài tiếng động kết].
    Nhân vật có lồng tiếng thì mỗi khung truyện kéo dài đúng bằng câu thoại của nó; chưa có thì dùng nhịp cố định và tiếng bíp. */
-const VOX = { 0: [0, 2.17, 2.26, 1.21, 2.4] }, VOA = new Audio(); VOA.preload = "auto"; VOA.onerror = () => { if (!VOA._f) { VOA._f = 1; VOA.src = CDN + "99dca064-76a9-49f1-a82b-fd55b3fe685e.mp3"; } }; VOA.src = "./vox.mp3"; let voEnd = 0;
+const VOX = { 0: [0, 2.17, 2.26, 1.21, 2.4], 1: [8.34, 1.13, 1.76, 1.58, 2.4], 2: [15.51, 2.22, 1.55, 1.89, 2.4], 3: [23.87, 1.93, 1.69, 1.52, 2.4], 4: [31.71, 2.03, 1.53, 2.42, 2.4], 5: [40.39, 1.81, 1.76, 1.3, 2.4], 6: [47.96, 1.48, 1.52, 1.63, 2.4], 7: [55.29, 3.0, 1.39, 2.03, 2.4], 8: [64.41, 1.65, 1.25, 1.72, 2.4], 9: [71.73, 1.19, 1.2, 1.6, 2.4], 10: [78.42, 1.76, 1.02, 1.42, 2.4], 11: [85.32, 2.29, 1.63, 1.14, 2.4], 12: [93.08, 2.3, 1.71, 1.2, 2.4], 13: [100.99, 1.44, 1.56, 1.05, 2.4] }, VOA = new Audio(); VOA.preload = "auto"; VOA.onerror = () => { if (!VOA._f) { VOA._f = 1; VOA.src = CDN + "fceecef1-61b6-4e12-a39d-011a786e9b82.mp3"; } }; VOA.src = "./vox.mp3"; let voEnd = 0;
 function voStop() { voEnd = 0; try { VOA.pause(); } catch {} }
 function startCut(i, ci, name) {
   const fr = STROW[ci] != null && ok(STO), v = fr && G.sound && VOA.readyState >= 2 ? VOX[ci] : null, b = v ? [FR0, FR0 + v[1], FR0 + v[1] + v[2], FR0 + v[1] + v[2] + v[3]] : [FR0, FR0 + FRD, FR0 + FRD * 2, FR0 + FRD * 3];
