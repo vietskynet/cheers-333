@@ -513,9 +513,27 @@ const STORY = {
   boss: ["Brief nào rồi cũng tới hạn.", "Mọi câu «mai em gửi»…", "…đều về tay ta."],
 };
 const PFACE = [[.57, .15], [.45, .22], [.57, .14], [.48, .21], [.55, .29], [.36, .26], [.45, .2], [.5, .16], [.61, .11], [.49, .35], [.48, .19], [.48, .19], [.59, .19]];   // tâm gương mặt trên từng poster (tỉ lệ ngang, dọc)
-function startCut(i, ci, name) { G.cut = { i, ci, n: name, t: 0, d: 2.75, s: 0, lines: STORY[CH[ci].id] || ["…", "…", "…"] }; beep(120, .5, "sawtooth", .08, 900); }
-function stepCut(dt) { const c = G.cut; c.t += dt; const st = c.t < .35 ? 0 : c.t < .9 ? 1 : c.t < 1.45 ? 2 : c.t < 2 ? 3 : 4; if (st > c.s) { c.s = st; if (st < 4) beep(500 + st * 120, .06, "square", .05); else { beep(90, .5, "sawtooth", .12, 40); beep(1400, .25, "square", .06, 200); } } if (c.t >= c.d) { G.cut = null; G.flash = .7; G.shake = 10; } }
+/* Ba khung truyện vẽ riêng cho từng nhân vật (story.webp: mỗi hàng 3 ô 512×288). STROW: số nhân vật → hàng trong ảnh. Chưa tải xong thì dùng kiểu zoom poster. */
+const STROW = Object.fromEntries(CH.map((c, i) => [i, i])), FW = 512, FH = 288, STO = new Image(), FR0 = .2, FRD = .95; STO.onerror = () => { if (!STO._f) { STO._f = 1; STO.src = CDN + "87cbfa42-b82c-4628-8999-5956811edbe7.webp"; } }; STO.src = "./story.webp";   // FRD: mỗi khung hiện 0,95 giây
+function startCut(i, ci, name) { const fr = STROW[ci] != null && ok(STO); G.cut = { i, ci, n: name, t: 0, d: fr ? FR0 + FRD * 3 + .75 : 2.75, s: 0, fr, lines: STORY[CH[ci].id] || ["…", "…", "…"] }; beep(120, .5, "sawtooth", .08, 900); }
+function stepCut(dt) { const c = G.cut; c.t += dt; const st = c.fr ? Math.min(4, 1 + Math.floor(Math.max(0, c.t - FR0) / FRD) + (c.t < FR0 ? -1 : 0)) : c.t < .35 ? 0 : c.t < .9 ? 1 : c.t < 1.45 ? 2 : c.t < 2 ? 3 : 4; if (st > c.s) { c.s = st; if (st < 4) beep(500 + st * 120, .06, "square", .05); else { beep(90, .5, "sawtooth", .12, 40); beep(1400, .25, "square", .06, 200); } } if (c.t >= c.d) { G.cut = null; G.flash = .7; G.shake = 10; } }
+function drawCutFrames(c) {      // bản có tranh: ba khung truyện lần lượt phủ kín màn hình, khung cuối là lúc tung chiêu
+  const t = c.t, ch = CH[c.ci], col = ch.col, ease = k => 1 - Math.pow(1 - clamp(k, 0, 1), 3), kin = ease(t / FR0), tn = FR0 + FRD * 3, fi = clamp(Math.floor((t - FR0) / FRD), 0, 2), ft = t - FR0 - fi * FRD, row = STROW[c.ci];
+  x.save(); x.setTransform(1, 0, 0, 1, 0, 0); x.globalAlpha = 1; x.globalCompositeOperation = "source-over"; x.fillStyle = `rgba(0,0,0,${kin})`; x.fillRect(0, 0, W, H);
+  if (t >= FR0) { const z = 1.04 + (fi === 2 ? .1 : .06) * Math.min(1, ft / FRD) + (fi === 2 && t >= tn ? .03 : 0), dx = [-1, 1, 0][fi] * (1 - Math.min(1, ft / FRD)) * 10, sl = (1 - ease(ft / .16)) * [W * .5, -W * .5, 0][fi], jx = fi === 2 && t >= tn ? Math.sin(t * 90) * Math.max(0, tn + .3 - t) * 10 : 0;
+    x.save(); x.beginPath(); x.rect(0, 22, W, H - 44); x.clip(); x.imageSmoothingEnabled = true; x.translate(W / 2 + dx + sl + jx, H / 2); x.scale(z, z); x.drawImage(STO, fi * FW, row * FH, FW, FH, -W / 2, -H / 2, W, H); x.restore(); x.imageSmoothingEnabled = false;
+    if (ft < .12) { x.fillStyle = `rgba(255,255,255,${(1 - ft / .12) * .85})`; x.fillRect(0, 22, W, H - 44); }
+    const g = x.createLinearGradient(0, H - 100, 0, H - 22); g.addColorStop(0, "rgba(0,0,0,0)"); g.addColorStop(1, "rgba(0,0,0,.82)"); x.fillStyle = g; x.fillRect(0, H - 100, W, 78); }
+  x.fillStyle = "#000"; x.fillRect(0, 0, W, 22); x.fillRect(0, H - 22, W, 22); x.fillStyle = col; x.fillRect(0, 21, W, 2); x.fillRect(0, H - 23, W, 2);
+  text("★ FINAL ACT ★", 10, 16, col, 16); text(ch.name.toUpperCase(), W - 10, 16, "#fff", 16, "right"); [0, 1, 2].forEach(i => { x.fillStyle = i <= fi && t >= FR0 ? col : "#333"; x.fillRect(W / 2 - 22 + i * 16, 9, 12, 4); });
+  if (t >= FR0 && t < tn) { const ln = c.lines[fi], n = Math.floor(ft * 46); x.font = FONT(22); x.textAlign = "center"; x.lineJoin = "round"; x.lineWidth = 5; x.strokeStyle = "#000"; const sh = ln.slice(0, n); x.strokeText(sh, W / 2, H - 34); x.fillStyle = "#fff"; x.fillText(sh, W / 2, H - 34); }
+  text("bấm nút bất kỳ để bỏ qua", W / 2, H - 6, "#6b7280", 12, "center");
+  if (t >= tn) { const u = clamp((t - tn) / .16, 0, 1), sc = 3.2 - 2.2 * ease(u); x.save(); x.translate(W / 2, H / 2 + 28); x.transform(1, 0, -.18, 1, 0, 0); x.scale(sc, sc); x.globalAlpha = u; const nm = c.n.toUpperCase(), size = nm.length > 15 ? 40 : 50; x.font = FONT(size); x.textAlign = "center"; x.lineJoin = "round"; x.lineWidth = 9; x.strokeStyle = "#000"; x.strokeText(nm, 0, 0); x.lineWidth = 3; x.strokeStyle = col; x.strokeText(nm, 0, 0); x.fillStyle = "#fff"; x.fillText(nm, 0, 0); x.restore(); if (u >= 1 && t < tn + .28) { x.fillStyle = `rgba(255,255,255,${(tn + .28 - t) * 2.4})`; x.fillRect(0, 0, W, H); } }
+  const out = clamp((t - (c.d - .14)) / .14, 0, 1); if (out > 0) { x.fillStyle = `rgba(255,255,255,${out})`; x.fillRect(0, 0, W, H); }
+  x.restore();
+}
 function drawCut() {
+  if (G.cut.fr) return drawCutFrames(G.cut);
   const c = G.cut, t = c.t, ch = CH[c.ci], col = ch.col, left = c.i === 0, ease = k => 1 - Math.pow(1 - clamp(k, 0, 1), 3), kin = ease(t / .28);
   x.save(); x.setTransform(1, 0, 0, 1, 0, 0); x.globalAlpha = 1; x.globalCompositeOperation = "source-over";
   x.fillStyle = `rgba(6,4,22,${.84 * kin})`; x.fillRect(0, 0, W, H);
