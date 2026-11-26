@@ -519,7 +519,7 @@ const mkCtrl = c => ({ k: c[0], t: c[1], end: c[2] || 0, lb: c[3] || "", ic: c[4
 function resolve(a, T) {
   const res = { id: a.id, r: "hit", dmg: 0, x: a.cond ? a.tx : T.x, h: a.p ? a.h : 70 };
   if (T.ko) return null;
-  if (a.rng && !a.p && Math.abs(T.x - a.cx) > a.rng + 12) res.r = "miss";   // skill tầm ngắn: đối thủ đứng ngoài tầm thì trượt
+  if (a.rng && !a.p && Math.abs(T.x - a.cx) > a.rng + (a.n ? 45 : 12)) { res.r = "miss"; res.far = 1; }   // skill tầm ngắn: đối thủ đứng ngoài tầm thì trượt
   else if (a.cond && Math.abs(T.x - a.tx) > 30) res.r = "miss";
   else if (T.smoke > 0 || T.nap > 0 || (T.inv > 0 && !a.sp)) res.r = "miss";
   else if (a.p && !a.low && T.crouch && !a.sp) res.r = "miss";
@@ -556,7 +556,8 @@ function showRes(res, a) {
     if (res.paint && T) T.paint = res.paint; if (res.steal) { const fr = F[a ? a.from : 1 - res.to]; if (fr && own(fr.i) && !fr.ai) fr.mp = Math.min(100, fr.mp + res.steal); pop("+" + res.steal + " MP", fr.x, FLOOR - 150, "#7fd4ff", .8); } if (res.wake) pop("GIẬT MÌNH!", X, Y - 60, "#fff", .8);
   } else if (res.r === "block") { pop("CHẶN!", X, Y - 24, "#7fd4ff", .7); burst(X, Y, "#7fd4ff", 8); beep(900, .06, "triangle"); }
   else if (res.r === "ward") { pop(res.dmg ? "ĐỠ ĐƯỢC! -" + res.dmg : "ĐỠ TRỌN!", clamp(X, 50, W - 50), Y - 24, "#ffe14a", 1, 1.2); burst(X, Y, "#ffe14a", 16); G.stop = Math.max(G.stop, .08); beep(1400, .12, "square"); if (res.dmg && (a ? a.from : 1 - res.to) === G.ME) { G.hits++; G.hitT = 2.4; } }
-  else if (res.r === "miss" && a && !a.p) pop(a.rng && Math.abs(X - a.cx) > a.rng + 12 ? "HỤT TẦM" : "TRƯỢT", X, Y - 24, "#bbb", .6);
+  else if (res.far && a) { if (!a.n) { const rx = a.cx + a.dir * a.rng; pop("HỤT TẦM", clamp(rx, 40, W - 40), FLOOR - 96, "#ddd", .9); for (let i = 0; i < 8; i++) FX.push({ k: "spark", t: 0, d: .35, x: rx + rnd(-10, 10), y: FLOOR - rnd(4, 60), vx: rnd(-50, 50), vy: rnd(10, 70), c: "#aaa" }); beep(160, .12, "triangle", .04); } }
+  else if (res.r === "miss" && a && !a.p) pop("TRƯỢT", X, Y - 24, "#bbb", .6);
   if (res.ko) doKO(to);
 }
 function doKO(loser) {
@@ -638,7 +639,7 @@ function stepAttacks(dt) {
       if (a.x < -40 || a.x > W + 40 || (a.range && Math.abs(a.x - a.cx) > a.range + 46)) ATK.splice(j, 1);
       else if (a.rng && Math.abs(a.x - a.cx) > a.rng) { pop("HỤT TẦM", a.x, FLOOR - a.h - 14, "#bbb", .6); burst(a.x, FLOOR - a.h, "#888", 5); ATK.splice(j, 1); }   // đòn thường chỉ với tới tầm ngắn
     } else if (!a.done) {
-      a.done = 1; a.hitAt = a.age; a.hx = a.cond ? a.tx : T.x;
+      a.done = 1; a.hitAt = a.age; a.hx = a.cond ? a.tx : a.rng ? a.cx + clamp(T.x - a.cx, -a.rng, a.rng) : T.x;
       if (own(a.to)) { const res = resolve(a, T); if (res) { showRes(res, a); if (G.mode === "pvp") send({ t: "res", res, aid: a.id }); } }
       if (a.fx === "world" || a.fx === "rain" || a.fx === "nobg" || a.fx === "orbit" || a.fx === "rise" || a.fx === "tornado" || a.fx === "aura" || a.fx === "zoom" || a.fx === "call" || a.fx === "butt" || a.fx === "perf" || a.fx === "prompt" || a.fx === "wedding" || a.fx === "cry" || a.fx === "shame" || a.fx === "runway" || a.fx === "goat" || a.fx === "glare" || a.fx === "paint" || a.fx === "filter" || a.fx === "goddess" || a.fx === "bus" || a.fx === "guides" || a.fx === "shave" || a.fx === "parade" || a.fx === "bkk" || a.fx === "fans" || a.fx === "inhale" || a.fx === "nine" || a.fx === "timeup" || a.fx === "sketch" || a.fx === "mob" || (a.fx === "drop" && a.sc > 1.2)) { G.flash = Math.max(G.flash, .5); G.shake = Math.max(G.shake, 9); beep(70, .35, "sawtooth", .1, 35); }
     } else if (a.age - a.hitAt > .6) ATK.splice(j, 1);
@@ -812,7 +813,8 @@ function drawAttack(a) {
     if (a.low) { x.fillStyle = col; for (let i = 0; i < 4; i++) x.fillRect(X - d * i * 8 - 2, FLOOR - 4 - ((t * 60 + i * 9) % 14), 4, 5); }
     return;
   }
-  const k = clamp(a.age / Math.max(.01, a.wait), 0, 1), post = a.done ? a.age - a.hitAt : -1, TX = a.done ? a.hx : a.cond ? a.tx : T.x;
+  const k = clamp(a.age / Math.max(.01, a.wait), 0, 1), post = a.done ? a.age - a.hitAt : -1, TXfull = a.done ? a.hx : a.cond ? a.tx : T.x, short = a.rng && !a.p, TX = short ? a.cx + clamp(TXfull - a.cx, -a.rng, a.rng) : TXfull;   // skill tầm ngắn: hiệu ứng chỉ vươn tới hết tầm, không chạm đối thủ đứng xa
+  if (short && !a.done && !a.n) { const rx = a.cx + a.dir * a.rng, al = .35 + .25 * Math.sin(t * 14); x.fillStyle = `rgba(255,255,255,${al})`; for (let u = a.cx + a.dir * 30; (rx - u) * a.dir > 0; u += a.dir * 12) x.fillRect(Math.round(u), FLOOR + 5, 6, 2); x.fillRect(Math.round(rx) - 1, FLOOR - 4, 3, 13); }   // vạch tầm với trên sàn lúc đang vận chiêu
   x.save();
   if (a.fx === "drop") {
     const top = a.gnd ? FLOOR - 36 * a.sc + 8 : FLOOR - 96 - 14 * (a.sc || 1), t0 = a.quick ? Math.max(0, a.wait - .32) : 0, kk = clamp((a.age - t0) / Math.max(.01, a.wait - t0), 0, 1), y = a.done ? top + Math.min(1, post * 6) * 26 : -70 + (top + 70) * kk * kk;
