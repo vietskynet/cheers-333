@@ -396,7 +396,7 @@ function newF(i) {
   return { i, dir: i ? -1 : 1, x: i ? 372 : 110, y: 0, vy: 0, hp: o ? o.hp : 100, max: o ? o.hp : 100, lag: 1, mp: 25, guard: 100, stun: 0, inv: 0, shield: 0, parry: 0, charge: 0, big: 0, bigK: 0, giant: 0, nap: 0, mute: 0, smoke: 0, fly: 0, ride: null, paint: 0, lock: 0, ctrl: null, crouch: false, walk: 0, moving: false, act: "", actT: 0, cd: {}, ko: false, q: [], ai: o ? { rest: rnd(...o.rest), wind: 0, type: "", fire: 0 } : null };
 }
 function startMatch(mode, lvl, chars, sub) {
-  G.cut = null;
+  G.cut = null; voStop();
   G.mode = mode; G.lvl = lvl || 0; G.sub = mode === "ai" ? sub || "" : ""; G.ally = null; G.lvo = G.sub === "tour" ? (chars[1] === BOSS ? BOSSLV : tourLv(G.tour.s, G.tour.order.length - 1)) : G.sub === "test" && G.passive ? DUMMY : null; $("tourBox").className = ""; G.round = 1; G.score = [0, 0]; G.ME = mode === "pvp" && !net.host ? 1 : 0; G.chars = chars;
   show("game"); scrollTo(0, 0);
   // bảng 8 skill ngay dưới sân đấu: chỉ để xem tổ hợp phím và tên chiêu, không bấm được; ô sáng khi đủ MP
@@ -433,7 +433,8 @@ function musDrum(t, d, vol, hp) { const n = AC.createBufferSource(), g = AC.crea
 function musKick(t) { const o = AC.createOscillator(), g = AC.createGain(); o.type = "triangle"; o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(45, t + .11); g.gain.setValueAtTime(.3, t); g.gain.exponentialRampToValueAtTime(.0001, t + .13); o.connect(g); g.connect(MUS.out); o.start(t); o.stop(t + .15); }
 function musTick() {
   if (!AC || AC.state !== "running" || !MUS.out) return;
-  MUS.out.gain.value = G.sound && !document.hidden ? .55 : 0;
+  MUS.out.gain.value = G.sound && !document.hidden ? (G.cut && G.cut.vo ? .14 : .55) : 0;   // đang đọc thoại thì hạ nhạc nền
+  if (voEnd && (VOA.currentTime >= voEnd - .03 || !G.sound || !$("game").classList.contains("on"))) voStop();
   const name = $("game").classList.contains("on") ? (G.lvo && G.lvo.boss ? "boss" : "fight") : "menu", S = SONGS[name], sl = 60 / S.bpm / 4, now = AC.currentTime;
   if (name !== MUS.cur || MUS.next < now - .3) { MUS.cur = name; MUS.step = 0; MUS.next = now + .06; }
   while (MUS.next < now + .25) {
@@ -450,7 +451,8 @@ function musTick() {
   }
 }
 // trình duyệt chỉ cho phát tiếng sau khi người chơi chạm hoặc bấm phím lần đầu
-function musUnlock() { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === "suspended") AC.resume(); if (!MUS.out) { MUS.out = AC.createGain(); MUS.out.gain.value = 0; MUS.out.connect(AC.destination); const b = AC.createBuffer(1, AC.sampleRate, AC.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; MUS.nz = b; setInterval(musTick, 50); } } catch {} }
+function musUnlock() { if (!VOA._u) { VOA._u = 1; try { VOA.muted = true; const pr = VOA.play(); const done = () => { VOA.pause(); VOA.muted = false; }; pr && pr.then ? pr.then(done, () => { VOA.muted = false; }) : done(); } catch {} }
+  try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === "suspended") AC.resume(); if (!MUS.out) { MUS.out = AC.createGain(); MUS.out.gain.value = 0; MUS.out.connect(AC.destination); const b = AC.createBuffer(1, AC.sampleRate, AC.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; MUS.nz = b; setInterval(musTick, 50); } } catch {} }
 addEventListener("pointerdown", musUnlock); addEventListener("keydown", musUnlock);
 
 /* ======================= ĐIỀU KHIỂN ======================= */
@@ -466,7 +468,7 @@ addEventListener("keydown", e => { if (!$("game").classList.contains("on")) retu
 addEventListener("keyup", e => { if (KMAP[e.code]) KEY[KMAP[e.code]] = 0; });
 const canAct = p => !p.ko && G.phase === "fight" && p.stun <= 0 && !p.ctrl && p.lock <= 0 && p.charge <= 0 && p.fly <= 0 && p.nap <= 0;
 function press(k) {
-  if (G.cut) { if (G.cut.t > .4) G.cut.t = Math.max(G.cut.t, G.cut.d - .12); return; }
+  if (G.cut) { if (G.cut.t > .4) { G.cut.t = Math.max(G.cut.t, G.cut.d - .12); voStop(); } return; }
   const p = F[G.ME]; if (!p || G.phase !== "fight" || p.ko) return;
   seq.s = G.t - seq.t < SEQT ? (seq.s + k).slice(-6) : k; seq.t = G.t; G.keys.push({ k, t: G.t }); if (G.keys.length > 8) G.keys.shift();
   // đang nạp (Q) hoặc vừa ra đòn nặng (D) vẫn nối được combo: phím kế tiếp khớp chuỗi thì huỷ nạp và ra skill luôn
@@ -515,18 +517,31 @@ const STORY = {
 const PFACE = [[.57, .15], [.45, .22], [.57, .14], [.48, .21], [.55, .29], [.36, .26], [.45, .2], [.5, .16], [.61, .11], [.49, .35], [.48, .19], [.48, .19], [.59, .19]];   // tâm gương mặt trên từng poster (tỉ lệ ngang, dọc)
 /* Ba khung truyện vẽ riêng cho từng nhân vật (story.webp: mỗi hàng 3 ô 512×288). STROW: số nhân vật → hàng trong ảnh. Chưa tải xong thì dùng kiểu zoom poster. */
 const STROW = Object.fromEntries(CH.map((c, i) => [i, i])), FW = 512, FH = 288, STO = new Image(), FR0 = .2, FRD = .95; STO.onerror = () => { if (!STO._f) { STO._f = 1; STO.src = CDN + "87cbfa42-b82c-4628-8999-5956811edbe7.webp"; } }; STO.src = "./story.webp";   // FRD: mỗi khung hiện 0,95 giây
-function startCut(i, ci, name) { const fr = STROW[ci] != null && ok(STO); G.cut = { i, ci, n: name, t: 0, d: fr ? FR0 + FRD * 3 + .75 : 2.75, s: 0, fr, lines: STORY[CH[ci].id] || ["…", "…", "…"] }; beep(120, .5, "sawtooth", .08, 900); }
-function stepCut(dt) { const c = G.cut; c.t += dt; const st = c.fr ? Math.min(4, 1 + Math.floor(Math.max(0, c.t - FR0) / FRD) + (c.t < FR0 ? -1 : 0)) : c.t < .35 ? 0 : c.t < .9 ? 1 : c.t < 1.45 ? 2 : c.t < 2 ? 3 : 4; if (st > c.s) { c.s = st; if (st < 4) beep(500 + st * 120, .06, "square", .05); else { beep(90, .5, "sawtooth", .12, 40); beep(1400, .25, "square", .06, 200); } } if (c.t >= c.d) { G.cut = null; G.flash = .7; G.shake = 10; } }
+/* Lồng tiếng Final Act: một file vox.mp3 chứa lần lượt các đoạn của từng nhân vật. VOX[ci] = [mốc bắt đầu trong file, dài câu 1, câu 2, câu 3, dài tiếng động kết].
+   Nhân vật có lồng tiếng thì mỗi khung truyện kéo dài đúng bằng câu thoại của nó; chưa có thì dùng nhịp cố định và tiếng bíp. */
+const VOX = { 0: [0, 2.17, 2.26, 1.21, 2.4] }, VOA = new Audio(); VOA.preload = "auto"; VOA.onerror = () => { if (!VOA._f) { VOA._f = 1; VOA.src = CDN + "99dca064-76a9-49f1-a82b-fd55b3fe685e.mp3"; } }; VOA.src = "./vox.mp3"; let voEnd = 0;
+function voStop() { voEnd = 0; try { VOA.pause(); } catch {} }
+function startCut(i, ci, name) {
+  const fr = STROW[ci] != null && ok(STO), v = fr && G.sound && VOA.readyState >= 2 ? VOX[ci] : null, b = v ? [FR0, FR0 + v[1], FR0 + v[1] + v[2], FR0 + v[1] + v[2] + v[3]] : [FR0, FR0 + FRD, FR0 + FRD * 2, FR0 + FRD * 3];
+  G.cut = { i, ci, n: name, t: 0, d: fr ? b[3] + (v ? Math.min(1.5, v[4] - .5) : .75) : 2.75, s: 0, fr, b, vo: v, lines: STORY[CH[ci].id] || ["…", "…", "…"] }; beep(120, .5, "sawtooth", .08, 900);
+}
+function stepCut(dt) {
+  const c = G.cut, t0 = c.t; c.t += dt; const b = c.b;
+  if (c.vo && t0 < FR0 && c.t >= FR0) { try { VOA.currentTime = c.vo[0]; voEnd = c.vo[0] + c.vo[1] + c.vo[2] + c.vo[3] + c.vo[4]; const pr = VOA.play(); if (pr && pr.catch) pr.catch(() => {}); } catch {} }   // bắt đầu đọc thoại đúng lúc khung 1 hiện
+  const st = c.fr ? (c.t < b[0] ? 0 : c.t < b[1] ? 1 : c.t < b[2] ? 2 : c.t < b[3] ? 3 : 4) : c.t < .35 ? 0 : c.t < .9 ? 1 : c.t < 1.45 ? 2 : c.t < 2 ? 3 : 4;
+  if (st > c.s) { c.s = st; if (!c.vo) { if (st < 4) beep(500 + st * 120, .06, "square", .05); else { beep(90, .5, "sawtooth", .12, 40); beep(1400, .25, "square", .06, 200); } } }
+  if (c.t >= c.d) { G.cut = null; G.flash = .7; G.shake = 10; }   // tiếng động kết còn ngân thêm một chút sang lúc ra đòn
+}
 function drawCutFrames(c) {      // bản có tranh: ba khung truyện lần lượt phủ kín màn hình, khung cuối là lúc tung chiêu
-  const t = c.t, ch = CH[c.ci], col = ch.col, ease = k => 1 - Math.pow(1 - clamp(k, 0, 1), 3), kin = ease(t / FR0), tn = FR0 + FRD * 3, fi = clamp(Math.floor((t - FR0) / FRD), 0, 2), ft = t - FR0 - fi * FRD, row = STROW[c.ci];
+  const t = c.t, ch = CH[c.ci], col = ch.col, ease = k => 1 - Math.pow(1 - clamp(k, 0, 1), 3), kin = ease(t / FR0), b = c.b, tn = b[3], fi = t < b[1] ? 0 : t < b[2] ? 1 : 2, ft = Math.max(0, t - b[fi]), FD = b[fi + 1] - b[fi], row = STROW[c.ci];
   x.save(); x.setTransform(1, 0, 0, 1, 0, 0); x.globalAlpha = 1; x.globalCompositeOperation = "source-over"; x.fillStyle = `rgba(0,0,0,${kin})`; x.fillRect(0, 0, W, H);
-  if (t >= FR0) { const z = 1.04 + (fi === 2 ? .1 : .06) * Math.min(1, ft / FRD) + (fi === 2 && t >= tn ? .03 : 0), dx = [-1, 1, 0][fi] * (1 - Math.min(1, ft / FRD)) * 10, sl = (1 - ease(ft / .16)) * [W * .5, -W * .5, 0][fi], jx = fi === 2 && t >= tn ? Math.sin(t * 90) * Math.max(0, tn + .3 - t) * 10 : 0;
+  if (t >= FR0) { const z = 1.04 + (fi === 2 ? .1 : .06) * Math.min(1, ft / FD) + (fi === 2 && t >= tn ? .03 : 0), dx = [-1, 1, 0][fi] * (1 - Math.min(1, ft / FD)) * 10, sl = (1 - ease(ft / .16)) * [W * .5, -W * .5, 0][fi], jx = fi === 2 && t >= tn ? Math.sin(t * 90) * Math.max(0, tn + .3 - t) * 10 : 0;
     x.save(); x.beginPath(); x.rect(0, 22, W, H - 44); x.clip(); x.imageSmoothingEnabled = true; x.translate(W / 2 + dx + sl + jx, H / 2); x.scale(z, z); x.drawImage(STO, fi * FW, row * FH, FW, FH, -W / 2, -H / 2, W, H); x.restore(); x.imageSmoothingEnabled = false;
     if (ft < .12) { x.fillStyle = `rgba(255,255,255,${(1 - ft / .12) * .85})`; x.fillRect(0, 22, W, H - 44); }
     const g = x.createLinearGradient(0, H - 100, 0, H - 22); g.addColorStop(0, "rgba(0,0,0,0)"); g.addColorStop(1, "rgba(0,0,0,.82)"); x.fillStyle = g; x.fillRect(0, H - 100, W, 78); }
   x.fillStyle = "#000"; x.fillRect(0, 0, W, 22); x.fillRect(0, H - 22, W, 22); x.fillStyle = col; x.fillRect(0, 21, W, 2); x.fillRect(0, H - 23, W, 2);
   text("★ FINAL ACT ★", 10, 16, col, 16); text(ch.name.toUpperCase(), W - 10, 16, "#fff", 16, "right"); [0, 1, 2].forEach(i => { x.fillStyle = i <= fi && t >= FR0 ? col : "#333"; x.fillRect(W / 2 - 22 + i * 16, 9, 12, 4); });
-  if (t >= FR0 && t < tn) { const ln = c.lines[fi], n = Math.floor(ft * 46); x.font = FONT(22); x.textAlign = "center"; x.lineJoin = "round"; x.lineWidth = 5; x.strokeStyle = "#000"; const sh = ln.slice(0, n); x.strokeText(sh, W / 2, H - 34); x.fillStyle = "#fff"; x.fillText(sh, W / 2, H - 34); }
+  if (t >= FR0 && t < tn) { const ln = c.lines[fi], n = Math.floor(ft / (FD * .6) * ln.length) + 1; x.font = FONT(22); x.textAlign = "center"; x.lineJoin = "round"; x.lineWidth = 5; x.strokeStyle = "#000"; const sh = ln.slice(0, n); x.strokeText(sh, W / 2, H - 34); x.fillStyle = "#fff"; x.fillText(sh, W / 2, H - 34); }
   text("bấm nút bất kỳ để bỏ qua", W / 2, H - 6, "#6b7280", 12, "center");
   if (t >= tn) { const u = clamp((t - tn) / .16, 0, 1), sc = 3.2 - 2.2 * ease(u); x.save(); x.translate(W / 2, H / 2 + 28); x.transform(1, 0, -.18, 1, 0, 0); x.scale(sc, sc); x.globalAlpha = u; const nm = c.n.toUpperCase(), size = nm.length > 15 ? 40 : 50; x.font = FONT(size); x.textAlign = "center"; x.lineJoin = "round"; x.lineWidth = 9; x.strokeStyle = "#000"; x.strokeText(nm, 0, 0); x.lineWidth = 3; x.strokeStyle = col; x.strokeText(nm, 0, 0); x.fillStyle = "#fff"; x.fillText(nm, 0, 0); x.restore(); if (u >= 1 && t < tn + .28) { x.fillStyle = `rgba(255,255,255,${(tn + .28 - t) * 2.4})`; x.fillRect(0, 0, W, H); } }
   const out = clamp((t - (c.d - .14)) / .14, 0, 1); if (out > 0) { x.fillStyle = `rgba(255,255,255,${out})`; x.fillRect(0, 0, W, H); }
