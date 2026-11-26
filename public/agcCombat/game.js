@@ -416,11 +416,20 @@ let F = [], ATK = [], FX = [], NUM = [], aid = [0, 0];
 const KEY = { l: 0, r: 0, u: 0, d: 0 }, seq = { s: "", t: -9 };
 const own = i => G.mode === "ai" || i === G.ME;        // máy này có quyền quyết định cho nhân vật i không
 const chOf = i => CH[G.chars[i]];
+/* Chỉ số riêng từng nhân vật, thang 1–5, mỗi người tổng 12 điểm: [tốc độ, sức mạnh, máu, năng lượng]. Mức 3 là chuẩn cũ.
+   Tốc độ: bước đi ±10% mỗi nấc. Sức mạnh: sát thương đòn thường và skill ±10% mỗi nấc. Máu: 100 ±10 mỗi nấc (máy: nhân theo tỉ lệ).
+   Năng lượng: nộ đầu hiệp 25 ±5 mỗi nấc, tốc độ lên nộ ±15% mỗi nấc. Boss không có chỉ số (giữ nguyên BOSSLV). */
+const STATS = { duc: [3, 3, 2, 4], viet: [2, 3, 3, 4], nhan: [2, 4, 2, 4], hieu: [2, 2, 3, 5], ngan: [3, 2, 3, 4], khoa: [4, 3, 2, 3], bao: [2, 5, 4, 1], nguyen: [1, 3, 4, 4], thang: [4, 3, 2, 3], nhu: [3, 2, 2, 5], hang: [5, 3, 3, 1], jen: [3, 3, 4, 2], tuan: [4, 4, 2, 2], tudong: [1, 3, 5, 3], vitlon: [4, 2, 1, 5] };
+const STN = ["Tốc độ", "Sức mạnh", "Máu", "Năng lượng"], stOf = ci => (CH[ci] && STATS[CH[ci].id]) || [3, 3, 3, 3];
+const stK = (ci, j) => 1 + (stOf(ci)[j] - 3) * (j === 3 ? .15 : .1), SK = (i, j) => stK(G.chars[i], j);   // hệ số nhân của nhân vật ci / đấu thủ i cho chỉ số j
+const stShow = ci => { const k = stOf(ci); return [`${Math.round(125 * stK(ci, 0))} px/s`, `×${stK(ci, 1).toFixed(1)}`, `${Math.round(100 * stK(ci, 2))} HP`, `nộ đầu hiệp ${25 + (k[3] - 3) * 5}`]; };
 
 function newF(i) {
   const o = G.mode === "ai" && i === 1 ? lv() : null;
-  return { i, dir: i ? -1 : 1, x: i ? 372 : 110, y: 0, vy: 0, hp: o ? o.hp : 100, max: o ? o.hp : 100, lag: 1, mp: 25, guard: 100, stun: 0, inv: 0, shield: 0, parry: 0, charge: 0, big: 0, bigK: 0, giant: 0, nap: 0, mute: 0, smoke: 0, fly: 0, ride: null, paint: 0, lock: 0, ctrl: null, crouch: false, walk: 0, moving: false, act: "", actT: 0, cd: {}, ko: false, q: [], ai: o ? { rest: rnd(...o.rest), wind: 0, type: "", fire: 0 } : null };
+  const mx = Math.round((o ? o.hp : 100) * (o && !o.spd ? 1 : SK(i, 2)));
+  return { i, dir: i ? -1 : 1, x: i ? 372 : 110, y: 0, vy: 0, hp: mx, max: mx, lag: 1, mp: 25 + (stOf(G.chars[i])[3] - 3) * 5, guard: 100, stun: 0, inv: 0, shield: 0, parry: 0, charge: 0, big: 0, bigK: 0, giant: 0, nap: 0, mute: 0, smoke: 0, fly: 0, ride: null, paint: 0, lock: 0, ctrl: null, crouch: false, walk: 0, moving: false, act: "", actT: 0, cd: {}, ko: false, q: [], ai: o ? { rest: rnd(...o.rest), wind: 0, type: "", fire: 0 } : null };
 }
+
 function startMatch(mode, lvl, chars, sub) {
   G.cut = null; voStop();
   G.mode = mode; G.lvl = lvl || 0; G.sub = mode === "ai" ? sub || "" : ""; G.ally = null; G.lvo = G.sub === "tour" ? (chars[1] === BOSS ? BOSSLV : tourLv(G.tour.s, G.tour.order.length - 1)) : G.sub === "test" && G.passive ? DUMMY : null; $("tourBox").className = ""; G.round = 1; G.score = [0, 0]; G.ME = mode === "pvp" && !net.host ? 1 : 0; G.chars = chars;
@@ -515,8 +524,8 @@ function doBasic(i, k, local) {
   const p = F[i], c = chOf(i); if (local && (p.cd[k] || 0) > 0) return;
   if (local && G.mode === "pvp") send({ t: "b", k });
   p.cd[k] = CD[k];
-  if (k === "F") { p.act = "cast"; p.actT = .18; spawn(i, { p: 1, v: 300, dmg: BASIC.F, col: c.col, ic: c.F.ic, sc: .4, basic: 1, range: 62 }); beep(880, .06); if (near(i)) aiReact(i, .4); }
-  if (k === "G") { p.act = "heavy"; p.actT = .3; p.lock = .22; p.softT = G.t + .25; const low = G.mode === "pvp"; spawn(i, { p: 1, v: 240, dmg: BASIC.G, col: c.col, ic: c.G.ic, sc: .6, wob: 1, low, h: low ? 16 : HIGH, basic: 1, range: 80 }); beep(330, .12, "sawtooth"); if (near(i)) aiReact(i, .7); }
+  if (k === "F") { p.act = "cast"; p.actT = .18; spawn(i, { p: 1, v: 300, dmg: BASIC.F * SK(i, 1), col: c.col, ic: c.F.ic, sc: .4, basic: 1, range: 62 }); beep(880, .06); if (near(i)) aiReact(i, .4); }
+  if (k === "G") { p.act = "heavy"; p.actT = .3; p.lock = .22; p.softT = G.t + .25; const low = G.mode === "pvp"; spawn(i, { p: 1, v: 240, dmg: BASIC.G * SK(i, 1), col: c.col, ic: c.G.ic, sc: .6, wob: 1, low, h: low ? 16 : HIGH, basic: 1, range: 80 }); beep(330, .12, "sawtooth"); if (near(i)) aiReact(i, .7); }
   if (k === "C") { p.shield = .85; p.cd.C = .85 + CD.C; beep(520, .1, "triangle"); }
   if (k === "V") { p.parry = WARD; beep(700, .12, "triangle", .06, 1400); }
   if (k === "B") { p.charge = .65; beep(260, .3, "sine", .05, 520); }
@@ -603,7 +612,7 @@ const allyX = () => clamp((F[1] ? F[1].x : 400) + 46, 60, 462), CI = a => a.as ?
 function doCast(i, si, local, as) {            // as: số nhân vật của đồng đội ra chiêu hộ (boss cuối), không khoá người gọi
   const p = F[i], s = (as != null ? CH[as] : chOf(i)).sp[si], T = TIER[s.t], tg = F[1 - i];
   if (local) { p.mp -= T.mp; if (G.mode === "pvp") send({ t: "c", s: si }); }
-  const wait = s.t >= 3 ? .6 : .42, weak = (p.ai ? lv().sk || .55 : 1) * CUT[s.t];                 // máy ra skill yếu hơn người
+  const wait = s.t >= 3 ? .6 : .42, weak = (p.ai ? lv().sk || .55 : 1) * CUT[s.t] * stK(as ?? G.chars[i], 1);                 // máy ra skill yếu hơn người
   if (as == null) { p.lock = wait + .15 + REC[s.t]; p.act = "wind"; p.actT = wait; }
   if (s.t === 4) startCut(i, as ?? G.chars[i], s.n);
   G.cine = { n: (as != null ? CH[as].name.split(" ")[0] + ": " : "") + s.n, t: 0, d: wait + .25, tier: s.t, i }; beep(200, wait, "sawtooth", .05, 900); aiReact(i, 1);
@@ -656,7 +665,7 @@ function resolve(a, T) {
 function showRes(res, a) {
   const to = a ? a.to : res.to, T = F[to], X = res.x, Y = FLOOR - res.h - (T ? T.y : 0), col = a?.col || chOf(1 - to).col;
   if (res.r === "hit" || res.r === "guard") {
-    if (res.dmg > 0) { const fr = a ? a.from : 1 - to, me = F[G.ME]; if (me && !me.ai) { if (fr === G.ME) me.mp = Math.min(100, me.mp + (a && a.basic ? (res.dmg >= 8 ? 9 : 6) : res.dmg * .25)); else if (to === G.ME) me.mp = Math.min(100, me.mp + res.dmg * .7); } }
+    if (res.dmg > 0) { const fr = a ? a.from : 1 - to, me = F[G.ME]; if (me && !me.ai) { if (fr === G.ME) me.mp = Math.min(100, me.mp + (a && a.basic ? (a.range >= 80 ? 9 : 6) : res.dmg * .25) * SK(G.ME, 3)); else if (to === G.ME) me.mp = Math.min(100, me.mp + res.dmg * .7 * SK(G.ME, 3)); } }
     if (res.r === "guard" && !res.dmg) { pop("CHẶN!", X, Y - 24, "#7fd4ff", .7); burst(X, Y, "#7fd4ff", 8); beep(900, .06, "triangle"); }
     if (a && a.pierce && a.sp && res.dmg > 0 && !a.p) { G.stop = .16; pop("FINAL ACT!", W / 2, 96, "#fff", 1.1, 1.9); }
     if (res.brk) { pop("VỠ KHIÊN!", clamp(X, 50, W - 50), Y - 44, "#ff8a7a", 1.2, 1.3); burst(X, Y, "#9fd8ff", 26); G.shake = Math.max(G.shake, 7); beep(180, .3, "sawtooth", .09, 60); }
@@ -680,7 +689,7 @@ function stepFighter(p, dt) {
   ["stun", "inv", "shield", "parry", "big", "smoke", "lock", "actT", "fly", "paint", "giant", "nap", "mute"].forEach(k => { if (p[k] > 0) p[k] = Math.max(0, p[k] - dt); });
   if (p.smoke <= 0 && own(p.i)) p.ride = null;
   for (let j = p.q.length - 1; j >= 0; j--) { p.q[j].t -= dt; if (p.q[j].t <= 0) { const e = p.q.splice(j, 1)[0]; if (!p.ko) e.fn(); } }
-  if (p.charge > 0) { p.charge -= dt; p.mp = Math.min(100, p.mp + 15 * dt); if (Math.random() < .5) FX.push({ k: "mote", t: 0, d: .4, x: p.x + rnd(-30, 30), y: FLOOR - rnd(10, 110), tx: p.x + p.dir * 40, ty: FLOOR - HIGH, c: "#7fd4ff" }); }
+  if (p.charge > 0) { p.charge -= dt; p.mp = Math.min(100, p.mp + 15 * SK(p.i, 3) * dt); if (Math.random() < .5) FX.push({ k: "mote", t: 0, d: .4, x: p.x + rnd(-30, 30), y: FLOOR - rnd(10, 110), tx: p.x + p.dir * 40, ty: FLOOR - HIGH, c: "#7fd4ff" }); }
   if (!p.ai) { p.mp = Math.min(100, p.mp + (G.sub === "test" ? 45 : 0) * dt);   // thanh nộ không tự hồi: chỉ tăng khi đánh trúng, bị đánh hoặc đứng nạp (Q)
     // mana đầy quá 3 giây mà không dùng thì tuột về 40
     if (p.mp >= 100 && G.sub !== "test") { p.fullT = (p.fullT || 0) + dt; if (p.fullT >= FULL_HOLD && own(p.i) && G.phase === "fight") { p.mp = FULL_DROP; p.fullT = 0; pop("TUỘT NỘ!", p.x, FLOOR - 150, "#7fd4ff", 1, 1.2); beep(500, .25, "sawtooth", .05, 120); } } else p.fullT = 0; }
@@ -693,7 +702,7 @@ function stepLocal(p, dt) {
   if (G.phase !== "fight" || p.stun > 0 || p.ctrl || p.ko || p.charge > 0 || p.lock > 0 || p.fly > 0 || p.nap > 0) return;
   if (KEY.d && p.y === 0) { p.crouch = true; return; }
   const mv = (KEY.r ? 1 : 0) - (KEY.l ? 1 : 0);
-  if (mv) { p.x += mv * 125 * dt; p.moving = true; p.walk += dt; }
+  if (mv) { p.x += mv * 125 * SK(p.i, 0) * dt; p.moving = true; p.walk += dt; }
   p.x = p.i === 0 ? clamp(p.x, 36, o.x - GAP) : clamp(p.x, o.x + GAP, 444);
   if ((KEY.u || p.jq > G.t) && p.y === 0) { p.jq = 0; p.vy = 340; beep(500, .08, "square", .04, 800); }
 }
@@ -719,9 +728,9 @@ function stepAI(p, dt) {
       // đánh dồn: bắn xong có thể bồi ngay 1–2 phát nữa
       if (a.chain > 0) { a.chain--; if (!a.chain && o.boss) a.fin = 1; } else a.chain = Math.random() < (o.burst || 0) ? 1 + (Math.random() < o.burst ? 1 : 0) : 0;
       a.rest = a.chain > 0 ? .12 : rnd(...o.rest);
-      if (a.type === "th") spawn(1, { wait: .8, dmg: o.dmg, cond: 1, tx: pl.x, fx: "drop", ic: c.th.ic, sc: .9, quick: 1, col: c.col });
-      else if (a.type === "lo") spawn(1, { p: 1, v: o.bolt * .85, dmg: o.dmg, col: c.col, ic: c.G.ic, sc: .55, wob: 1, low: 1, h: 16, range: 66 });
-      else spawn(1, { p: 1, v: o.bolt, dmg: o.dmg, col: c.col, ic: c.F.ic, sc: .45, range: 66 }); } return; }
+      if (a.type === "th") spawn(1, { wait: .8, dmg: o.dmg * SK(1, 1), cond: 1, tx: pl.x, fx: "drop", ic: c.th.ic, sc: .9, quick: 1, col: c.col });
+      else if (a.type === "lo") spawn(1, { p: 1, v: o.bolt * .85, dmg: o.dmg * SK(1, 1), col: c.col, ic: c.G.ic, sc: .55, wob: 1, low: 1, h: 16, range: 66 });
+      else spawn(1, { p: 1, v: o.bolt, dmg: o.dmg * SK(1, 1), col: c.col, ic: c.F.ic, sc: .45, range: 66 }); } return; }
   if (p.shield > 0) return;
   // di chuyển: đòn thường là cận chiến nên muốn đánh phải áp sát; máy Tournament còn lượn vào lượn ra và nhảy
   const REACH = 80, gap = p.x - pl.x;
@@ -733,7 +742,7 @@ function stepAI(p, dt) {
   }
   if (a.want && (a.type === "th" || gap <= REACH)) { a.want = 0; a.wind = o.wind * (a.chain > 0 ? .6 : 1); return; }
   if (a.want) { a.chase += dt; if (a.chase > 2.2 && o.types.includes("th")) a.type = "th"; }       // đuổi mãi không tới thì thả đồ từ trần
-  const want = pl.x + (a.want ? REACH - 14 : o.roam ? a.goal || o.dist : Math.min(o.dist, 150)), dx = want - p.x, sp = o.spd * (a.want ? 1.7 : 1);
+  const want = pl.x + (a.want ? REACH - 14 : o.roam ? a.goal || o.dist : Math.min(o.dist, 150)), dx = want - p.x, sp = o.spd * (a.want ? 1.7 : 1) * SK(1, 0);
   if (Math.abs(dx) > 6 && o.spd) { p.x += Math.sign(dx) * Math.min(Math.abs(dx), sp * dt); p.moving = true; p.walk += dt; }
   p.x = clamp(p.x, pl.x + GAP, 448);
 }
@@ -1190,10 +1199,11 @@ function drawPick() {
   const tour = pick.mode === "tour", n = NPC - 1;
   $("pickTitle").textContent = tour ? "TOURNAMENT" : "TEST NHÂN VẬT";
   document.querySelectorAll("#pickGrid .chr").forEach((b, i) => { b.classList.toggle("p1", i === pick.a); b.classList.toggle("p2", i === pick.b); b.querySelector("em").textContent = (i === pick.a ? "BẠN" : "") + (i === pick.a && i === pick.b ? " + " : "") + (i === pick.b ? "MÁY" : ""); });
-  [["postA", pick.a], ["postB", pick.b]].forEach(([id, ci]) => { const el = $(id); el.classList.toggle("empty", ci < 0); el.style.setProperty("--c", ci < 0 ? "#555" : CH[ci].col); el.querySelector("i").style.backgroundPosition = ci < 0 ? "0 9999px" : `-40px ${-ci * 150}px`; el.querySelector("u").style.backgroundPosition = ci < 0 ? "0 9999px" : `${ci * 100 / (NPC - 1)}% 0`; el.querySelector("b").textContent = ci < 0 ? "?" : CH[ci].name.toUpperCase(); el.querySelector("b").style.fontSize = ci >= 0 && CH[ci].name.length > 11 ? "15px" : ci >= 0 && CH[ci].name.length > 8 ? "18px" : ""; el.querySelector("small").textContent = ci < 0 ? "" : CH[ci].role.split(" · ").pop(); });
+  [["postA", pick.a], ["postB", pick.b]].forEach(([id, ci]) => { const el = $(id); el.classList.toggle("empty", ci < 0); el.style.setProperty("--c", ci < 0 ? "#555" : CH[ci].col); el.querySelector("i").style.backgroundPosition = ci < 0 ? "0 9999px" : `-40px ${-ci * 150}px`; el.querySelector("u").style.backgroundPosition = ci < 0 ? "0 9999px" : `${ci * 100 / (NPC - 1)}% 0`; el.querySelector("b").textContent = ci < 0 ? "?" : CH[ci].name.toUpperCase(); el.querySelector("b").style.fontSize = ci >= 0 && CH[ci].name.length > 11 ? "15px" : ci >= 0 && CH[ci].name.length > 8 ? "18px" : ""; el.querySelector("small").textContent = ci < 0 ? "" : CH[ci].role.split(" · ").pop();
+    el.querySelector(".st").innerHTML = ci < 0 || (tour && id === "postB") ? "" : stOf(ci).map((v, j) => `<div><label>${STN[j]}</label><s>${[1, 2, 3, 4, 5].map(k => `<em class="${k <= v ? "on" : ""}"></em>`).join("")}</s></div>`).join(""); });
   if (tour) { $("postB").querySelector("b").textContent = n + " ĐỐI THỦ + BOSS"; $("postB").querySelector("small").textContent = "khó dần từng trận"; }
   $("pickTip").textContent = pick.a < 0 ? "Chạm để chọn nhân vật của BẠN" : tour ? `Bạn là ${CH[pick.a].name}. Đấu lần lượt ${n} nhân vật còn lại, thứ tự ngẫu nhiên, trận sau khó hơn trận trước. Thắng hết thì gặp BOSS CUỐI` : pick.b < 0 ? `Bạn là ${CH[pick.a].name}. Giờ chọn nhân vật làm ĐỐI THỦ` : `${CH[pick.a].name} đấu ${CH[pick.b].name}. Chạm nhân vật bất kỳ để chọn lại`;
-  $("pickInfo").innerHTML = pick.a < 0 ? "" : `<b style="color:${CH[pick.a].col}">${CH[pick.a].name}</b> · ${CH[pick.a].tag}<br>S: ${CH[pick.a].F.n} · D: ${CH[pick.a].G.n} · Tối thượng: ${CH[pick.a].sp[7].n}`;
+  $("pickInfo").innerHTML = pick.a < 0 ? "" : `<b style="color:${CH[pick.a].col}">${CH[pick.a].name}</b> · ${CH[pick.a].tag}<br>S: ${CH[pick.a].F.n} · D: ${CH[pick.a].G.n} · Tối thượng: ${CH[pick.a].sp[7].n}<br>${stShow(pick.a).map((v, j) => STN[j] + " " + v).join(" · ")}`;
   $("lvPick").style.display = tour ? "none" : ""; $("tourName").style.display = tour ? "" : "none"; document.querySelectorAll("#lvPick button").forEach((b, i) => b.classList.toggle("on", (i === 0) === pick.passive));
   $("bFight").disabled = pick.a < 0 || (!tour && pick.b < 0); $("bFight").textContent = tour ? "VÀO GIẢI" : "VÀO TẬP";
 }
@@ -1221,5 +1231,5 @@ $("bSound").onclick = () => { G.sound = !G.sound; $("bSound").textContent = G.so
 document.querySelectorAll("[data-k]").forEach(b => { const k = b.dataset.k, down = e => { e.preventDefault(); b.classList.add("on"); if (KEY[k] !== undefined) { KEY[k] = 1; dirIn(k); } else press(k); }, up = e => { e.preventDefault(); b.classList.remove("on"); if (KEY[k] !== undefined) KEY[k] = 0; }; b.addEventListener("pointerdown", down); b.addEventListener("pointerup", up); b.addEventListener("pointercancel", up); b.addEventListener("pointerleave", up); b.addEventListener("contextmenu", e => e.preventDefault()); });
 // bảng 8 skill của một nhân vật (trang chơi: chạm để ra chiêu; trang hướng dẫn: để tra)
 function spellHTML(ci, tap) { return `<div class="spg">` + CH[ci].sp.map((s, i) => `<button class="sp t${s.t}" ${tap ? `data-sp="${i}"` : "disabled"}><span class="ks">${kshow(s.k, " › ")} · ${TIER[s.t].mp} MP</span><b>${s.n}</b><small>${s.b ? (s.m ? s.m + " × " : "") + Math.round((s.fixed ? s.b : s.b * TIER[s.t].k) * CUT[s.t]) + " sát thương · " : ""}${s.d}</small></button>`).join("") + "</div>"; }
-$("guideSpells").innerHTML = CH.slice(0, NPC).map((c, i) => `<h3 style="color:${c.col}">${c.name} · ${c.role}</h3><p>${c.tag}. Đòn S: ${c.F.n}. Đòn D: ${c.G.n}.</p>` + spellHTML(i, false)).join("");
+$("guideSpells").innerHTML = CH.slice(0, NPC).map((c, i) => `<h3 style="color:${c.col}">${c.name} · ${c.role}</h3><p>${c.tag}. Đòn S: ${c.F.n}. Đòn D: ${c.G.n}.<br>${stOf(i).map((v, j) => STN[j] + " " + v + "/5").join(" · ")}</p>` + spellHTML(i, false)).join("");
 window.__wz = { G, CH, doCast, get F() { return F; }, get ATK() { return ATK; }, press, tapSpell, startMatch, startTour, openRank, lv, MUS, net, setReady, KEY, pick };
