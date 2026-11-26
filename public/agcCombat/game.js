@@ -396,6 +396,7 @@ function newF(i) {
   return { i, dir: i ? -1 : 1, x: i ? 372 : 110, y: 0, vy: 0, hp: o ? o.hp : 100, max: o ? o.hp : 100, lag: 1, mp: 25, guard: 100, stun: 0, inv: 0, shield: 0, parry: 0, charge: 0, big: 0, bigK: 0, giant: 0, nap: 0, mute: 0, smoke: 0, fly: 0, ride: null, paint: 0, lock: 0, ctrl: null, crouch: false, walk: 0, moving: false, act: "", actT: 0, cd: {}, ko: false, q: [], ai: o ? { rest: rnd(...o.rest), wind: 0, type: "", fire: 0 } : null };
 }
 function startMatch(mode, lvl, chars, sub) {
+  G.cut = null;
   G.mode = mode; G.lvl = lvl || 0; G.sub = mode === "ai" ? sub || "" : ""; G.ally = null; G.lvo = G.sub === "tour" ? (chars[1] === BOSS ? BOSSLV : tourLv(G.tour.s, G.tour.order.length - 1)) : G.sub === "test" && G.passive ? DUMMY : null; $("tourBox").className = ""; G.round = 1; G.score = [0, 0]; G.ME = mode === "pvp" && !net.host ? 1 : 0; G.chars = chars;
   show("game"); scrollTo(0, 0);
   // bảng 8 skill ngay dưới sân đấu: chỉ để xem tổ hợp phím và tên chiêu, không bấm được; ô sáng khi đủ MP
@@ -465,6 +466,7 @@ addEventListener("keydown", e => { if (!$("game").classList.contains("on")) retu
 addEventListener("keyup", e => { if (KMAP[e.code]) KEY[KMAP[e.code]] = 0; });
 const canAct = p => !p.ko && G.phase === "fight" && p.stun <= 0 && !p.ctrl && p.lock <= 0 && p.charge <= 0 && p.fly <= 0 && p.nap <= 0;
 function press(k) {
+  if (G.cut) { if (G.cut.t > .4) G.cut.t = Math.max(G.cut.t, G.cut.d - .12); return; }
   const p = F[G.ME]; if (!p || G.phase !== "fight" || p.ko) return;
   seq.s = G.t - seq.t < SEQT ? (seq.s + k).slice(-6) : k; seq.t = G.t; G.keys.push({ k, t: G.t }); if (G.keys.length > 8) G.keys.shift();
   // đang nạp (Q) hoặc vừa ra đòn nặng (D) vẫn nối được combo: phím kế tiếp khớp chuỗi thì huỷ nạp và ra skill luôn
@@ -491,12 +493,58 @@ function doBasic(i, k, local) {
   if (k === "V") { p.parry = WARD; beep(700, .12, "triangle", .06, 1400); }
   if (k === "B") { p.charge = .65; beep(260, .3, "sine", .05, 520); }
 }
+/* ======================= FINAL ACT: màn dạo đầu của chiêu Tối thượng =======================
+   Game đứng hình khoảng 2,7 giây: nền tối, dải chéo zoom vào gương mặt người ra chiêu (cắt từ poster), ba dòng kể chuyện
+   hiện kiểu đánh máy, tên chiêu đập vào màn hình, chớp trắng rồi mới tới đòn kết liễu. Bấm một nút bất kỳ để bỏ qua. */
+const STORY = {
+  duc: ["Thứ Sáu. 17 giờ 59.", "Khách: «Em ơi, có tí feedback…»", "Anh bấm gọi cả team."],
+  viet: ["Anh không cần slide.", "Anh chỉ cần vuốt tóc.", "Cả phòng họp nín thở."],
+  nhan: ["Layout thứ 48.", "Lưng anh đã hết thẳng.", "Giờ tới lượt mày cong."],
+  hieu: ["Slide 1 trên 120.", "Win khách. Win sếp. Win giải.", "Win luôn cả mày."],
+  ngan: ["Headline chưa ai duyệt.", "Nhưng mèo thì đã đói.", "Pspspsps…"],
+  khoa: ["Chuyện này anh chỉ nghe kể…", "…nhưng anh kể lại cho cả công ty.", "Thêm chút mắm muối."],
+  bao: ["Tập xong chưa kịp tắm.", "Nhưng story thì phải đăng.", "Ánh sáng: hoàn hảo."],
+  nguyen: ["Tin nhắn thứ 99: «Ngủ ngon nha».", "Đã xem. Không trả lời.", "Tim anh hoá thành vũ khí."],
+  thang: ["Outfit hôm nay: 10 điểm.", "Ngại ngùng: 0 điểm.", "Lại gần đây coi."],
+  nhu: ["Góc trái: đẹp.", "Góc phải: cũng đẹp.", "Không có góc chết."],
+  hang: ["Căn lề lệch đúng 1 pixel.", "Chị không tha thứ.", "Tông đơ đã sạc đầy."],
+  jen: ["Loa phường vang lên.", "Cả khu phố xuống đường.", "Đều bước!"],
+  tuan: ["Vé đi Bangkok: đã book.", "Dầu gió: đã mở nắp.", "Sawadee khrap."],
+  boss: ["Brief nào rồi cũng tới hạn.", "Mọi câu «mai em gửi»…", "…đều về tay ta."],
+};
+const PFACE = [[.57, .15], [.45, .22], [.57, .14], [.48, .21], [.55, .29], [.36, .26], [.45, .2], [.5, .16], [.61, .11], [.49, .35], [.48, .19], [.48, .19], [.59, .19]];   // tâm gương mặt trên từng poster (tỉ lệ ngang, dọc)
+function startCut(i, ci, name) { G.cut = { i, ci, n: name, t: 0, d: 2.75, s: 0, lines: STORY[CH[ci].id] || ["…", "…", "…"] }; beep(120, .5, "sawtooth", .08, 900); }
+function stepCut(dt) { const c = G.cut; c.t += dt; const st = c.t < .35 ? 0 : c.t < .9 ? 1 : c.t < 1.45 ? 2 : c.t < 2 ? 3 : 4; if (st > c.s) { c.s = st; if (st < 4) beep(500 + st * 120, .06, "square", .05); else { beep(90, .5, "sawtooth", .12, 40); beep(1400, .25, "square", .06, 200); } } if (c.t >= c.d) { G.cut = null; G.flash = .7; G.shake = 10; } }
+function drawCut() {
+  const c = G.cut, t = c.t, ch = CH[c.ci], col = ch.col, left = c.i === 0, ease = k => 1 - Math.pow(1 - clamp(k, 0, 1), 3), kin = ease(t / .28);
+  x.save(); x.setTransform(1, 0, 0, 1, 0, 0); x.globalAlpha = 1; x.globalCompositeOperation = "source-over";
+  x.fillStyle = `rgba(6,4,22,${.84 * kin})`; x.fillRect(0, 0, W, H);
+  x.strokeStyle = col; x.lineWidth = 2; x.globalAlpha = .4 * kin; for (let i = 0; i < 28; i++) { const y = (i * 37) % H, len = 40 + (i * 53) % 130, xx = ((i * 97 + t * (left ? 1 : -1) * (900 + (i % 4) * 300)) % (W + 300) + W + 300) % (W + 300) - 150; x.beginPath(); x.moveTo(xx, y); x.lineTo(xx + len, y); x.stroke(); } x.globalAlpha = 1;
+  // dải chéo: zoom vào gương mặt
+  const by = 54, bh = 122, sk = 28, off = (1 - kin) * (left ? -W - 80 : W + 80), band = () => { x.beginPath(); x.moveTo(-12 + sk, by); x.lineTo(W + 12 + sk, by); x.lineTo(W + 12 - sk, by + bh); x.lineTo(-12 - sk, by + bh); x.closePath(); }, z = 1 + t * .1;
+  x.save(); x.translate(off, 0); band(); x.fillStyle = col; x.fill(); x.save(); x.clip();
+  if (c.ci < PFACE.length && ok(POST)) { const f = PFACE[c.ci], sw = 262 / z, sh = sw * bh / W, sx = clamp(c.ci * 360 + f[0] * 360 - sw / 2, c.ci * 360, c.ci * 360 + 360 - sw), sy = clamp(f[1] * 480 - sh / 2, 0, 480 - sh); x.imageSmoothingEnabled = true; x.drawImage(POST, sx, sy, sw, sh, 0, by, W, bh); x.imageSmoothingEnabled = false; }
+  else if (ok(SPR)) { const sw = 76 / z, sh = sw * bh / W; x.imageSmoothingEnabled = false; x.fillStyle = "#1a0508"; x.fillRect(0, by, W, bh); if (!left) { x.translate(W, 0); x.scale(-1, 1); } x.drawImage(SPR, 96 - sw / 2, c.ci * CHH + 36 - sh / 2, sw, sh, 0, by, W, bh); }
+  const g = x.createLinearGradient(0, by, 0, by + bh); g.addColorStop(0, "rgba(0,0,0,.35)"); g.addColorStop(.35, "rgba(0,0,0,0)"); g.addColorStop(1, "rgba(0,0,0,.45)"); x.setTransform(1, 0, 0, 1, off, 0); x.fillStyle = g; x.fillRect(-20, by, W + 40, bh);
+  if (Math.floor(t * 14) % 5 === 0) { x.fillStyle = "rgba(255,255,255,.12)"; x.fillRect(-20, by, W + 40, bh); }
+  x.restore(); band(); x.strokeStyle = "#fff"; x.lineWidth = 3; x.stroke(); x.strokeStyle = col; x.lineWidth = 1; x.stroke(); x.restore();
+  // viền phim + nhãn
+  x.fillStyle = "#000"; x.fillRect(0, 0, W, 26 * kin); x.fillRect(0, H - 26 * kin, W, 26 * kin);
+  if (kin > .9) { text("★ FINAL ACT ★", 10, 18, col, 17); text(ch.name.toUpperCase(), W - 10, 18, "#fff", 17, "right"); text("bấm nút bất kỳ để bỏ qua", W / 2, H - 8, "#6b7280", 12, "center"); }
+  // ba dòng kể chuyện
+  c.lines.forEach((ln, i) => { const ts = .35 + i * .55; if (t < ts) return; const n = Math.floor((t - ts) * 42), last = t < ts + .55 && i < 2 || i === 2 && t < 2; text(ln.slice(0, n) + (n < ln.length && Math.floor(t * 10) % 2 ? "▌" : ""), left ? 22 : W - 22, 196 + i * 17, last ? "#ffe14a" : "#cbd5e1", 17, left ? "left" : "right"); });
+  // tên chiêu đập vào
+  if (t >= 2) { const u = clamp((t - 2) / .16, 0, 1), sc = 3.2 - 2.2 * ease(u), jx = u >= 1 ? Math.sin(t * 90) * Math.max(0, 2.3 - t) * 8 : 0; x.save(); x.translate(W / 2 + jx, by + bh / 2 + 16); x.transform(1, 0, -.18, 1, 0, 0); x.scale(sc, sc); x.globalAlpha = u; const nm = c.n.toUpperCase(), size = nm.length > 15 ? 38 : 46; x.font = FONT(size); x.textAlign = "center"; x.lineJoin = "round"; x.lineWidth = 8; x.strokeStyle = "#000"; x.strokeText(nm, 0, 0); x.lineWidth = 3; x.strokeStyle = col; x.strokeText(nm, 0, 0); x.fillStyle = "#fff"; x.fillText(nm, 0, 0); x.restore(); if (u >= 1 && t < 2.3) { x.fillStyle = `rgba(255,255,255,${(2.3 - t) * 2})`; x.fillRect(0, 0, W, H); } }
+  const out = clamp((t - (c.d - .14)) / .14, 0, 1); if (out > 0) { x.fillStyle = `rgba(255,255,255,${out})`; x.fillRect(0, 0, W, H); }
+  x.restore();
+}
 const allyX = () => clamp((F[1] ? F[1].x : 400) + 46, 60, 462), CI = a => a.as ?? G.chars[a.from];
 function doCast(i, si, local, as) {            // as: số nhân vật của đồng đội ra chiêu hộ (boss cuối), không khoá người gọi
   const p = F[i], s = (as != null ? CH[as] : chOf(i)).sp[si], T = TIER[s.t], tg = F[1 - i];
   if (local) { p.mp -= T.mp; if (G.mode === "pvp") send({ t: "c", s: si }); }
   const wait = s.t >= 3 ? .6 : .42, weak = (p.ai ? lv().sk || .55 : 1) * CUT[s.t];                 // máy ra skill yếu hơn người
   if (as == null) { p.lock = wait + .15 + REC[s.t]; p.act = "wind"; p.actT = wait; }
+  if (s.t === 4) startCut(i, as ?? G.chars[i], s.n);
   G.cine = { n: (as != null ? CH[as].name.split(" ")[0] + ": " : "") + s.n, t: 0, d: wait + .25, tier: s.t, i }; beep(200, wait, "sawtooth", .05, 900); aiReact(i, 1);
   p.q.push({ t: wait, fn: () => {
     if (as == null) { p.act = s.t >= 3 ? "heavy" : "cast"; p.actT = .3; } beep(1200, .15, "square", .07, 300);
@@ -549,6 +597,7 @@ function showRes(res, a) {
   if (res.r === "hit" || res.r === "guard") {
     if (res.dmg > 0) { const fr = a ? a.from : 1 - to, me = F[G.ME]; if (me && !me.ai) { if (fr === G.ME) me.mp = Math.min(100, me.mp + (a && a.basic ? (res.dmg >= 8 ? 9 : 6) : res.dmg * .25)); else if (to === G.ME) me.mp = Math.min(100, me.mp + res.dmg * .7); } }
     if (res.r === "guard" && !res.dmg) { pop("CHẶN!", X, Y - 24, "#7fd4ff", .7); burst(X, Y, "#7fd4ff", 8); beep(900, .06, "triangle"); }
+    if (a && a.pierce && a.sp && res.dmg > 0 && !a.p) { G.stop = .16; pop("FINAL ACT!", W / 2, 96, "#fff", 1.1, 1.9); }
     if (res.brk) { pop("VỠ KHIÊN!", clamp(X, 50, W - 50), Y - 44, "#ff8a7a", 1.2, 1.3); burst(X, Y, "#9fd8ff", 26); G.shake = Math.max(G.shake, 7); beep(180, .3, "sawtooth", .09, 60); }
     if (res.dmg > 0) { pop("-" + res.dmg, X + rnd(-8, 8), Y - 20, res.r === "guard" ? "#9fd8ff" : "#ffe14a", .9); G.stop = Math.max(G.stop, .06); G.shake = Math.max(G.shake, a?.sp ? 7 : 3.5); G.flash = Math.max(G.flash, a?.sp ? .3 : .12); burst(X, Y, col, a?.sp ? 24 : 12); beep(res.r === "guard" ? 300 : 160, .1, "sawtooth", .08, 60);
       if ((a ? a.from : 1 - res.to) === G.ME) { G.hits++; G.hitT = 2.4; } }
@@ -646,6 +695,7 @@ function stepAttacks(dt) {
   }
 }
 function update(dt) {
+  if (G.cut) return stepCut(dt);                          // đang chiếu Final Act: cả trận đứng hình
   G.t += dt;
   if (G.cine) { G.cine.t += dt; if (G.cine.t > G.cine.d) G.cine = null; }
   if (G.hitT > 0) { G.hitT -= dt; if (G.hitT <= 0) G.hits = 0; }
@@ -980,7 +1030,7 @@ function loop(now) {
   if (dt > 0) update(dt);
   if (now - lastUi > 150) { lastUi = now; const mp = F[G.ME].mute > 0 ? -1 : F[G.ME].mp; document.querySelectorAll("#spells .sk").forEach(b => b.classList.toggle("no", mp < +b.dataset.mp)); }
   if (G.mode === "pvp" && now - lastSend > 33) { lastSend = now; const p = F[G.ME]; send({ t: "s", x: Math.round(p.x), y: Math.round(p.y), hp: p.hp, mp: Math.round(p.mp), f: frameOf(p), sh: +p.shield.toFixed(2), bg: +p.big.toFixed(2), bk: p.bigK, gi: +p.giant.toFixed(2), np: +p.nap.toFixed(2), mu: +p.mute.toFixed(1), sm: +p.smoke.toFixed(2), rd: p.ride, fx: p.flyX == null ? null : Math.round(p.flyX), iv: p.inv > 0 ? 1 : 0, cr: p.crouch ? 1 : 0, c: p.ctrl ? [p.ctrl.k, +p.ctrl.t.toFixed(2), 0, p.ctrl.lb, p.ctrl.ic] : null, ko: p.ko ? 1 : 0 }, false); }
-  render();
+  render(); if (G.cut) drawCut();
 }
 requestAnimationFrame(loop);
 
