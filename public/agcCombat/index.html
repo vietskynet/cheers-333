@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>AGENCY COMBAT</title>
-<meta name="description" content="Game đối kháng 16-bit của agency: 15 nhân vật, mỗi người 8 skill, test nhân vật, tournament đấu đơn hoặc đấu đôi qua mã phòng.">
+<meta name="description" content="Game đối kháng 16-bit của agency: 17 nhân vật, mỗi người 8 skill, test nhân vật, tournament đấu đơn hoặc đấu đôi qua mã phòng.">
 <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
@@ -74,7 +74,7 @@
   .rwrap{overflow:hidden;margin:8px 0 6px;border-top:2px solid #000;border-bottom:2px solid #000;background:#0005}
   #roster{display:flex;gap:10px;width:max-content;padding:10px 5px;animation:slide 34s linear infinite}
   .rost{position:relative;width:min(46vw,190px);aspect-ratio:3/4.62;overflow:hidden;background:var(--c);border:3px solid #000;box-shadow:0 0 0 2px var(--c),0 0 14px var(--c);flex:none}.rost:nth-child(odd){transform:rotate(-1.5deg)}.rost:nth-child(even){transform:rotate(1.5deg) translateY(4px)}
-  .rost u{position:absolute;inset:0 0 34px 0;background:var(--post) no-repeat;background-size:1500% 100%;display:none}
+  .rost u{position:absolute;inset:0 0 34px 0;background:var(--post) no-repeat;background-size:1700% 100%;display:none}
   .rost i{position:absolute;left:50%;bottom:34px;width:110px;height:150px;margin-left:-55px;background:var(--spr) no-repeat;image-rendering:pixelated}
   .hasPost .rost u{display:block}.hasPost .rost i{display:none}
   .rost b{position:absolute;left:0;right:0;bottom:15px;background:#000;color:#ffd84a;font-weight:400;font-size:22px;line-height:1;white-space:nowrap;border-top:3px solid var(--c);text-shadow:2px 2px 0 #a3261c}
@@ -98,7 +98,7 @@
   .post{height:340px;position:relative;overflow:hidden;--c:#555}
   .post:before{content:"";position:absolute;left:-20%;right:-20%;top:18%;bottom:0;background:var(--c);opacity:.55;transform:skewY(-12deg);border-top:3px solid #000}
   .post i{position:absolute;left:50%;bottom:44px;width:110px;height:150px;margin-left:-55px;background:var(--spr) no-repeat;image-rendering:pixelated;transform:scale(1.55);transform-origin:50% 100%}
-  .post u{position:absolute;top:0;bottom:120px;left:50%;aspect-ratio:3/4;transform:translateX(-50%);background:var(--post) no-repeat;background-size:1500% 100%;display:none}
+  .post u{position:absolute;top:0;bottom:120px;left:50%;aspect-ratio:3/4;transform:translateX(-50%);background:var(--post) no-repeat;background-size:1700% 100%;display:none}
   .hasPost .post u{display:block}.hasPost .post i{display:none}
   .post.p2 i{transform:scale(-1.55,1.55)}.post.p2 u{transform:translateX(-50%) scaleX(-1)}
   .post span{position:absolute;top:2px;left:2px;background:#000;color:#fff;font-size:15px;padding:0 5px}.post.p2 span{left:auto;right:2px}
@@ -231,7 +231,7 @@
 <!-- ============ HƯỚNG DẪN ============ -->
 <section class="scr" id="guide">
   <h2>Hướng dẫn</h2>
-  <p>Chọn một trong mười lăm nhân vật của agency. Đánh cho đối thủ hết máu trước là thắng hiệp. Hết hiệp, cả hai đầy máu và đấu tiếp; tỉ số ghi ở giữa màn hình.</p>
+  <p>Chọn một trong mười bảy nhân vật của agency. Đánh cho đối thủ hết máu trước là thắng hiệp. Hết hiệp, cả hai đầy máu và đấu tiếp; tỉ số ghi ở giữa màn hình.</p>
   <h3>Điều khiển</h3>
   <div class="keys">
     <b>← →</b><span>Di chuyển. Áp sát được tới sát người đối thủ.</span>
@@ -262,7 +262,7 @@
   <h3>Ba chế độ</h3>
   <div class="keys">
     <b>Test nhân vật</b><span>Chọn nhân vật của bạn và một đối thủ để tập skill. Nộ tự hồi rất nhanh và không tuột, để tập tổ hợp phím. Đối thủ là bao cát đứng yên (300 HP) hoặc biết đánh trả.</span>
-    <b>Tournament</b><span>Đấu đơn. Chọn một nhân vật rồi đấu lần lượt 14 nhân vật còn lại theo thứ tự ngẫu nhiên, mỗi trận một hiệp. Trận sau khó hơn trận trước: máy nhiều máu hơn, đánh nhanh và đau hơn, biết áp sát, lùi ra, nhảy, cúi né đòn, đánh dồn 2–3 phát; từ trận 2 ra skill, từ trận 5 ra cả Tối thượng và biết mở vòng đỡ. Thắng trận thứ N được N × 100 điểm cộng số máu còn lại; điểm cao nhất của mỗi người lên bảng xếp hạng. Thua thì đấu lại trận đó (điểm còn một nửa) hoặc làm lại giải. Thắng đủ 12 trận sẽ gặp <b style="color:#ff5a5a">BOSS CUỐI</b>: không chọn được, kéo theo một nhân vật ngẫu nhiên đánh hộ, và càng gần hết máu càng dữ.</span>
+    <b>Tournament</b><span>Đấu đơn. Chọn một nhân vật rồi đấu lần lượt 16 nhân vật còn lại theo thứ tự ngẫu nhiên, mỗi trận một hiệp. Trận sau khó hơn trận trước: máy nhiều máu hơn, đánh nhanh và đau hơn, biết áp sát, lùi ra, nhảy, cúi né đòn, đánh dồn 2–3 phát; từ trận 2 ra skill, từ trận 5 ra cả Tối thượng và biết mở vòng đỡ. Thắng trận thứ N được N × 100 điểm cộng số máu còn lại; điểm cao nhất của mỗi người lên bảng xếp hạng. Thua thì đấu lại trận đó (điểm còn một nửa) hoặc làm lại giải. Thắng đủ 12 trận sẽ gặp <b style="color:#ff5a5a">BOSS CUỐI</b>: không chọn được, kéo theo một nhân vật ngẫu nhiên đánh hộ, và càng gần hết máu càng dữ.</span>
     <b>Đấu đôi</b><span>Hai người, hai máy. Một người tạo phòng và gửi mã 4 ký tự, người kia nhập mã.</span>
   </div>
   <p style="margin-top:8px">Đốm sáng trước mặt máy báo trước độ cao của đòn sắp ra. Skill của máy yếu hơn của bạn khoảng một nửa.</p>
@@ -274,7 +274,7 @@
     <b>Năng lượng</b><span>Nộ lúc vào hiệp (nấc 3 là 25, mỗi nấc ±5) và tốc độ lên nộ (mỗi nấc ±15%).</span>
   </div>
   <p style="margin-top:8px">Mỗi nhân vật có 12 điểm chia cho bốn chỉ số, thang 1–5, xem ở màn chọn nhân vật. Máy cũng dùng chỉ số của nhân vật nó đang cầm.</p>
-  <h3>Mười lăm nhân vật và bộ skill</h3>
+  <h3>Mười bảy nhân vật và bộ skill</h3>
   <div id="guideSpells"></div>
   <div class="col"><button class="btn" data-go="home">← Về màn hình chính</button></div>
 </section>
